@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 #elif __APPLE__
+#include <TargetConditionals.h>
 #endif
 
 

@@ -447,9 +447,10 @@ void xwl_osx_startup()
 	}
 	
 	// Tell the application to stop bouncing in the Dock.
-	[[NSApplication sharedApplication] finishLaunching];
+	//[[NSApplication sharedApplication] finishLaunching];
 	// NOTE : This last call won't harm anything even if SFML window was
 	// created with an external handle.
+	// NOTE2: Removing this call in OSX 10.7 fixes "_createMenuRef called with existing principal MenuRef" Unhandled exception.
 	
 	pool = [[NSAutoreleasePool alloc] init];
 	application = [NSApplication sharedApplication];

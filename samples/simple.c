@@ -17,7 +17,10 @@ xwl_windowparams_t p;
 #include <GL/gl.h>
 #include <GL/glx.h>
 #elif __APPLE__
+// for OSX 10.6
 #include <OpenGL/OpenGL.h>
+// for OSX 10.7+
+#include <OpenGL/gl.h>
 #endif
 
 
@@ -116,7 +119,7 @@ int main()
 	printf( "Actual Window dimensions: %i x %i\n", p.width, p.height );
 
 	// set event callback
-	//xwl_set_callback( callback );
+	xwl_set_callback( callback );
 
 #if 1
 	printf( "GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
@@ -129,7 +132,7 @@ int main()
 	while( running )
 	{
 		xwl_pollevent( &event );
-		callback( &event );
+		//callback( &event );
 
 		glClearColor(0.25, 0.25, 0.25, 1.0);
 		glClear( GL_COLOR_BUFFER_BIT );
