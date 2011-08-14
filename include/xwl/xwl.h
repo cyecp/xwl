@@ -24,6 +24,7 @@ extern "C" {
 #include <TargetConditionals.h>
 #endif
 
+#define XWL_MAX_TOUCHES 5
 
 
 #ifndef Z_TYPES
@@ -191,7 +192,10 @@ enum
 	XWLE_CLOSED,
 	XWLE_LOSTFOCUS,
 	XWLE_GAINFOCUS,
-	XWLE_TEXT
+	XWLE_TEXT,
+	XWLE_TOUCHES_BEGAN,
+	XWLE_TOUCHES_MOVED,
+	XWLE_TOUCHES_END
 };
 
 // flags
@@ -237,6 +241,13 @@ typedef struct xwl_windowparams_s
 	void * userdata;
 	char * title;
 } xwl_windowparams_t;
+	
+typedef struct
+{
+	float x;
+	float y;
+	
+} xwl_touch_t;
 
 typedef struct xwl_event_s
 {
@@ -270,11 +281,12 @@ typedef struct xwl_event_s
 	i16 button;
 	i16 keymods;
 
+	xwl_touch_t touches[ XWL_MAX_TOUCHES ];
 } xwl_event_t;
 
 
 typedef void (*xwl_event_callback)( xwl_event_t * );
-
+	
 // returns 0 on failure
 // returns 1 on success
 i32 xwl_startup();
@@ -293,7 +305,6 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title 
 
 // set the event callback
 void xwl_set_callback( xwl_event_callback cb );
-
 
 const char * xwl_key_to_string( i32 key );
 const char * xwl_event_to_string( i32 event_type );
@@ -317,7 +328,7 @@ xwl_window_handle_t *xwl_get_unused_window();
 void xwl_send_event( xwl_event_t * ev );
 void xwl_setup_rendering( xwl_window_t * window );
 void xwl_finish();
-
+void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
 
 
 // -- platform specifics

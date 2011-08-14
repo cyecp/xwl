@@ -30,6 +30,7 @@ extern "C" {
 i32 xwl_renderer_startup( xwl_renderer_settings_t * settings );
 void xwl_renderer_post( xwl_renderer_settings_t * settings );
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
+void xwl_renderer_activate( xwl_renderer_settings_t * settings );
 
 #define XWL_MAX_WINDOW_HANDLES 4
 static xwl_window_handle_t xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
@@ -85,6 +86,19 @@ void xwl_setup_rendering( xwl_window_t * window )
 #if __APPLE__
 	xwl_setup_osx_rendering( window );
 #endif
+}
+	
+void xwl_activate( xwl_window_t * window )
+{
+	xwl_renderer_settings_t cfg;
+	
+	if ( !window )
+	{
+		return;
+	}
+	
+	cfg.window = window;
+	xwl_renderer_activate( &cfg );
 }
 
 void xwl_finish()
