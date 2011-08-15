@@ -1083,10 +1083,12 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title 
 	//memset( windowName, 0, 128 );
 	HWND handle;
 
-	style |= WS_MINIMIZEBOX | WS_CAPTION | WS_BORDER | WS_SYSMENU;
+
 
 	if ( title == 0 )
+	{
 		title = "Untitled Window";
+	}
 
 	if ( !(params->flags & XWL_FULLSCREEN) )
 	{
@@ -1094,10 +1096,18 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title 
 		AdjustWindowRect( &r, style, 0 );
 		params->width = (r.right - r.left);
 		params->height = (r.bottom - r.top);
+		style |= WS_MINIMIZEBOX | WS_CAPTION | WS_BORDER | WS_SYSMENU;
+
+		if ( !(params->flags & XWL_NORESIZE) )
+		{
+			style |= WS_OVERLAPPEDWINDOW;
+		}
+	}
+	else
+	{
+		style |= WS_POPUP;
 	}
 
-	if ( !(params->flags & XWL_NORESIZE) )
-		style |= WS_OVERLAPPEDWINDOW;
 
 	MultiByteToWideChar( CP_UTF8, 0, title, -1, windowName, 128 );
 
