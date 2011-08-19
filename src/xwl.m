@@ -1043,7 +1043,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 	NSRect frame;
 	NSPoint origin;
 	i32 windowMask;
-	
+	NSRect mainScreenFrame;
 
 	// full screen
 	
@@ -1065,6 +1065,10 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 	
 	frame = NSMakeRect( 0, 0, params->width, params->height );
 	
+	// get this screen's dimensions
+	mainScreenFrame = [[NSScreen mainScreen] frame];
+	//NSLog( @"DIMS: %g %g", mainScreenFrame.size.width, mainScreenFrame.size.height );
+	
 	handle = [[XWLWINDOW alloc] initWithContentRect: frame styleMask: windowMask backing: NSBackingStoreBuffered defer: NO];
 	[handle autorelease];
 	
@@ -1082,7 +1086,8 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 
 	[handle setDelegate: appDelegate ];
 
-	origin = NSMakePoint( 0, 0 );
+	// try to center the window
+	origin = NSMakePoint( (mainScreenFrame.size.width/2) - (params->width/2), (mainScreenFrame.size.height/2) - (params->height/2) );
 	
 	[handle center];
 	[handle setFrameOrigin: origin];
