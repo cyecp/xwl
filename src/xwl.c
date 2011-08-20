@@ -1100,15 +1100,16 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title 
 	if ( !(params->flags & XWL_FULLSCREEN) )
 	{
 		RECT r = { 0, 0, params->width, params->height };
-		AdjustWindowRect( &r, style, 0 );
-		params->width = (r.right - r.left);
-		params->height = (r.bottom - r.top);
 		style |= WS_MINIMIZEBOX | WS_CAPTION | WS_BORDER | WS_SYSMENU;
-
 		if ( !(params->flags & XWL_NORESIZE) )
 		{
 			style |= WS_OVERLAPPEDWINDOW;
 		}
+		
+		AdjustWindowRect( &r, style, 0 );
+		params->width = (r.right - r.left);
+		params->height = (r.bottom - r.top);
+
 	}
 	else
 	{
