@@ -532,6 +532,9 @@ void xwl_pollevent_osx( xwl_event_t * e )
 
 #if !TARGET_OS_IPHONE
 @implementation MyOpenGLView
+
+@synthesize context = ctx;
+
 -(id)initWithFrame:(NSRect)frameRect
 {
 	self = [super initWithFrame: frameRect];
@@ -900,6 +903,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 #if TARGET_OS_IPHONE
 #elif TARGET_OS_MAC
 
+
 MyOpenGLView* setup_rendering( XWLWINDOW * handle )
 {
 	NSOpenGLContext * ctx;
@@ -967,7 +971,30 @@ void xwl_setup_osx_rendering( xwl_window_t * window )
 	{
 		((xwlWindow*)window->handle).render = view;
 		window->view = view;
+		NSOpenGLContext * context = view->ctx;
+		
+		// enable v-sync
+		GLint sync = 1;
+		[context setValues: &sync forParameter:NSOpenGLCPSwapInterval]; 
 	}
+	
+	
+#endif
+}
+
+void * xwl_osx_rendering_context( xwl_window_t * window )
+{
+#if TARGET_OS_IPHONE
+	return 0;
+#else
+	MyOpenGLView * view = ((xwlWindow*)window->handle).render;
+	
+	if ( !view )
+	{
+		return 0;
+	}
+	
+	return view->ctx;
 #endif
 }
 

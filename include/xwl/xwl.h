@@ -329,7 +329,7 @@ void xwl_send_event( xwl_event_t * ev );
 void xwl_setup_rendering( xwl_window_t * window );
 void xwl_finish();
 void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
-
+void *xwl_rendering_context( xwl_window_t * window );
 
 // -- platform specifics
 typedef struct xwl_renderer_settings_s

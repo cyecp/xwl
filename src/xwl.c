@@ -88,6 +88,13 @@ void xwl_setup_rendering( xwl_window_t * window )
 #endif
 }
 	
+void *xwl_rendering_context(xwl_window_t * window )
+{
+#if __APPLE__ && TARGET_OS_MAC
+	return xwl_osx_rendering_context( window );
+#endif
+}
+	
 void xwl_activate( xwl_window_t * window )
 {
 	xwl_renderer_settings_t cfg;
