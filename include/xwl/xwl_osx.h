@@ -51,7 +51,7 @@ void *xwl_osx_rendering_context( xwl_window_t * window );
 	NSOpenGLContext * ctx;
 }
 
-@property (nonatomic) NSOpenGLContext * context;
+@property (nonatomic, retain) NSOpenGLContext * context;
 
 -(id)initWithFrame:(NSRect)frameRect;
 -(void)dealloc;

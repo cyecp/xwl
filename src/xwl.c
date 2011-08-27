@@ -92,6 +92,8 @@ void *xwl_rendering_context(xwl_window_t * window )
 {
 #if __APPLE__ && TARGET_OS_MAC
 	return xwl_osx_rendering_context( window );
+#else
+	return 0;
 #endif
 }
 	
