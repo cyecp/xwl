@@ -11,23 +11,24 @@ elseif _ACTION == "xcode3" then
 	targetOS = "macosx"
 end
 
+local target_folder = "lib"
+
 project "xwl"
 	objdir "obj"
-	targetdir "build/bin"
-	uuid( "CCD84535-0BFB-DC4A-AF85-4AADA85D998E" )
-	platforms{ "x32", "x64" }
-	-- ConsoleApp, WindowedApp, SharedLib, or StaticLib
-	kind "ConsoleApp"
+	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
+	platforms { "x32", "x64" }
+	kind "StaticLib"
 	language ("C")
-	baseDefines = {}
 	
 	files
 	{
 		"src/**.c",	
 		"src/**.h",	
-		"samples/**.c"
+		
 	}
 
+	excludes { "samples/**.c" }
+	
 	includedirs 
 	{ 
 		"include"
@@ -63,9 +64,71 @@ project "xwl"
 		}
 	end
 
-	configuration { "debug" }
-		targetsuffix "d"		
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		
-	configuration { "release" }
+	for _,platform in ipairs(platforms()) do
+		configuration { "debug", platform }
+			targetdir (target_folder .. "/" .. platform .. "/debug" )
+			flags { "Symbols" }
+			defines { "DEBUG" }
+			
+		configuration { "release", platform }
+			targetdir (target_folder .. "/" .. platform .. "/release" )
+			flags { "Optimize" }
+	end	
+--[[
+target_folder = "bin"
+project "sample"
+	objdir "obj"
+	targetdir "build/bin"
+	uuid( "D2302F80-6997-9346-8033-1FA0E461A6CE" )
+	platforms{ "x32", "x64" }
+	-- ConsoleApp, WindowedApp, SharedLib, or StaticLib
+	kind "ConsoleApp"
+	language ("C")
+	baseDefines = {}
+	
+	files
+	{
+		"samples/**.c"
+	}
+
+	includedirs 
+	{ 
+		"include"
+	}	
+	
+	if targetOS == "macosx" then
+		files
+		{
+			"src/**.m"
+		}
+	end
+	
+	links
+	{
+		"xwl"
+	}
+
+
+	if targetOS == "windows" then
+		defines { "WIN32", "UNICODE", baseDefines }
+
+	elseif targetOS == "linux" then
+		defines { "LINUX=1", baseDefines }
+
+	elseif targetOS == "macosx" then
+		defines { "__MACH__", baseDefines }
+	end
+
+	for _,platform in ipairs(platforms()) do
+		configuration { "debug", platform }
+			targetdir (target_folder .. "/" .. platform .. "/debug" )
+			flags { "Symbols" }
+			defines { "DEBUG" }
+			libdirs { "lib/" .. platform .. "/debug" }
+			
+		configuration { "release", platform }
+			targetdir (target_folder .. "/" .. platform .. "/release" )
+			flags { "Optimize" }
+			libdirs { "lib/" .. platform .. "/release" }
+	end
+--]]
