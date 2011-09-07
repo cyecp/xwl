@@ -74,7 +74,7 @@ project "xwl"
 			targetdir (target_folder .. "/" .. platform .. "/release" )
 			flags { "Optimize" }
 	end	
---[[
+
 target_folder = "bin"
 project "sample"
 	objdir "obj"
@@ -108,15 +108,27 @@ project "sample"
 		"xwl"
 	}
 
-
 	if targetOS == "windows" then
 		defines { "WIN32", "UNICODE", baseDefines }
-
+		links
+		{
+			"opengl32"
+		}
 	elseif targetOS == "linux" then
 		defines { "LINUX=1", baseDefines }
-
+		links
+		{
+			"Xinerama",
+			"X11",
+			"GL"
+		}
 	elseif targetOS == "macosx" then
 		defines { "__MACH__", baseDefines }
+		linkoptions
+		{
+			"-framework Cocoa",
+			"-framework OpenGL"
+		}
 	end
 
 	for _,platform in ipairs(platforms()) do
@@ -131,4 +143,3 @@ project "sample"
 			flags { "Optimize" }
 			libdirs { "lib/" .. platform .. "/release" }
 	end
---]]
