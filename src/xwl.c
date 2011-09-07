@@ -27,7 +27,7 @@ static XComposeStatus currentKeyboardStatus;
 extern "C" {
 #endif
 
-i32 xwl_renderer_startup( xwl_renderer_settings_t * settings );
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs );
 void xwl_renderer_post( xwl_renderer_settings_t * settings );
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
 void xwl_renderer_activate( xwl_renderer_settings_t * settings );
@@ -77,14 +77,14 @@ void xwl_send_event( xwl_event_t * ev )
 	}
 } // xwl_send_event
 
-void xwl_setup_rendering( xwl_window_t * window )
+void xwl_setup_rendering( xwl_window_t * window, u32 * attribs )
 {
 #if _WIN32
 
 #endif
 
 #if __APPLE__
-	xwl_setup_osx_rendering( window );
+	xwl_setup_osx_rendering( window, attribs );
 #endif
 }
 	
@@ -1080,7 +1080,7 @@ i32 xwl_pollevent( xwl_event_t *event )
 }
 
 
-xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title )
+xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, u32 * attribs )
 {
 	xwl_window_handle_t * wh = 0;
     xwl_renderer_settings_t cfg;
@@ -1264,7 +1264,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title 
 
     if ( (params->flags & XWL_OPENGL) )
     {
-        xwl_renderer_startup( &cfg );
+        xwl_renderer_startup( &cfg, attribs );
     }
 
 #endif

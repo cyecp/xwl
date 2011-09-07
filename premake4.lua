@@ -85,9 +85,13 @@ project "sample"
 	kind "ConsoleApp"
 	language ("C")
 	baseDefines = {}
-	
+		
 	files
 	{
+--[[
+		"src/**.c",	
+		"src/**.h",	
+--]]
 		"samples/**.c"
 	}
 
@@ -96,13 +100,14 @@ project "sample"
 		"include"
 	}	
 	
+--[[
 	if targetOS == "macosx" then
 		files
 		{
 			"src/**.m"
 		}
 	end
-	
+--]]
 	links
 	{
 		"xwl"

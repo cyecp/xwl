@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #if _WIN32
-i32 xwl_renderer_startup( xwl_renderer_settings_t * settings )
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs )
 {
 	HGLRC glrc;
 	PIXELFORMATDESCRIPTOR pfd = {0};
@@ -93,7 +93,7 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 
 
 #if LINUX
-i32 xwl_renderer_startup( xwl_renderer_settings_t * settings )
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs )
 {
     XWindowAttributes att;
     Window window = (Window)settings->window;
@@ -155,14 +155,14 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 
 #if __APPLE__
 void xwl_pollevent_osx( xwl_event_t * event );
-void xwl_setup_osx_rendering( xwl_window_t * window );
+void xwl_setup_osx_rendering( xwl_window_t * window, u32 * attribs );
 void xwl_osx_finish( xwl_window_t * window );
-	void xwl_osx_activate( xwl_window_t * window );
+void xwl_osx_activate( xwl_window_t * window );
 
-i32 xwl_renderer_startup( xwl_renderer_settings_t * settings )
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs )
 {
 	// setup an opengl view
-	xwl_setup_osx_rendering( settings->window );
+	xwl_setup_osx_rendering( settings->window, attribs );
 
 	return 1;
 }

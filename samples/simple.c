@@ -92,7 +92,7 @@ int main()
 {
 	xwl_window_t *w = 0;
 	xwl_event_t event;
-
+	u32 attribs[] = { XWL_GL_DOUBLEBUFFER, XWL_GL_PROFILE, XWL_GLPROFILE_LEGACY, 0 };
     p.flags = XWL_OPENGL;
 
 #if 0
@@ -108,7 +108,7 @@ int main()
 	xwl_startup();
 
     printf( "xwl_create_window...\n" );
-	w = xwl_create_window( &p, "Window Title Here \xc3\xb1 | \xe2\x82\xa1" );
+	w = xwl_create_window( &p, "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 
 	if ( !w )
 	{

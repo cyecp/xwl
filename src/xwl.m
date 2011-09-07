@@ -13,7 +13,6 @@
 #endif
 
 
-
 #if !TARGET_OS_IPHONE
 NSApplication * application = 0;
 NSAutoreleasePool *pool = 0;
@@ -903,16 +902,97 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 #if TARGET_OS_IPHONE
 #elif TARGET_OS_MAC
 
+// OpenGL 3.2 is only supported on MacOS X Lion and later
+// CGL_VERSION_1_3 is defined as 1 on MacOS X Lion and later
+#if CGL_VERSION_1_3
+	#import <OpenGL/gl3.h>
+#else
+	#import <OpenGL/gl.h>
+#endif
 
-MyOpenGLView* setup_rendering( XWLWINDOW * handle )
+
+NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( u32 * attribs )
+{
+	// count attribs
+	int total_attribs;
+	int i;
+	NSOpenGLPixelFormatAttribute * outattribs;
+
+	for( total_attribs = 0; attribs[total_attribs] != 0; ++total_attribs ) {}
+	
+	outattribs = (NSOpenGLPixelFormatAttribute*)malloc( (total_attribs+2) * sizeof(NSOpenGLPixelFormatAttribute) );
+	outattribs[ total_attribs+1 ] = 0;
+	outattribs[ total_attribs ] = NSOpenGLPFAAccelerated;
+	
+	for( i = 0; i < total_attribs; )
+	{
+		switch( attribs[i] )
+		{
+			case XWL_GL_DOUBLEBUFFER:
+			{
+				outattribs[ i ] = NSOpenGLPFADoubleBuffer;
+				i++;
+				break;
+			}
+				
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7) && CGL_VERSION_1_3 > 0
+			case XWL_GL_PROFILE:
+			{
+				outattribs[ i ] = NSOpenGLPFAOpenGLProfile;
+				i++;
+				if ( attribs[i] == XWL_GLPROFILE_CORE3_2 )
+					outattribs[ i ] = NSOpenGLProfileVersion3_2Core;
+				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
+					outattribs[ i ] = NSOpenGLProfileVersionLegacy;
+				i++;
+				break;
+			}
+#endif
+			default: i++;
+		}
+	}
+	
+	
+	
+	return outattribs;
+}
+
+MyOpenGLView* setup_rendering( XWLWINDOW * handle, u32 * xwlattribs )
 {
 	NSOpenGLContext * ctx;
 	NSOpenGLPixelFormat * format;
 	MyOpenGLView * view;
+	NSOpenGLPixelFormatAttribute * attribs;
+	NSOpenGLPixelFormatAttribute default_attribs[] = { 
+		NSOpenGLPFADoubleBuffer,
+		NSOpenGLPFAAccelerated,
+		NSOpenGLPFAWindow,
+		NSOpenGLPFAColorSize, 24,
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7) && CGL_VERSION_1_3 > 0
+		NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy,
+#endif
+		0
+	};
 	
 	// choose pixel format
-	NSOpenGLPixelFormatAttribute attribs[] = { NSOpenGLPFAClosestPolicy, NSOpenGLPFADoubleBuffer, NSOpenGLPFAAccelerated, NSOpenGLPFAWindow, NSOpenGLPFAColorSize, 24, 0 };
+	if ( xwlattribs )
+	{
+		attribs = xwl_attribs_to_native( xwlattribs );
+	}
+	else
+	{
+		attribs = default_attribs;
+	}
+	
+
 	format = [[NSOpenGLPixelFormat alloc] initWithAttributes: attribs];
+	
+	if ( xwlattribs )
+	{
+		free( attribs );
+	}
+	
+	attribs = nil;
 	
 	if ( format == nil )
 	{
@@ -952,7 +1032,7 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle )
 }
 #endif
 
-void xwl_setup_osx_rendering( xwl_window_t * window )
+void xwl_setup_osx_rendering( xwl_window_t * window, u32 * attribs )
 {
 #if TARGET_OS_IPHONE
 	EAGLView * view = [[[EAGLView alloc] initWithFrame: [UIScreen mainScreen].bounds] retain];
@@ -965,7 +1045,7 @@ void xwl_setup_osx_rendering( xwl_window_t * window )
 	}
 #else
 	MyOpenGLView * view;
-	view = setup_rendering( window->handle );
+	view = setup_rendering( window->handle, attribs );
 	
 	if ( view )
 	{
