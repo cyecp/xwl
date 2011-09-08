@@ -1170,7 +1170,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 #endif
 
 #ifdef LINUX
-    XSetWindowAttributes attribs;
+    XSetWindowAttributes window_attribs;
     XVisualInfo * info;
     Window handle;
 
@@ -1194,7 +1194,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
         return 0;
     }
 
-    attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
+    window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
     cfg.display = currentDisplay;
     cfg.screen = currentScreen;
 
@@ -1207,10 +1207,10 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     printf( "Creating color map\n" );
     colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
-    attribs.colormap = colormap;
+    window_attribs.colormap = colormap;
 
     printf( "Now creating window...\n" );
-    handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &attribs );
+    handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
 
     if ( handle == 0 )
     {
