@@ -1165,7 +1165,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 	if ( (params->flags & XWL_OPENGL) )
 	{
 	    cfg.window = &wh->handle;
-		xwl_renderer_startup( &cfg );
+		xwl_renderer_startup( &cfg, attribs );
 	}
 #endif
 
@@ -1203,7 +1203,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     cwattrs = CWEventMask;
 
-    xwl_renderer_startup( &cfg );
+    xwl_renderer_startup( &cfg, attribs );
 
     printf( "Creating color map\n" );
     colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
