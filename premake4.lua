@@ -13,6 +13,14 @@ end
 
 local target_folder = "lib"
 
+function translate_platform( platform )
+	if platform == "x32" then
+		return "x86"
+	end
+	
+	return platform
+end
+
 project "xwl"
 	objdir "obj"
 	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
@@ -65,14 +73,15 @@ project "xwl"
 	end
 
 	for _,platform in ipairs(platforms()) do
+
 		configuration { "debug", platform }
-			targetdir (target_folder .. "/" .. platform .. "/debug" )
+			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/debug" )
 			flags { "Symbols" }
 			defines { "DEBUG" }
 			
 		configuration { "release", platform }
-			targetdir (target_folder .. "/" .. platform .. "/release" )
-			flags { "Optimize" }
+			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/release" )
+			flags { "Optimize", "Symbols" }
 	end	
 
 target_folder = "bin"
@@ -137,14 +146,15 @@ project "sample"
 	end
 
 	for _,platform in ipairs(platforms()) do
+		
 		configuration { "debug", platform }
-			targetdir (target_folder .. "/" .. platform .. "/debug" )
+			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/debug" )
 			flags { "Symbols" }
 			defines { "DEBUG" }
-			libdirs { "lib/" .. platform .. "/debug" }
+			libdirs { "lib/" .. translate_platform( platform ) .. "/debug" }
 			
 		configuration { "release", platform }
-			targetdir (target_folder .. "/" .. platform .. "/release" )
-			flags { "Optimize" }
-			libdirs { "lib/" .. platform .. "/release" }
+			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/release" )
+			flags { "Optimize", "Symbols" }
+			libdirs { "lib/" .. translate_platform( platform ) .. "/release" }
 	end
