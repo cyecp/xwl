@@ -266,7 +266,6 @@ const char * xwl_mouse_to_string( i32 mb )
 {
 	switch( mb )
 	{
-		case XWLMB_INVALID: return "XWLMB_INVALID";
 		case XWLMB_LEFT: return "XWLMB_LEFT";
 		case XWLMB_RIGHT: return "XWLMB_RIGHT";
 		case XWLMB_MIDDLE: return "XWLMB_MIDDLE";

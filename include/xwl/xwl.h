@@ -142,7 +142,15 @@ enum
 	XWLK_LCONTROL,
 	XWLK_RCONTROL,
 	XWLK_LALT,
-	XWLK_RALT
+	XWLK_RALT,
+
+	XWLMB_LEFT,
+	XWLMB_RIGHT,
+	XWLMB_MIDDLE,
+	XWLMB_MOUSE4,
+	XWLMB_MOUSE5,
+	XWLMB_MOUSE6,
+	XWLMB_MOUSE7
 };
 
 // key mods
@@ -153,19 +161,6 @@ enum
 	XWLKM_ALT = 1,
 	XWLKM_SHIFT = 2,
 	XWLKM_CONTROL = 4
-};
-
-// mouse buttons
-enum
-{
-	XWLMB_INVALID,
-	XWLMB_LEFT,
-	XWLMB_RIGHT,
-	XWLMB_MIDDLE,
-	XWLMB_MOUSE4,
-	XWLMB_MOUSE5,
-	XWLMB_MOUSE6,
-	XWLMB_MOUSE7
 };
 
 // window creation constants
@@ -313,7 +308,7 @@ void xwl_shutdown();
 i32 xwl_pollevent( xwl_event_t *event );
 
 // returns 0 on failure
-// tite is a UTF-8 encoded string
+// title is a UTF-8 encoded string
 xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, u32 * attribs );
 
 // set the event callback
