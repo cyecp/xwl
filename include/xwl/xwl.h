@@ -200,6 +200,11 @@ enum
 	XWL_FULLSCREEN = 1, // start window full screen
 	XWL_NORESIZE = 2, // disable window resizing,
 	XWL_OPENGL = 4, // setup opengl rendering
+	
+#if _WIN32
+	XWL_WIN32_ICON = 8,
+	XWL_WIN32_ICONSM = 16,
+#endif
 };
 
 // OpenGL Attributes
@@ -249,6 +254,11 @@ typedef struct xwl_windowparams_s
 	u32 y;
 	void * userdata;
 	char * title;
+	
+#if _WIN32
+	HICON hIcon;
+	HICON hIconSm;
+#endif	
 } xwl_windowparams_t;
 	
 typedef struct
