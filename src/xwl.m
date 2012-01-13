@@ -286,12 +286,12 @@ u32 NonLocalizedKeys(unsigned short keycode)
 
 -(void)keyDown:(NSEvent*)event
 {
-	NSLog( @"xwlDelegate keyDown" );
+	//NSLog( @"xwlDelegate keyDown" );
 }
 
 -(void)keyUp:(NSEvent*)event
 {
-	NSLog( @"xwlDelegate keyUp" );
+	//NSLog( @"xwlDelegate keyUp" );
 }
 -(void) noResponderFor: (SEL)eventSelector
 {
@@ -301,12 +301,12 @@ u32 NonLocalizedKeys(unsigned short keycode)
 
 -(void) windowWillMiniaturize:(NSNotification*)notification
 {
-	NSLog( @"Window will miniaturize" );
+	//NSLog( @"Window will miniaturize" );
 }
 
 -(void) windowDidMiniaturize:(NSNotification*)notification
 {
-	NSLog( @"Window did miniaturize!" );
+	//NSLog( @"Window did miniaturize!" );
 }
 
 -(BOOL) windowShouldClose:(id)windowIn
@@ -315,7 +315,7 @@ u32 NonLocalizedKeys(unsigned short keycode)
 	ev.type = XWLE_CLOSED;
 
 	xwl_send_event( &ev );
-	NSLog( @"Window should close?" );
+	//NSLog( @"Window should close?" );
 		
 	return YES;
 }
@@ -325,7 +325,7 @@ u32 NonLocalizedKeys(unsigned short keycode)
 	ev.type = XWLE_LOSTFOCUS;
 	xwl_send_event( &ev );
 	
-	NSLog( @"Window did resign key %@", [notification object] );
+	//NSLog( @"Window did resign key %@", [notification object] );
 }
 
 -(void) windowDidBecomeKey:(NSNotification*)notification
@@ -334,40 +334,40 @@ u32 NonLocalizedKeys(unsigned short keycode)
 	ev.type = XWLE_GAINFOCUS;
 	xwl_send_event( &ev );
 	
-	NSLog( @"Window did become key %@", [notification object] );
+	//NSLog( @"Window did become key %@", [notification object] );
 }
 
 -(void)windowDidBecomeMain:(NSNotification*)notification
 {
-	NSLog( @"windowDidBecomeMain %@", [notification object] );
+	//NSLog( @"windowDidBecomeMain %@", [notification object] );
 }
 
 -(void)windowDidResignMain:(NSNotification*)notification
 {
-	NSLog( @"windowDidResignMain %@", [notification object] );
+	//NSLog( @"windowDidResignMain %@", [notification object] );
 }
 
 -(void) windowWillClose
 {
-	NSLog( @"Window will close!" );
+	//NSLog( @"Window will close!" );
 }
 
 
 
 - (void)windowDidEndSheet:(NSNotification *)notification
 {
-	NSLog( @"Window did end sheet!" );
+	//NSLog( @"Window did end sheet!" );
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification
 {
-	NSLog( @"Window Did Deminiaturize!" );
+	//NSLog( @"Window Did Deminiaturize!" );
 }
 
 
 -(NSApplicationTerminateReply) applicationShouldTerminate:(NSApplication *)sender;
 {
-	NSLog( @"ApplicationShouldTerminate" );
+	//NSLog( @"ApplicationShouldTerminate" );
 	return YES;
 }
 
@@ -422,7 +422,7 @@ u32 NonLocalizedKeys(unsigned short keycode)
 
 -(void) applicationWillFinishLaunching:(NSNotification *)aNotification
 {
-	NSLog( @"Application will finish launching?" );
+	//NSLog( @"Application will finish launching?" );
 	
 	NSMenu * mainMenu = [[NSMenu alloc] initWithTitle: @"MainMenu"];
 	NSMenuItem * menuItem;
@@ -445,7 +445,7 @@ u32 NonLocalizedKeys(unsigned short keycode)
 
 -(void) applicationDidFinishLaunching:(NSNotification*)notification
 {
-	NSLog( @"Application finished launching?" );
+	//NSLog( @"Application finished launching?" );
 }
 @end
 #endif
@@ -555,12 +555,12 @@ void xwl_pollevent_osx( xwl_event_t * e )
 	
 	[ctx makeCurrentContext];
 	
-	NSLog( @"Lock Focus!" );
+	//NSLog( @"Lock Focus!" );
 }
 
 -(void)unlockFocus
 {
-	NSLog( @"unlock focus" );
+	//NSLog( @"unlock focus" );
 	[super unlockFocus];
 }
 
@@ -920,9 +920,7 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( u32 * attribs )
 
 	for( total_attribs = 0; attribs[total_attribs] != 0; ++total_attribs ) {}
 	
-	outattribs = (NSOpenGLPixelFormatAttribute*)malloc( (total_attribs+2) * sizeof(NSOpenGLPixelFormatAttribute) );
-	outattribs[ total_attribs+1 ] = 0;
-	outattribs[ total_attribs ] = NSOpenGLPFAAccelerated;
+	outattribs = (NSOpenGLPixelFormatAttribute*)malloc( (total_attribs+4) * sizeof(NSOpenGLPixelFormatAttribute) );
 	
 	for( i = 0; i < total_attribs; )
 	{
@@ -951,6 +949,11 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( u32 * attribs )
 			default: i++;
 		}
 	}
+	
+	outattribs[ i++ ] = NSOpenGLPFAAccelerated;
+	outattribs[ i++ ] = NSOpenGLPFADepthSize;
+	outattribs[ i++ ] = 24;
+	outattribs[ i++ ] = 0;
 	
 	
 	
