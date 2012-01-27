@@ -1,18 +1,7 @@
 solution "xwl"
 configurations { "debug", "release" }
 	
-targetOS = "unknown";
-
-if _ACTION == "vs2005" or _ACTION == "vs2008" or _ACTION == "vs2010" then
-	targetOS = "windows"
-elseif _ACTION == "codeblocks" or _ACTION == "gmake" then
-	targetOS = "linux"
-elseif _ACTION == "xcode3" then
-	targetOS = "macosx"
-end
-
 local target_folder = "lib"
-
 function translate_platform( platform )
 	if platform == "x32" then
 		return "x86"
@@ -31,8 +20,7 @@ project "xwl"
 	files
 	{
 		"src/**.c",	
-		"src/**.h",	
-		
+		"src/**.h"
 	}
 
 	excludes { "samples/**.c" }
@@ -42,20 +30,7 @@ project "xwl"
 		"include"
 	}	
 	
-	if targetOS == "macosx" then
-		files
-		{
-			"src/**.m"
-		}
-	end
-
-	if targetOS == "windows" then
-		defines { "WIN32", "UNICODE", baseDefines }
-		links
-		{
-			"opengl32"
-		}
-	elseif targetOS == "linux" then
+	configuration{ "linux" }
 		defines { "LINUX=1", baseDefines }
 		links
 		{
@@ -63,14 +38,25 @@ project "xwl"
 			"X11",
 			"GL"
 		}
-	elseif targetOS == "macosx" then
+
+	configuration{ "macosx" }
+		files
+		{
+			"src/**.m"
+		}
 		defines { "__MACH__", baseDefines }
 		linkoptions
 		{
 			"-framework Cocoa",
 			"-framework OpenGL"
 		}
-	end
+
+	configuration{ "windows" }
+		defines { "WIN32", "UNICODE", baseDefines }
+		links
+		{
+			"opengl32"
+		}
 
 	for _,platform in ipairs(platforms()) do
 
@@ -97,10 +83,6 @@ project "sample"
 		
 	files
 	{
---[[
-		"src/**.c",	
-		"src/**.h",	
---]]
 		"samples/**.c"
 	}
 
@@ -108,27 +90,20 @@ project "sample"
 	{ 
 		"include"
 	}	
-	
---[[
-	if targetOS == "macosx" then
-		files
-		{
-			"src/**.m"
-		}
-	end
---]]
+
 	links
 	{
 		"xwl"
 	}
 
-	if targetOS == "windows" then
+	configuration{ "windows" }
 		defines { "WIN32", "UNICODE", baseDefines }
 		links
 		{
 			"opengl32"
 		}
-	elseif targetOS == "linux" then
+
+	configuration{ "linux" }
 		defines { "LINUX=1", baseDefines }
 		links
 		{
@@ -136,14 +111,13 @@ project "sample"
 			"X11",
 			"GL"
 		}
-	elseif targetOS == "macosx" then
+	configuration{ "macosx" }
 		defines { "__MACH__", baseDefines }
 		linkoptions
 		{
 			"-framework Cocoa",
 			"-framework OpenGL"
 		}
-	end
 
 	for _,platform in ipairs(platforms()) do
 		
