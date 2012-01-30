@@ -234,6 +234,16 @@ const char * xwl_key_to_string( i32 key )
 		case XWLK_7: return "XWLK_7";
 		case XWLK_8: return "XWLK_8";
 		case XWLK_9: return "XWLK_9";
+
+		case XWLK_LSHIFT: return "XWLK_LSHIFT";
+		case XWLK_RSHIFT: return "XWLK_RSHIFT";
+		case XWLK_LCONTROL: return "XWLK_LCONTROL";
+		case XWLK_RCONTROL: return "XWLK_RCONTROL";
+		case XWLK_LALT: return "XWLK_LALT";
+		case XWLK_RALT: return "XWLK_RALT";
+		case XWLK_NUMLOCK: return "XWLK_NUMLOCK";
+
+
 	}
 
 	return "XWLK_INVALID";
@@ -839,6 +849,10 @@ u32 X11KeyToXWL( KeySym sym )
         case XK_7 :            return XWLK_7;
         case XK_8 :            return XWLK_8;
         case XK_9 :            return XWLK_9;
+        case XK_Num_Lock:	   return XWLK_NUMLOCK;
+
+        // this does not match with the caps lock button
+        //case XK_Caps_Lock:		return XWLK_CAPSLOCK;
     }
     printf( "Unknown Key: %u\n", (unsigned int)Key );
     return 0;
