@@ -36,6 +36,13 @@ typedef short i16;
 typedef int i32;
 #endif
 
+#define XWL_DEBUG 1
+#if XWL_DEBUG
+#define xwlPrintf printf
+#else
+#define xwlPrintf //
+#endif
+
 
 
 // keys
