@@ -184,6 +184,35 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 }
 #endif
 
+
+
+
+#if _NACL_SDK
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs )
+{
+	return 1;
+}
+
+void xwl_renderer_post( xwl_renderer_settings_t * settings )
+{
+
+}
+
+void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )
+{
+
+}
+	
+void xwl_renderer_activate( xwl_renderer_settings_t * settings )
+{
+}
+#endif
+
+
+
+
+
+
 #ifdef __cplusplus
 }; // extern "C"
 #endif
