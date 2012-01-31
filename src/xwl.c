@@ -234,6 +234,16 @@ const char * xwl_key_to_string( int key )
 		case XWLK_7: return "XWLK_7";
 		case XWLK_8: return "XWLK_8";
 		case XWLK_9: return "XWLK_9";
+
+		case XWLK_LSHIFT: return "XWLK_LSHIFT";
+		case XWLK_RSHIFT: return "XWLK_RSHIFT";
+		case XWLK_LCONTROL: return "XWLK_LCONTROL";
+		case XWLK_RCONTROL: return "XWLK_RCONTROL";
+		case XWLK_LALT: return "XWLK_LALT";
+		case XWLK_RALT: return "XWLK_RALT";
+		case XWLK_NUMLOCK: return "XWLK_NUMLOCK";
+
+
 	}
 
 	return "XWLK_INVALID";
@@ -839,6 +849,10 @@ unsigned int X11KeyToXWL( KeySym sym )
         case XK_7 :            return XWLK_7;
         case XK_8 :            return XWLK_8;
         case XK_9 :            return XWLK_9;
+        case XK_Num_Lock:	   return XWLK_NUMLOCK;
+
+        // this does not match with the caps lock button
+        //case XK_Caps_Lock:		return XWLK_CAPSLOCK;
     }
     printf( "Unknown Key: %u\n", (unsigned int)Key );
     return 0;
@@ -1201,13 +1215,13 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     if ( !wh )
     {
-        printf( "Could not find unused window\n" );
+        xwlPrintf( "[xwl] Could not find unused window\n" );
         return 0;
     }
 
     if ( !(params->flags & XWL_OPENGL) )
     {
-        printf( "Must create an OpenGL window on Linux!\n" );
+        xwlPrintf( "[xwl::X11] Must create an OpenGL window on Linux!\n" );
         return 0;
     }
 
@@ -1215,23 +1229,23 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
     cfg.display = currentDisplay;
     cfg.screen = currentScreen;
 
-    printf( "Renderer startup...\n" );
+    xwlPrintf( "[xwl::X11] Renderer startup...\n" );
     cfg.window = &wh->handle;
 
     cwattrs = CWEventMask;
 
     xwl_renderer_startup( &cfg, attribs );
 
-    printf( "Creating color map\n" );
+    xwlPrintf( "[xwl::X11] Creating color map\n" );
     colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
     window_attribs.colormap = colormap;
 
-    printf( "Now creating window...\n" );
+    xwlPrintf( "[xwl::X11] Now creating window...\n" );
     handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
 
     if ( handle == 0 )
     {
-        printf( "XCreateWindow failed\n" );
+        xwlPrintf( "[xwl::X11] XCreateWindow failed\n" );
         return 0;
     }
 
@@ -1266,7 +1280,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
         wh->inputContext = XCreateIC( currentInputMethod, XNClientWindow, handle, XNFocusWindow, handle, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
         if ( !wh->inputContext )
         {
-            printf( "Failed to create input context!\n" );
+            xwlPrintf( "[xwl::X11] Failed to create input context!\n" );
         }
     }
 
