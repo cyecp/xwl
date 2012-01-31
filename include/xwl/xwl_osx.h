@@ -2,8 +2,13 @@
 
 #include <xwl/xwl.h>
 
-void xwl_osx_startup();
-void xwl_osx_shutdown();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void xwl_osx_startup( void );
+void xwl_osx_shutdown( void );
+void xwl_osx_activate( xwl_window_t * window );
 
 xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const char * title );
 void xwl_pollevent_osx( xwl_event_t * event );
@@ -14,8 +19,39 @@ void *xwl_osx_rendering_context( xwl_window_t * window );
 #if __OBJC__
 
 #if TARGET_OS_IPHONE
+#define XWL_APPLE_ARC 1
 #import <UIKit/UIKit.h>
-#import "EAGLView.h"
+#import <OpenGLES/EAGL.h>
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+
+@interface EAGLView : UIView
+{
+@private
+    /* The pixel dimensions of the backbuffer */
+    GLint backingWidth;
+    GLint backingHeight;
+    
+    EAGLContext *context;
+    
+    /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
+    GLuint viewRenderbuffer, viewFramebuffer;
+    
+    /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
+    GLuint depthRenderbuffer;
+	
+	BOOL isInitialized;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)drawView;
+- (void)startup;
+- (void)begin;
+- (void)end;
+
+@end
 
 
 @interface xwlWindow : UIWindow
@@ -82,4 +118,8 @@ void *xwl_osx_rendering_context( xwl_window_t * window );
 @end
 #endif
 
+#endif
+
+#ifdef __cplusplus
+}; // extern "C"
 #endif

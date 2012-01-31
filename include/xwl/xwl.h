@@ -308,10 +308,10 @@ typedef void (*xwl_event_callback)( xwl_event_t * );
 	
 // returns 0 on failure
 // returns 1 on success
-i32 xwl_startup();
+i32 xwl_startup( void );
 
 // shutdown system
-void xwl_shutdown();
+void xwl_shutdown( void );
 
 // returns 0 if no events are queued
 // returns 1 if an event is removed from the queue
@@ -328,7 +328,7 @@ const char * xwl_key_to_string( i32 key );
 const char * xwl_event_to_string( i32 event_type );
 const char * xwl_mouse_to_string( i32 mouse );
 
-const char * xwl_get_error();
+const char * xwl_get_error( void );
 
 typedef struct xwl_window_handle_s
 {
@@ -342,10 +342,10 @@ typedef struct xwl_window_handle_s
 
 } xwl_window_handle_t;
 
-xwl_window_handle_t *xwl_get_unused_window();
+xwl_window_handle_t *xwl_get_unused_window( void );
 void xwl_send_event( xwl_event_t * ev );
 void xwl_setup_rendering( xwl_window_t * window, u32 * attribs );
-void xwl_finish();
+void xwl_finish( void );
 void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
 void *xwl_rendering_context( xwl_window_t * window );
 
