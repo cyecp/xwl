@@ -183,6 +183,33 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 }
 #endif
 
+#if _NACL_SDK
+void xwl_pollevent_osx( xwl_event_t * event );
+void xwl_setup_osx_rendering( xwl_window_t * window, u32 * attribs );
+void xwl_osx_finish( xwl_window_t * window );
+void xwl_osx_activate( xwl_window_t * window );
+
+i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs )
+{
+	return 1;
+}
+
+void xwl_renderer_post( xwl_renderer_settings_t * settings )
+{
+}
+
+void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )
+{
+
+}
+
+void xwl_renderer_activate( xwl_renderer_settings_t * settings )
+{
+}
+#endif
+
+
+
 #ifdef __cplusplus
 }; // extern "C"
 #endif
