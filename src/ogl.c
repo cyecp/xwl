@@ -183,7 +183,7 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 }
 #endif
 
-#if _NACL_SDK
+#if __native_client__
 void xwl_pollevent_osx( xwl_event_t * event );
 void xwl_setup_osx_rendering( xwl_window_t * window, u32 * attribs );
 void xwl_osx_finish( xwl_window_t * window );
