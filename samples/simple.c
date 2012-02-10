@@ -24,14 +24,6 @@ xwl_windowparams_t p;
 #endif
 
 
-#define XWL_DEBUG 1
-#if XWL_DEBUG
-#define xwlPrintf printf
-#else
-#define xwlPrintf //
-#endif
-
-
 void callback( xwl_event_t * e )
 {
 
@@ -107,24 +99,24 @@ int main()
 
 	xwl_startup();
 
-    printf( "xwl_create_window...\n" );
+    xwlPrintf( "-> xwl_create_window...\n" );
 	w = xwl_create_window( &p, "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 
 	if ( !w )
 	{
-		printf( "Unable to create window! [%s]\n", xwl_get_error() );
+		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );
 		return -1;
 	}
-	printf( "Window created OK! (handle: %x)\n", (u32)w->handle );
-	printf( "Actual Window dimensions: %i x %i\n", p.width, p.height );
+	xwlPrintf( "-> Window created OK! (handle: %x)\n", (u32)w->handle );
+	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", p.width, p.height );
 
 	// set event callback
 	xwl_set_callback( callback );
 
 #if 1
-	printf( "GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
-	printf( "GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
-	printf( "GL_VERSION: %s\n", glGetString( GL_VERSION ) );
+	xwlPrintf( "-> GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
+	xwlPrintf( "-> GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
+	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );
 #endif
 
 

@@ -12,6 +12,192 @@
 #define DLOG( fmt, ... )
 #endif
 
+#if TARGET_OS_IPHONE
+#import <QuartzCore/QuartzCore.h>
+#import <OpenGLES/EAGLDrawable.h>
+
+@interface EAGLView()
+@property (nonatomic, retain) EAGLContext *context;
+- (BOOL) createFramebuffer;
+- (void) destroyFramebuffer;
+
+@end
+
+@implementation EAGLView
+
+@synthesize context;
+
+#if 0
+// You must implement this method
++ (Class)layerClass {
+    return [CAEAGLLayer class];
+}
+#endif
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	// pass through to the kernel
+	//[[dKernel sharedKernel] touchesBegan: touches withEvent: event];
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	// pass through to kernel
+	//[[dKernel sharedKernel] touchesMoved: touches withEvent: event];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	// pass through to kernel
+	//[[dKernel sharedKernel] touchesEnded: touches withEvent: event];
+}
+
+- (void)startup
+{
+#if 0
+	DLOG();
+	// Get the layer
+	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+	
+	isInitialized = NO;
+	eaglLayer.opaque = YES;
+	eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+									[NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
+	
+	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+	
+	if (!context || ![EAGLContext setCurrentContext:context]) {
+		NSLog (@"error creating context!" );
+	}
+#endif
+}
+
+- (void)begin
+{
+#if 0
+    [EAGLContext setCurrentContext:context];
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+    glViewport(0, 0, backingWidth, backingHeight);
+	
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+#endif
+}
+
+- (void)end
+{
+    //glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    //[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+}
+
+- (void)drawView {
+#if 0
+    DLOG();
+	
+	
+    // Replace the implementation of this method to do your own custom drawing
+    
+    const GLfloat squareVertices[] = {
+        -5.5f, -5.5f,
+        5.5f,  -5.5f,
+        -5.5f,  5.5f,
+        5.5f,   5.5f,
+    };
+    const GLubyte squareColors[] = {
+        255, 255,   0, 255,
+        0,   255, 255, 255,
+        0,     0,   0,   0,
+        255,   0, 255, 255,
+    };
+    
+	[self begin];
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+	
+	// place the origin at the center
+    glOrthof(-160.0f, 160.0f, -240.0f, 240.0f, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+	
+    glRotatef(3.0f, 0.0f, 0.0f, 1.0f);
+    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
+	glDisableClientState( GL_COLOR_ARRAY );
+	
+#endif
+	[self end];
+}
+
+
+- (void)layoutSubviews {
+	[EAGLContext setCurrentContext:context];
+	[self destroyFramebuffer];
+	[self createFramebuffer];
+	//isInitialized = YES;
+	
+    //[self drawView];
+}
+
+
+- (BOOL)createFramebuffer {
+#if 0
+    glGenFramebuffersOES(1, &viewFramebuffer);
+    glGenRenderbuffersOES(1, &viewRenderbuffer);
+    
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
+    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    
+    if (USE_DEPTH_BUFFER) {
+        glGenRenderbuffersOES(1, &depthRenderbuffer);
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
+        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
+        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+    }
+    
+    if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+        NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+        return NO;
+    }
+#endif
+    return YES;
+}
+
+
+- (void)destroyFramebuffer {
+    glDeleteFramebuffers(1, &viewFramebuffer);
+    viewFramebuffer = 0;
+    glDeleteRenderbuffers(1, &viewRenderbuffer);
+    viewRenderbuffer = 0;
+    
+    if(depthRenderbuffer) {
+        glDeleteRenderbuffers(1, &depthRenderbuffer);
+        depthRenderbuffer = 0;
+    }
+}
+
+- (void)dealloc {
+	
+    if ([EAGLContext currentContext] == context) {
+        [EAGLContext setCurrentContext:nil];
+    }
+
+#if !XWL_APPLE_ARC
+    [context release];  
+    [super dealloc];
+#endif
+}
+
+@end
+#endif
+
 
 #if !TARGET_OS_IPHONE
 NSApplication * application = 0;
@@ -23,7 +209,7 @@ xwlDelegate * appDelegate = 0;
  ////////////////////////////////////////////////////////
 
 #if !TARGET_OS_IPHONE
-u32 LocalizedKeys(unichar ch)
+unsigned int LocalizedKeys(unichar ch)
  {
 	 switch (ch) 
 	 {
@@ -112,7 +298,7 @@ u32 LocalizedKeys(unichar ch)
  
 
 ////////////////////////////////////////////////////////
-u32 NonLocalizedKeys(unsigned short keycode)
+unsigned int NonLocalizedKeys(unsigned short keycode)
 {
 	// (Some) 0x code based on http://forums.macrumors.com/showthread.php?t=780577
 	// Some sf::Key are present twice.
@@ -450,7 +636,7 @@ u32 NonLocalizedKeys(unsigned short keycode)
 @end
 #endif
 
-void xwl_osx_startup()
+void xwl_osx_startup( void )
 {
 #if !TARGET_OS_IPHONE
 	pool = [[NSAutoreleasePool alloc] init];
@@ -485,7 +671,7 @@ void xwl_osx_startup()
 #endif
 }
 
-void xwl_osx_shutdown()
+void xwl_osx_shutdown( void )
 {
 #if !TARGET_OS_IPHONE
 	[application setDelegate: nil ];
@@ -502,7 +688,7 @@ void xwl_osx_activate( xwl_window_t * window )
 		return;
 	
 #if TARGET_OS_IPHONE
-	[((EAGLView*)window->view) begin];
+	[((__bridge EAGLView*)window->view) begin];
 #else
 	[[((MyOpenGLView*)window->view) getContext] makeCurrentContext];
 #endif
@@ -620,7 +806,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 {
 	xwl_event_t ev = {0};
 	u16 titleBarHeight;
-	u32 fixedHeight;
+	unsigned int fixedHeight;
 	XWLWINDOW * wnd = (XWLWINDOW*)[theEvent window];
 	NSPoint pt = [[theEvent window] mouseLocationOutsideOfEventStream];
 	//NSPoint loc = [self convertPoint:[theEvent locationInWindow] fromView: nil];
@@ -911,7 +1097,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 #endif
 
 
-NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( u32 * attribs )
+NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 {
 	// count attribs
 	int total_attribs;
@@ -960,7 +1146,7 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( u32 * attribs )
 	return outattribs;
 }
 
-MyOpenGLView* setup_rendering( XWLWINDOW * handle, u32 * xwlattribs )
+MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 {
 	NSOpenGLContext * ctx;
 	NSOpenGLPixelFormat * format;
@@ -1035,16 +1221,16 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, u32 * xwlattribs )
 }
 #endif
 
-void xwl_setup_osx_rendering( xwl_window_t * window, u32 * attribs )
+void xwl_setup_osx_rendering( xwl_window_t * window, unsigned int * attribs )
 {
 #if TARGET_OS_IPHONE
-	EAGLView * view = [[[EAGLView alloc] initWithFrame: [UIScreen mainScreen].bounds] retain];
+	EAGLView * view = [[EAGLView alloc] initWithFrame: [UIScreen mainScreen].bounds];
 	if ( view )
 	{
 		[view startup];
-		[(xwlWindow*)window->handle addSubview: view];
-		((xwlWindow*)window->handle).render = view;
-		window->view = view;
+		[(__bridge xwlWindow*)window->handle addSubview: view];
+		((__bridge xwlWindow*)window->handle).render = view;
+		window->view = (__bridge void*)view;
 	}
 #else
 	MyOpenGLView * view;
@@ -1087,7 +1273,7 @@ void xwl_osx_finish( xwl_window_t * window )
 		return;
 	
 #if TARGET_OS_IPHONE
-	[((EAGLView*)window->view) end];
+	[((__bridge EAGLView*)window->view) end];
 #else
 	[[((MyOpenGLView*)window->view) getContext] flushBuffer];
 #endif
@@ -1130,7 +1316,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 			delegate.window = handle;
 			
 			wh = xwl_get_unused_window();
-			wh->handle.handle = handle;
+			wh->handle.handle = (__bridge void*)handle;
 			//wh->handle.view = delegate.glView;
 			
 			params->width = [handle bounds].size.width;
@@ -1152,7 +1338,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 #else
 	NSRect frame;
 	NSPoint origin;
-	i32 windowMask;
+	int windowMask;
 	NSRect mainScreenFrame;
 
 	// full screen

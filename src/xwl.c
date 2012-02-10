@@ -14,7 +14,7 @@ static wchar_t xwl_windowClassName[] = L"xwl_window";
 
 #if LINUX
 static Display *currentDisplay = 0;
-static i32 currentScreen = 0;
+static int currentScreen = 0;
 static XIM currentInputMethod = 0;
 static XComposeStatus currentKeyboardStatus;
 #endif
@@ -27,7 +27,7 @@ static XComposeStatus currentKeyboardStatus;
 extern "C" {
 #endif
 
-i32 xwl_renderer_startup( xwl_renderer_settings_t * settings, u32 * attribs );
+int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs );
 void xwl_renderer_post( xwl_renderer_settings_t * settings );
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
 void xwl_renderer_activate( xwl_renderer_settings_t * settings );
@@ -50,7 +50,7 @@ static xwl_event_t eventList[ XWL_MAX_EVENTS ];
 
 xwl_window_handle_t *xwl_get_unused_window()
 {
-	i32 i;
+	int i;
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
 		if ( !xwl_windowHandles[i].handle.handle )
@@ -77,7 +77,7 @@ void xwl_send_event( xwl_event_t * ev )
 	}
 } // xwl_send_event
 
-void xwl_setup_rendering( xwl_window_t * window, u32 * attribs )
+void xwl_setup_rendering( xwl_window_t * window, unsigned int * attribs )
 {
 #if _WIN32
 
@@ -115,7 +115,7 @@ void xwl_finish()
 	// loop through all windows and call finish
 	xwl_window_handle_t * wh = 0;
 	xwl_renderer_settings_t cfg;
-	i32 i;
+	int i;
 
 #if LINUX
 	cfg.display = currentDisplay;
@@ -135,7 +135,7 @@ void xwl_finish()
 	}
 }
 
-const char * xwl_key_to_string( i32 key )
+const char * xwl_key_to_string( int key )
 {
 	switch( key )
 	{
@@ -234,12 +234,22 @@ const char * xwl_key_to_string( i32 key )
 		case XWLK_7: return "XWLK_7";
 		case XWLK_8: return "XWLK_8";
 		case XWLK_9: return "XWLK_9";
+
+		case XWLK_LSHIFT: return "XWLK_LSHIFT";
+		case XWLK_RSHIFT: return "XWLK_RSHIFT";
+		case XWLK_LCONTROL: return "XWLK_LCONTROL";
+		case XWLK_RCONTROL: return "XWLK_RCONTROL";
+		case XWLK_LALT: return "XWLK_LALT";
+		case XWLK_RALT: return "XWLK_RALT";
+		case XWLK_NUMLOCK: return "XWLK_NUMLOCK";
+
+
 	}
 
 	return "XWLK_INVALID";
 }
 
-const char * xwl_event_to_string( i32 event_type )
+const char * xwl_event_to_string( int event_type )
 {
 	switch( event_type )
 	{
@@ -262,7 +272,7 @@ const char * xwl_event_to_string( i32 event_type )
 	return "";
 }
 
-const char * xwl_mouse_to_string( i32 mb )
+const char * xwl_mouse_to_string( int mb )
 {
 	switch( mb )
 	{
@@ -340,9 +350,9 @@ const char * xwl_mouse_to_string( i32 mb )
 #endif
 
 #if _WIN32
-static u32 lshift;
+static unsigned int lshift;
 
-i32 VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
+int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 {
 	switch( wp )
 	{
@@ -501,7 +511,7 @@ i32 VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 				if ( (lp & (1<<30)) == 0 )
 				{
 					ev.type = XWLE_TEXT;
-					ev.unicode = (u32)wp;
+					ev.unicode = (unsigned int)wp;
 					xwl_send_event( &ev );
 				}
 				return 0;
@@ -640,9 +650,9 @@ i32 VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 	}
 #endif
 
-i32 xwl_startup()
+int xwl_startup()
 {
-	i32 i;
+	int i;
 	xwl_window_handle_t * wh;
 
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
@@ -694,9 +704,9 @@ Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
 }
 #endif
 
-void xwl_shutdown()
+void xwl_shutdown( void )
 {
-	i32 i;
+	int i;
 	xwl_window_handle_t * wh;
 
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
@@ -729,7 +739,7 @@ void xwl_shutdown()
 #ifdef LINUX
 
 // this code taken straight from SFML-1.6
-u32 X11KeyToXWL( KeySym sym )
+unsigned int X11KeyToXWL( KeySym sym )
 {
     // First convert to uppercase (to avoid dealing with two different keysyms for the same key)
     KeySym Lower, Key;
@@ -839,6 +849,10 @@ u32 X11KeyToXWL( KeySym sym )
         case XK_7 :            return XWLK_7;
         case XK_8 :            return XWLK_8;
         case XK_9 :            return XWLK_9;
+        case XK_Num_Lock:	   return XWLK_NUMLOCK;
+
+        // this does not match with the caps lock button
+        //case XK_Caps_Lock:		return XWLK_CAPSLOCK;
     }
     printf( "Unknown Key: %u\n", (unsigned int)Key );
     return 0;
@@ -848,11 +862,11 @@ u32 X11KeyToXWL( KeySym sym )
 void ProcessEvent( XEvent event, xwl_window_handle_t * window )
 {
     xwl_event_t ev = {0};
-    i32 length;
-    u32 *end;
+    int length;
+    unsigned int *end;
     char keybuffer[16];
     char buffer[32];
-    u32 unicode[2];
+    unsigned int unicode[2];
     KeySym sym;
     Status returnedStatus;
 
@@ -986,7 +1000,7 @@ void ProcessEvent( XEvent event, xwl_window_handle_t * window )
 }
 #endif
 
-i32 xwl_pollevent( xwl_event_t *event )
+int xwl_pollevent( xwl_event_t *event )
 {
 #ifdef _WIN32
 	MSG msg;
@@ -1000,7 +1014,7 @@ i32 xwl_pollevent( xwl_event_t *event )
 
 #if LINUX
     XEvent ev;
-    i32 i;
+    int i;
     xwl_window_handle_t *wh = 0;
     XEvent lastKeyReleaseEvent;
 
@@ -1060,13 +1074,13 @@ i32 xwl_pollevent( xwl_event_t *event )
 }
 
 
-xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, u32 * attribs )
+xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, unsigned int * attribs )
 {
 	xwl_window_handle_t * wh = 0;
     xwl_renderer_settings_t cfg;
 
 #ifdef _WIN32
-	i32 style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	RECT clientrect;
 	wchar_t windowName[ 128 ];
 	//memset( windowName, 0, 128 );
@@ -1201,13 +1215,13 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     if ( !wh )
     {
-        printf( "Could not find unused window\n" );
+        xwlPrintf( "[xwl] Could not find unused window\n" );
         return 0;
     }
 
     if ( !(params->flags & XWL_OPENGL) )
     {
-        printf( "Must create an OpenGL window on Linux!\n" );
+        xwlPrintf( "[xwl::X11] Must create an OpenGL window on Linux!\n" );
         return 0;
     }
 
@@ -1215,23 +1229,23 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
     cfg.display = currentDisplay;
     cfg.screen = currentScreen;
 
-    printf( "Renderer startup...\n" );
+    xwlPrintf( "[xwl::X11] Renderer startup...\n" );
     cfg.window = &wh->handle;
 
     cwattrs = CWEventMask;
 
     xwl_renderer_startup( &cfg, attribs );
 
-    printf( "Creating color map\n" );
+    xwlPrintf( "[xwl::X11] Creating color map\n" );
     colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
     window_attribs.colormap = colormap;
 
-    printf( "Now creating window...\n" );
+    xwlPrintf( "[xwl::X11] Now creating window...\n" );
     handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
 
     if ( handle == 0 )
     {
-        printf( "XCreateWindow failed\n" );
+        xwlPrintf( "[xwl::X11] XCreateWindow failed\n" );
         return 0;
     }
 
@@ -1266,7 +1280,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
         wh->inputContext = XCreateIC( currentInputMethod, XNClientWindow, handle, XNFocusWindow, handle, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
         if ( !wh->inputContext )
         {
-            printf( "Failed to create input context!\n" );
+            xwlPrintf( "[xwl::X11] Failed to create input context!\n" );
         }
     }
 
