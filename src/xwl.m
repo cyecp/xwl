@@ -12,7 +12,7 @@
 #define DLOG( fmt, ... )
 #endif
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
 
@@ -199,7 +199,7 @@
 #endif
 
 
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 NSApplication * application = 0;
 NSAutoreleasePool *pool = 0;
 xwlDelegate * appDelegate = 0;
@@ -208,7 +208,7 @@ xwlDelegate * appDelegate = 0;
 #define XWLWINDOW xwlWindow
  ////////////////////////////////////////////////////////
 
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 unsigned int LocalizedKeys(unichar ch)
  {
 	 switch (ch) 
@@ -467,7 +467,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 
 // the implementation for xwlDelegate is provided for the Mac version
 // however, the iPhone version requires a little more customization, so it is separate from XWL.
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 @implementation xwlDelegate
 
 -(void)keyDown:(NSEvent*)event
@@ -638,7 +638,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 
 void xwl_osx_startup( void )
 {
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 	pool = [[NSAutoreleasePool alloc] init];
 	appDelegate = [[xwlDelegate alloc] init];
 	
@@ -673,7 +673,7 @@ void xwl_osx_startup( void )
 
 void xwl_osx_shutdown( void )
 {
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 	[application setDelegate: nil ];
 	[application release];
 	
@@ -687,7 +687,7 @@ void xwl_osx_activate( xwl_window_t * window )
 	if ( !window || !window->view )
 		return;
 	
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	[((__bridge EAGLView*)window->view) begin];
 #else
 	[[((MyOpenGLView*)window->view) getContext] makeCurrentContext];
@@ -696,7 +696,7 @@ void xwl_osx_activate( xwl_window_t * window )
 
 void xwl_pollevent_osx( xwl_event_t * e )
 {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	while( CFRunLoopRunInMode( kCFRunLoopDefaultMode, 0.002, TRUE) == kCFRunLoopRunHandledSource) {}
 	
 #elif TARGET_OS_MAC
@@ -715,7 +715,7 @@ void xwl_pollevent_osx( xwl_event_t * e )
 #endif
 }
 
-#if !TARGET_OS_IPHONE
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 @implementation MyOpenGLView
 
 @synthesize context = ctx;
@@ -1223,7 +1223,7 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 
 void xwl_setup_osx_rendering( xwl_window_t * window, unsigned int * attribs )
 {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	EAGLView * view = [[EAGLView alloc] initWithFrame: [UIScreen mainScreen].bounds];
 	if ( view )
 	{
@@ -1253,7 +1253,7 @@ void xwl_setup_osx_rendering( xwl_window_t * window, unsigned int * attribs )
 
 void * xwl_osx_rendering_context( xwl_window_t * window )
 {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	return 0;
 #else
 	MyOpenGLView * view = ((xwlWindow*)window->handle).render;
@@ -1272,7 +1272,7 @@ void xwl_osx_finish( xwl_window_t * window )
 	if ( !window || !window->view )
 		return;
 	
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	[((__bridge EAGLView*)window->view) end];
 #else
 	[[((MyOpenGLView*)window->view) getContext] flushBuffer];
@@ -1287,7 +1287,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 	xwl_window_handle_t * wh = 0;
 	XWLWINDOW * handle;
 	
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 
 	// force OpenGL on iPhone
 	params->flags |= XWL_OPENGL;

@@ -61,12 +61,12 @@ project "xwl"
 	for _,platform in ipairs(platforms()) do
 
 		configuration { "debug", platform }
-			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/debug" )
+			targetdir (target_folder .. "/debug" )
 			flags { "Symbols" }
 			defines { "DEBUG" }
 			
 		configuration { "release", platform }
-			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/release" )
+			targetdir (target_folder .. "/release" )
 			flags { "Optimize", "Symbols" }
 	end	
 
@@ -125,10 +125,10 @@ project "sample"
 			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/debug" )
 			flags { "Symbols" }
 			defines { "DEBUG" }
-			libdirs { "lib/" .. translate_platform( platform ) .. "/debug" }
+			libdirs { "lib/debug" }
 			
 		configuration { "release", platform }
 			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/release" )
 			flags { "Optimize", "Symbols" }
-			libdirs { "lib/" .. translate_platform( platform ) .. "/release" }
+			libdirs { "lib/release" }
 	end
