@@ -12,203 +12,14 @@
 #define DLOG( fmt, ... )
 #endif
 
-#if TARGET_OS_IPHONE
-#import <QuartzCore/QuartzCore.h>
-#import <OpenGLES/EAGLDrawable.h>
 
-@interface EAGLView()
-@property (nonatomic, retain) EAGLContext *context;
-- (BOOL) createFramebuffer;
-- (void) destroyFramebuffer;
-
-@end
-
-@implementation EAGLView
-
-@synthesize context;
-
-#if 0
-// You must implement this method
-+ (Class)layerClass {
-    return [CAEAGLLayer class];
-}
-#endif
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	// pass through to the kernel
-	//[[dKernel sharedKernel] touchesBegan: touches withEvent: event];
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	// pass through to kernel
-	//[[dKernel sharedKernel] touchesMoved: touches withEvent: event];
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	// pass through to kernel
-	//[[dKernel sharedKernel] touchesEnded: touches withEvent: event];
-}
-
-- (void)startup
-{
-#if 0
-	DLOG();
-	// Get the layer
-	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-	
-	isInitialized = NO;
-	eaglLayer.opaque = YES;
-	eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-									[NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
-	
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-	
-	if (!context || ![EAGLContext setCurrentContext:context]) {
-		NSLog (@"error creating context!" );
-	}
-#endif
-}
-
-- (void)begin
-{
-#if 0
-    [EAGLContext setCurrentContext:context];
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glViewport(0, 0, backingWidth, backingHeight);
-	
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-#endif
-}
-
-- (void)end
-{
-    //glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    //[context presentRenderbuffer:GL_RENDERBUFFER_OES];
-}
-
-- (void)drawView {
-#if 0
-    DLOG();
-	
-	
-    // Replace the implementation of this method to do your own custom drawing
-    
-    const GLfloat squareVertices[] = {
-        -5.5f, -5.5f,
-        5.5f,  -5.5f,
-        -5.5f,  5.5f,
-        5.5f,   5.5f,
-    };
-    const GLubyte squareColors[] = {
-        255, 255,   0, 255,
-        0,   255, 255, 255,
-        0,     0,   0,   0,
-        255,   0, 255, 255,
-    };
-    
-	[self begin];
-    
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-	
-	// place the origin at the center
-    glOrthof(-160.0f, 160.0f, -240.0f, 240.0f, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-	
-    glRotatef(3.0f, 0.0f, 0.0f, 1.0f);
-    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
-	glDisableClientState( GL_COLOR_ARRAY );
-	
-#endif
-	[self end];
-}
-
-
-- (void)layoutSubviews {
-	[EAGLContext setCurrentContext:context];
-	[self destroyFramebuffer];
-	[self createFramebuffer];
-	//isInitialized = YES;
-	
-    //[self drawView];
-}
-
-
-- (BOOL)createFramebuffer {
-#if 0
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-    
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-    
-    if (USE_DEPTH_BUFFER) {
-        glGenRenderbuffersOES(1, &depthRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-    }
-    
-    if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-        NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-        return NO;
-    }
-#endif
-    return YES;
-}
-
-
-- (void)destroyFramebuffer {
-    glDeleteFramebuffers(1, &viewFramebuffer);
-    viewFramebuffer = 0;
-    glDeleteRenderbuffers(1, &viewRenderbuffer);
-    viewRenderbuffer = 0;
-    
-    if(depthRenderbuffer) {
-        glDeleteRenderbuffers(1, &depthRenderbuffer);
-        depthRenderbuffer = 0;
-    }
-}
-
-- (void)dealloc {
-	
-    if ([EAGLContext currentContext] == context) {
-        [EAGLContext setCurrentContext:nil];
-    }
-
-#if !XWL_APPLE_ARC
-    [context release];  
-    [super dealloc];
-#endif
-}
-
-@end
-#endif
-
-
-#if !TARGET_OS_IPHONE
 NSApplication * application = 0;
 NSAutoreleasePool *pool = 0;
 xwlDelegate * appDelegate = 0;
-#endif
 
 #define XWLWINDOW xwlWindow
  ////////////////////////////////////////////////////////
 
-#if !TARGET_OS_IPHONE
 unsigned int LocalizedKeys(unichar ch)
  {
 	 switch (ch) 
@@ -462,12 +273,10 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 		default:                        return 0;
 	}
 }
-#endif
 
 
 // the implementation for xwlDelegate is provided for the Mac version
 // however, the iPhone version requires a little more customization, so it is separate from XWL.
-#if !TARGET_OS_IPHONE
 @implementation xwlDelegate
 
 -(void)keyDown:(NSEvent*)event
@@ -557,7 +366,20 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 	return YES;
 }
 
--(void) populateApplicationMenu:(NSMenu*) aMenu applicationName: (NSString*)applicationName
+-(void) applicationWillFinishLaunching:(NSNotification *)aNotification
+{
+
+}
+
+-(void) applicationDidFinishLaunching:(NSNotification*)notification
+{
+	//NSLog( @"Application finished launching?" );
+}
+@end
+
+
+
+void populateApplicationMenu( NSMenu * aMenu, NSString * applicationName )
 {
 	NSMenuItem * menuItem;
 	
@@ -606,7 +428,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 	[menuItem setTarget:NSApp];
 }
 
--(void) applicationWillFinishLaunching:(NSNotification *)aNotification
+void attachMenu( const char * title )
 {
 	//NSLog( @"Application will finish launching?" );
 	
@@ -619,7 +441,9 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 	[NSApp performSelector:@selector(setAppleMenu:) withObject: submenu];
 	// populate application menu
 	
-	[self populateApplicationMenu: submenu applicationName: @"Blah"];
+	NSString * applicationName = [[[NSString alloc] retain ] initWithCString: title encoding:NSUTF8StringEncoding];
+	populateApplicationMenu( submenu, applicationName );
+	[applicationName release];
 	[mainMenu setSubmenu: submenu forItem: menuItem];
 	//NSLog( @"Controller: %@", [window windowController] );
 	
@@ -629,16 +453,8 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 	//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:@"/Developer/About Xcode Tools.pdf"]];
 }
 
--(void) applicationDidFinishLaunching:(NSNotification*)notification
-{
-	//NSLog( @"Application finished launching?" );
-}
-@end
-#endif
-
 void xwl_osx_startup( void )
 {
-#if !TARGET_OS_IPHONE
 	pool = [[NSAutoreleasePool alloc] init];
 	appDelegate = [[xwlDelegate alloc] init];
 	
@@ -668,18 +484,15 @@ void xwl_osx_startup( void )
 	
 	// setup the app menu
 	[application finishLaunching];
-#endif
 }
 
 void xwl_osx_shutdown( void )
 {
-#if !TARGET_OS_IPHONE
 	[application setDelegate: nil ];
 	[application release];
 	
 	[appDelegate release];
 	appDelegate = 0;	
-#endif
 }
 
 void xwl_osx_activate( xwl_window_t * window )
@@ -687,19 +500,11 @@ void xwl_osx_activate( xwl_window_t * window )
 	if ( !window || !window->view )
 		return;
 	
-#if TARGET_OS_IPHONE
-	[((__bridge EAGLView*)window->view) begin];
-#else
 	[[((MyOpenGLView*)window->view) getContext] makeCurrentContext];
-#endif
 }
 
 void xwl_pollevent_osx( xwl_event_t * e )
 {
-#if TARGET_OS_IPHONE
-	while( CFRunLoopRunInMode( kCFRunLoopDefaultMode, 0.002, TRUE) == kCFRunLoopRunHandledSource) {}
-	
-#elif TARGET_OS_MAC
 	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask 
 										 untilDate: [NSDate distantPast]
 											inMode: NSDefaultRunLoopMode
@@ -712,10 +517,8 @@ void xwl_pollevent_osx( xwl_event_t * e )
 	}
 	
 	//[event release]; // is this needed?
-#endif
 }
 
-#if !TARGET_OS_IPHONE
 @implementation MyOpenGLView
 
 @synthesize context = ctx;
@@ -780,7 +583,7 @@ void xwl_pollevent_osx( xwl_event_t * e )
 
 -(void) noResponderFor: (SEL)eventSelector
 {
-	NSLog( @"MyOpenGLView: noResponderFor event!" );
+	NSLog( @"noResponderFor event!" );
 	[super noResponderFor:eventSelector];
 }
 
@@ -797,9 +600,7 @@ void xwl_pollevent_osx( xwl_event_t * e )
 		[[[wnd render] getContext] update];
 	
 	xwl_send_event( &ev );
-	
-	
-	NSLog( @"windowResized" );
+	//NSLog( @"windowResized" );
 }
 
 void dispatchMouseMoveEvent(NSEvent * theEvent)
@@ -1018,7 +819,6 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 
 -(void) keyUp:(NSEvent *) event
 {
-#if 1
 	xwl_event_t ev = {0};
 	NSString *string = [event charactersIgnoringModifiers];
 	
@@ -1043,7 +843,6 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 			NSLog( @"Unknown key code: %i", [event keyCode] );
 		}
 		
-		
 		// send the KeyPressed event
 		xwl_send_event( &ev );
 	}
@@ -1051,7 +850,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	{
 		//[super keyUp: event];
 	}
-#endif
+
 	//NSLog( @"MyOpenGLView keyUp" );
 	[super keyUp: event];
 }
@@ -1069,24 +868,20 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	if ( modifierFlags & NSCommandKeyMask )
 		NSLog( @"system" );	
 	
-	NSLog( @"Flags Changed!" );
+	//NSLog( @"Flags Changed!" );
 }
 
 -(void)mouseEntered:(NSEvent *)theEvent
 {
-	NSLog( @"mouseEntered");
+	//NSLog( @"mouseEntered");
 }
 
 -(void)mouseExited:(NSEvent *)theEvent
 {
-	NSLog( @"mouseExited" );
+	//NSLog( @"mouseExited" );
 }
 
 @end
-#endif
-
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
 
 // OpenGL 3.2 is only supported on MacOS X Lion and later
 // CGL_VERSION_1_3 is defined as 1 on MacOS X Lion and later
@@ -1219,20 +1014,10 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 	
 	return view;
 }
-#endif
+
 
 void xwl_setup_osx_rendering( xwl_window_t * window, unsigned int * attribs )
 {
-#if TARGET_OS_IPHONE
-	EAGLView * view = [[EAGLView alloc] initWithFrame: [UIScreen mainScreen].bounds];
-	if ( view )
-	{
-		[view startup];
-		[(__bridge xwlWindow*)window->handle addSubview: view];
-		((__bridge xwlWindow*)window->handle).render = view;
-		window->view = (__bridge void*)view;
-	}
-#else
 	MyOpenGLView * view;
 	view = setup_rendering( window->handle, attribs );
 	
@@ -1246,16 +1031,10 @@ void xwl_setup_osx_rendering( xwl_window_t * window, unsigned int * attribs )
 		GLint sync = 1;
 		[context setValues: &sync forParameter:NSOpenGLCPSwapInterval]; 
 	}
-	
-	
-#endif
 }
 
 void * xwl_osx_rendering_context( xwl_window_t * window )
 {
-#if TARGET_OS_IPHONE
-	return 0;
-#else
 	MyOpenGLView * view = ((xwlWindow*)window->handle).render;
 	
 	if ( !view )
@@ -1264,78 +1043,23 @@ void * xwl_osx_rendering_context( xwl_window_t * window )
 	}
 	
 	return view->ctx;
-#endif
 }
 
 void xwl_osx_finish( xwl_window_t * window )
 {
 	if ( !window || !window->view )
 		return;
-	
-#if TARGET_OS_IPHONE
-	[((__bridge EAGLView*)window->view) end];
-#else
+
 	[[((MyOpenGLView*)window->view) getContext] flushBuffer];
-#endif
 }
 
 
 
 xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const char * title )
 {
-	printf( "xwl_create_osx_window\n" );
 	xwl_window_handle_t * wh = 0;
 	XWLWINDOW * handle;
 	
-#if TARGET_OS_IPHONE
-
-	// force OpenGL on iPhone
-	params->flags |= XWL_OPENGL;
-	
-	float statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-	//DLOG( "StatusBarFrame: %g", statusBarHeight );
-	CGRect frame = [[UIScreen mainScreen] bounds];
-	
-	handle = [[xwlWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
-	
-	// move the origin ONLY IF +Y is UP in OpenGL
-	//frame.origin.y += statusBarHeight;
-	frame.size.height += statusBarHeight;
-	handle.frame = frame;
-	
-	[handle setBackgroundColor: [UIColor blackColor]];
-	[handle setUserInteractionEnabled: YES];
-	[handle setMultipleTouchEnabled: YES];
-	[handle makeKeyAndVisible];
-	
-	xwlDelegate * delegate = (xwlDelegate*)[[UIApplication sharedApplication] delegate];
-	if ( delegate != 0 )
-	{
-		if ( handle != 0 )
-		{
-			delegate.window = handle;
-			
-			wh = xwl_get_unused_window();
-			wh->handle.handle = (__bridge void*)handle;
-			//wh->handle.view = delegate.glView;
-			
-			params->width = [handle bounds].size.width;
-			params->height = [handle bounds].size.height;			
-		}
-		else
-		{
-			printf( "delegate.window is NOT valid\n" );
-		}
-
-	}
-	else
-	{
-		printf( "delegate is null\n" );
-	}
-	
-	return wh;
-	
-#else
 	NSRect frame;
 	NSPoint origin;
 	int windowMask;
@@ -1358,6 +1082,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 		windowMask &= ~NSResizableWindowMask;
 	}
 	
+	attachMenu( title );
 	
 	frame = NSMakeRect( 0, 0, params->width, params->height );
 	
@@ -1402,7 +1127,6 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 	}
 
 	return wh;
-#endif
 }
 
 
