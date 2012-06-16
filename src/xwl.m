@@ -503,7 +503,7 @@ void xwl_osx_activate( xwl_window_t * window )
 	[[((MyOpenGLView*)window->view) getContext] makeCurrentContext];
 }
 
-void xwl_pollevent_osx( xwl_event_t * e )
+int xwl_pollevent_osx( xwl_event_t * e )
 {
 	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask 
 										 untilDate: [NSDate distantPast]
@@ -514,9 +514,11 @@ void xwl_pollevent_osx( xwl_event_t * e )
 		//NSLog( @"Debug Event!" );
 		// dispatch the event!
 		[NSApp sendEvent: event ];
+		return 1;
 	}
 	
 	//[event release]; // is this needed?
+	return 0;
 }
 
 @implementation MyOpenGLView

@@ -46,6 +46,7 @@ const char * xwl_get_error()
 #define XWL_MAX_EVENTS 256
 unsigned int event_index = 0;
 unsigned int event_read_ptr = 0;
+unsigned int last_index = 0;
 static xwl_event_t eventList[ XWL_MAX_EVENTS ];
 
 xwl_window_handle_t *xwl_get_unused_window()
@@ -72,6 +73,7 @@ void xwl_send_event( xwl_event_t * ev )
 	}
 	else // otherwise, queue the event
 	{
+		last_index = event_index;
 		memcpy( &eventList[ event_index++ ], ev, sizeof(xwl_event_t) );
 		event_index = event_index % XWL_MAX_EVENTS;
 	}
@@ -1002,6 +1004,8 @@ void ProcessEvent( XEvent event, xwl_window_handle_t * window )
 
 int xwl_pollevent( xwl_event_t *event )
 {
+	int result;
+	
 #ifdef _WIN32
 	MSG msg;
 
@@ -1062,15 +1066,23 @@ int xwl_pollevent( xwl_event_t *event )
 
 #endif
 
+	
 #if __APPLE__
 	xwl_pollevent_osx( event );
 #endif
 
 
-	// get the last event off our event list
-	memcpy( event, &eventList[ event_read_ptr++ ], sizeof(xwl_event_t) );
-	event_read_ptr = event_read_ptr % XWL_MAX_EVENTS;
-	return 0;
+	result = 0;
+	if ( last_index != event_index )
+	{
+		result = 1;
+		// get the last event off our event list
+		memcpy( event, &eventList[ event_read_ptr++ ], sizeof(xwl_event_t) );
+		event_read_ptr = event_read_ptr % XWL_MAX_EVENTS;
+		last_index = event_read_ptr;
+	}
+	
+	return result;
 }
 
 
