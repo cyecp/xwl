@@ -2,19 +2,15 @@
 #include <xwl/xwl_ogl.h>
 #include <stdio.h>
 
-// temporary OpenGL tests
 #if _WIN32
-#include <windows.h>
-#include <gl/gl.h>
-#pragma comment( lib, "opengl32.lib" )
+	#include <windows.h>
+	#include <gl/gl.h>
+	#pragma comment( lib, "opengl32.lib" )
 #elif LINUX
-#include <GL/gl.h>
-#include <GL/glx.h>
+	#include <GL/gl.h>
+	#include <GL/glx.h>
 #elif __APPLE__
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
 	#include <OpenGL/OpenGL.h>
-#endif
 #endif
 
 #ifdef __cplusplus

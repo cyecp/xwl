@@ -307,6 +307,8 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 -(BOOL) windowShouldClose:(id)windowIn
 {
 	xwl_event_t ev = {0};
+	//XWLWINDOW * wnd = (XWLWINDOW*)[notification object];	
+	//ev.window = &wnd.xwlhandle->handle;	
 	ev.type = XWLE_CLOSED;
 
 	xwl_send_event( &ev );
@@ -317,6 +319,11 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 -(void) windowDidResignKey:(NSNotification*)notification
 {
 	xwl_event_t ev = {0};
+	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];	
+	NSLog( @"window: %@", wnd );
+
+	ev.window = &wnd.xwlhandle->handle;	
+	NSLog( @"handle: %p", ev.window );	
 	ev.type = XWLE_LOSTFOCUS;
 	xwl_send_event( &ev );
 	
@@ -326,6 +333,10 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 -(void) windowDidBecomeKey:(NSNotification*)notification
 {
 	xwl_event_t ev = {0};
+	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];	
+	NSLog( @"window: %@", wnd );
+	ev.window = &wnd.xwlhandle->handle;	
+	NSLog( @"handle: %p", ev.window );	
 	ev.type = XWLE_GAINFOCUS;
 	xwl_send_event( &ev );
 	
@@ -597,6 +608,7 @@ int xwl_pollevent_osx( xwl_event_t * e )
 	
 	ev.width = [[wnd contentView] frame].size.width;
 	ev.height = [[wnd contentView] frame].size.height;
+	ev.window = &wnd.xwlhandle->handle;
 	
 	if ( [wnd render] != nil )
 		[[[wnd render] getContext] update];
@@ -624,7 +636,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	ev.type = XWLE_MOUSEMOVE;
 	ev.mx = pt.x;
 	ev.my = fixedHeight - pt.y; // top left is origin
-	
+	ev.window = &wnd.xwlhandle->handle;
 	if ( ev.mx >= 0 && ev.my >= 0 && (ev.mx <= [wnd frame].size.width) && (ev.my <= fixedHeight) )
 	{
 		xwl_send_event( &ev );
@@ -643,6 +655,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	xwl_event_t ev = {0};
 	ev.type = XWLE_MOUSEBUTTON_PRESSED;
 	ev.button = XWLMB_LEFT;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;
 	xwl_send_event( &ev );
 }
 
@@ -651,6 +664,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	xwl_event_t ev = {0};
 	ev.type = XWLE_MOUSEBUTTON_RELEASED;
 	ev.button = XWLMB_LEFT;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;	
 	xwl_send_event( &ev );
 }
 
@@ -662,11 +676,12 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 }
 
 
--(void)rightMouseDown:(NSEvent *) event
+-(void)rightMouseDown:(NSEvent *) theEvent
 {
 	xwl_event_t ev = {0};
 	ev.type = XWLE_MOUSEBUTTON_PRESSED;
 	ev.button = XWLMB_RIGHT;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;	
 	xwl_send_event( &ev );
 }
 
@@ -675,6 +690,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	xwl_event_t ev = {0};
 	ev.type = XWLE_MOUSEBUTTON_RELEASED;
 	ev.button = XWLMB_RIGHT;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;	
 	xwl_send_event( &ev );
 }
 
@@ -689,6 +705,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	xwl_event_t ev = {0};
 	ev.type = XWLE_MOUSEBUTTON_PRESSED;
 	ev.button = XWLMB_MIDDLE;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;	
 	xwl_send_event( &ev );
 }
 
@@ -714,6 +731,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	// -1 is towards the user
 	// 1 is away from the user	
 	ev.wheelDelta = ([theEvent deltaY] > 0) ? 1 : -1;
+	ev.window = &((XWLWINDOW*)[theEvent window]).xwlhandle->handle;	
 	xwl_send_event( &ev );
 	//NSLog( @"scrollWheel %g %g %g", [theEvent deltaX], [theEvent deltaY], [theEvent deltaZ] );
 }
@@ -765,6 +783,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	{
 		memset( &ev, 0, sizeof(xwl_event_t) );
 		ev.type = XWLE_KEYPRESSED;
+		ev.window = &wnd.xwlhandle->handle;
 		
 		if ([string length] > 0)
 		{
@@ -822,12 +841,14 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 -(void) keyUp:(NSEvent *) event
 {
 	xwl_event_t ev = {0};
+	XWLWINDOW * wnd = (XWLWINDOW*)[event window];
 	NSString *string = [event charactersIgnoringModifiers];
 	
 	if ( ![event isARepeat] )
 	{
 		memset( &ev, 0, sizeof(xwl_event_t) );
 		ev.type = XWLE_KEYRELEASED;
+		ev.window = &wnd.xwlhandle->handle;
 		
 		if ([string length] > 0)
 		{
@@ -929,17 +950,21 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 				break;
 			}
 #endif
+			case XWL_GL_DEPTHSIZE:
+			{
+				outattribs[ i ] = NSOpenGLPFADepthSize;
+				i++;
+				outattribs[ i ] = attribs[ i ];
+				i++;
+				break;
+			}
 			default: i++;
 		}
 	}
 	
 	outattribs[ i++ ] = NSOpenGLPFAAccelerated;
-	outattribs[ i++ ] = NSOpenGLPFADepthSize;
-	outattribs[ i++ ] = 24;
 	outattribs[ i++ ] = 0;
-	
-	
-	
+
 	return outattribs;
 }
 
@@ -1126,6 +1151,7 @@ xwl_window_handle_t *xwl_create_osx_window( xwl_windowparams_t * params, const c
 	{
 		wh = xwl_get_unused_window();
 		wh->handle.handle = handle;
+		handle.xwlhandle = wh;
 	}
 
 	return wh;

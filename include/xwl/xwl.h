@@ -222,6 +222,7 @@ enum
 	XWL_GL_NOATTRIB = 1,
 	XWL_GL_PROFILE, // ignored on Mac OSX < 10.7
 	XWL_GL_DOUBLEBUFFER,
+	XWL_GL_DEPTHSIZE,
 };
 
 enum
@@ -236,11 +237,15 @@ typedef struct xwl_displaymode_s
 	u32 height;
 } xwl_displaymode_t;
 
+struct xwl_event_s;	
+typedef void (*xwl_event_callback)( struct xwl_event_s * );
+	
 typedef struct xwl_window_s
 {
 	void * handle;
 	void * userdata;
-
+	xwl_event_callback event_callback;
+	
 #if _WIN32
 	HDC dc;
 #endif
@@ -310,10 +315,9 @@ typedef struct xwl_event_s
 	i16 keymods;
 
 	xwl_touch_t touches[ XWL_MAX_TOUCHES ];
+	struct xwl_window_s * window;
 } xwl_event_t;
 
-
-typedef void (*xwl_event_callback)( xwl_event_t * );
 	
 // returns 0 on failure
 // returns 1 on success
