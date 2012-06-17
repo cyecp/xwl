@@ -320,10 +320,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 {
 	xwl_event_t ev = {0};
 	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];	
-	NSLog( @"window: %@", wnd );
-
 	ev.window = &wnd.xwlhandle->handle;	
-	NSLog( @"handle: %p", ev.window );	
 	ev.type = XWLE_LOSTFOCUS;
 	xwl_send_event( &ev );
 	
@@ -333,10 +330,8 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 -(void) windowDidBecomeKey:(NSNotification*)notification
 {
 	xwl_event_t ev = {0};
-	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];	
-	NSLog( @"window: %@", wnd );
+	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];
 	ev.window = &wnd.xwlhandle->handle;	
-	NSLog( @"handle: %p", ev.window );	
 	ev.type = XWLE_GAINFOCUS;
 	xwl_send_event( &ev );
 	
@@ -920,6 +915,7 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 	// count attribs
 	int total_attribs;
 	int i;
+	int depth_set_by_user = 0;
 	NSOpenGLPixelFormatAttribute * outattribs;
 
 	for( total_attribs = 0; attribs[total_attribs] != 0; ++total_attribs ) {}
@@ -952,6 +948,7 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 #endif
 			case XWL_GL_DEPTHSIZE:
 			{
+				depth_set_by_user = 1;
 				outattribs[ i ] = NSOpenGLPFADepthSize;
 				i++;
 				outattribs[ i ] = attribs[ i ];
@@ -960,6 +957,12 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 			}
 			default: i++;
 		}
+	}
+	
+	if ( !depth_set_by_user )
+	{
+		outattribs[ i++ ] = NSOpenGLPFADepthSize;
+		outattribs[ i++ ] = 24;
 	}
 	
 	outattribs[ i++ ] = NSOpenGLPFAAccelerated;
