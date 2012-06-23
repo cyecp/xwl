@@ -447,7 +447,7 @@ void attachMenu( const char * title )
 	[NSApp performSelector:@selector(setAppleMenu:) withObject: submenu];
 	// populate application menu
 	
-	NSString * applicationName = [[[NSString alloc] retain ] initWithCString: title encoding:NSUTF8StringEncoding];
+	NSString * applicationName = [[[NSString alloc] retain] initWithCString: title encoding:NSUTF8StringEncoding];
 	populateApplicationMenu( submenu, applicationName );
 	[applicationName release];
 	[mainMenu setSubmenu: submenu forItem: menuItem];
@@ -494,11 +494,12 @@ void xwl_osx_startup( void )
 
 void xwl_osx_shutdown( void )
 {
+	[pool release];
 	[application setDelegate: nil ];
 	[application release];
 	
 	[appDelegate release];
-	appDelegate = 0;	
+	appDelegate = 0;
 }
 
 void xwl_osx_activate( xwl_window_t * window )
@@ -511,6 +512,7 @@ void xwl_osx_activate( xwl_window_t * window )
 
 int xwl_pollevent_osx( xwl_event_t * e )
 {
+		
 	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask 
 										 untilDate: [NSDate distantPast]
 											inMode: NSDefaultRunLoopMode
@@ -522,8 +524,8 @@ int xwl_pollevent_osx( xwl_event_t * e )
 		[NSApp sendEvent: event ];
 		return 1;
 	}
+
 	
-	//[event release]; // is this needed?
 	return 0;
 }
 
@@ -1016,6 +1018,7 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 	
 	// create opengl context
 	ctx = [[NSOpenGLContext alloc] initWithFormat: format shareContext: NO];
+	[format release];
 	if ( ctx == nil )
 	{
 		NSLog( @"Unable to create opengl context!" );
