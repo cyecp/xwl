@@ -1240,19 +1240,15 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
     window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
     cfg.display = currentDisplay;
     cfg.screen = currentScreen;
-
-    xwlPrintf( "[xwl::X11] Renderer startup...\n" );
     cfg.window = &wh->handle;
 
     cwattrs = CWEventMask;
 
     xwl_renderer_startup( &cfg, attribs );
 
-    xwlPrintf( "[xwl::X11] Creating color map\n" );
     colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
     window_attribs.colormap = colormap;
 
-    xwlPrintf( "[xwl::X11] Now creating window...\n" );
     handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
 
     if ( handle == 0 )
