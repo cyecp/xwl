@@ -922,19 +922,12 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 
 	for( total_attribs = 0; attribs[total_attribs] != 0; ++total_attribs ) {}
 	
-	outattribs = (NSOpenGLPixelFormatAttribute*)malloc( (total_attribs+4) * sizeof(NSOpenGLPixelFormatAttribute) );
+	outattribs = (NSOpenGLPixelFormatAttribute*)malloc( (total_attribs+5) * sizeof(NSOpenGLPixelFormatAttribute) );
 	
 	for( i = 0; i < total_attribs; )
 	{
 		switch( attribs[i] )
-		{
-			case XWL_GL_DOUBLEBUFFER:
-			{
-				outattribs[ i ] = NSOpenGLPFADoubleBuffer;
-				i++;
-				break;
-			}
-				
+		{				
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7) && CGL_VERSION_1_3 > 0
 			case XWL_GL_PROFILE:
 			{
@@ -968,6 +961,7 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 	}
 	
 	outattribs[ i++ ] = NSOpenGLPFAAccelerated;
+	outattribs[ i++ ] = NSOpenGLPFADoubleBuffer; // this is now default on OSX
 	outattribs[ i++ ] = 0;
 
 	return outattribs;
