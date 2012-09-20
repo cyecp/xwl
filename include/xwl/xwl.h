@@ -221,7 +221,6 @@ enum
 {
 	XWL_GL_NOATTRIB = 1,
 	XWL_GL_PROFILE, // ignored on Mac OSX < 10.7
-	XWL_GL_DOUBLEBUFFER,
 	XWL_GL_DEPTHSIZE,
 };
 

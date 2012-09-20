@@ -927,7 +927,8 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 	for( i = 0; i < total_attribs; )
 	{
 		switch( attribs[i] )
-		{				
+		{
+
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7) && CGL_VERSION_1_3 > 0
 			case XWL_GL_PROFILE:
 			{
@@ -941,16 +942,17 @@ NSOpenGLPixelFormatAttribute * xwl_attribs_to_native( unsigned int * attribs )
 				break;
 			}
 #endif
+
 			case XWL_GL_DEPTHSIZE:
-			{
+			{				
 				depth_set_by_user = 1;
 				outattribs[ i ] = NSOpenGLPFADepthSize;
 				i++;
 				outattribs[ i ] = attribs[ i ];
-				i++;
+				i++;			
 				break;
 			}
-			default: i++;
+			default: i++; break;
 		}
 	}
 	
