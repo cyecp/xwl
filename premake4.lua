@@ -1,6 +1,6 @@
 solution "xwl"
 configurations { "debug", "release" }
-	
+
 local target_folder = "lib"
 function translate_platform( platform )
 	if platform == "x32" then
@@ -13,7 +13,7 @@ end
 project "xwl"
 	objdir "obj"
 	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
-	platforms { "x32", "x64" }
+	platforms { "x32", "x64", "native" }
 	kind "StaticLib"
 	language ("C")
 	
@@ -68,14 +68,14 @@ project "xwl"
 		configuration { "release", platform }
 			targetdir (target_folder .. "/" .. translate_platform( platform ) .. "/release" )
 			flags { "Optimize", "Symbols" }
-	end	
+	end
 
 target_folder = "bin"
 project "sample"
 	objdir "obj"
 	targetdir "build/bin"
 	uuid( "D2302F80-6997-9346-8033-1FA0E461A6CE" )
-	platforms{ "x32", "x64" }
+	platforms{ "x32", "x64", "native" }
 	-- ConsoleApp, WindowedApp, SharedLib, or StaticLib
 	kind "ConsoleApp"
 	language ("C")
