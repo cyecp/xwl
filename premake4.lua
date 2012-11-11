@@ -5,6 +5,8 @@ local target_folder = "lib"
 function translate_platform( platform )
 	if platform == "x32" then
 		return "x86"
+	elseif platform == "Native" then
+		return "native"	
 	end
 	
 	return platform
