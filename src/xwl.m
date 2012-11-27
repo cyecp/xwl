@@ -766,8 +766,9 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 				[text setString: @""];
 			}
 		}
-		else {
-			NSLog( @"Event Keycode: %i", [event keyCode] );
+		else
+		{
+//			NSLog( @"Event Keycode: %i", [event keyCode] );
 		}
 
 	}
@@ -878,15 +879,15 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 -(void)flagsChanged:(NSEvent *)event
 {
 	// TODO: generate key events for these
-	NSUInteger modifierFlags = [event modifierFlags];
-	if ( modifierFlags & NSAlternateKeyMask )
-		NSLog( @"alt" );
-	if ( modifierFlags & NSControlKeyMask)
-		NSLog( @"control" );
-	if ( modifierFlags & NSShiftKeyMask )
-		NSLog( @"shift" );
-	if ( modifierFlags & NSCommandKeyMask )
-		NSLog( @"system" );	
+//	NSUInteger modifierFlags = [event modifierFlags];
+//	if ( modifierFlags & NSAlternateKeyMask )
+//		NSLog( @"alt" );
+//	if ( modifierFlags & NSControlKeyMask)
+//		NSLog( @"control" );
+//	if ( modifierFlags & NSShiftKeyMask )
+//		NSLog( @"shift" );
+//	if ( modifierFlags & NSCommandKeyMask )
+//		NSLog( @"system" );	
 	
 	//NSLog( @"Flags Changed!" );
 }
