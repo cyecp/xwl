@@ -107,7 +107,7 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
     settings->visual = glXChooseVisual( settings->display, settings->screen, attrib );
     if ( !settings->visual )
     {
-        printf( "Unable to get visual!\n" );
+        fprintf( stderr, "[xwl] Unable to get visual!\n" );
         return 0;
     }
 
@@ -115,13 +115,13 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 
     if ( !settings->window->context )
     {
-        printf( "Unable to create context!\n" );
+        fprintf( stderr, "[xwl] Unable to create context!\n" );
         return 0;
     }
 
     if ( !glXIsDirect( settings->display, settings->window->context ) )
     {
-        printf( "Rendering is NOT direct.\n" );
+        fprintf( stderr, "[xwl] Direct rendering is NOT enabled!\n" );
         return 0;
     }
 

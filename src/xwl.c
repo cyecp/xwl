@@ -324,13 +324,13 @@ const char * xwl_mouse_to_string( int mb )
                             // Only interested in the first display for now, we should support others.
                             mode.width = p[x].width;
                             mode.height = p[x].height;
-                            fprintf( stderr, "Width: %i, Height: %i\n", mode.width, mode.height );
+                            fprintf( stderr, "[xwl] Width: %i, Height: %i\n", mode.width, mode.height );
                             break;
                         }
                     }
                     else
                     {
-                        fprintf( stderr, "XineramaQueryScreens says there aren't any\n" );
+                        fprintf( stderr, "[xwl] XineramaQueryScreens says there aren't any\n" );
                     }
 
 
@@ -338,13 +338,13 @@ const char * xwl_mouse_to_string( int mb )
                 }
                 else
                 {
-                    fprintf( stderr, "Xinerama not active\n" );
+                    fprintf( stderr, "[xwl] Xinerama not active\n" );
                 }
 
             }
             else
             {
-                fprintf( stderr, "No Xinerama extension\n" );
+                fprintf( stderr, "[xwl] No Xinerama extension\n" );
             }
 
             XCloseDisplay(d);
@@ -856,7 +856,7 @@ unsigned int X11KeyToXWL( KeySym sym )
         // this does not match with the caps lock button
         //case XK_Caps_Lock:		return XWLK_CAPSLOCK;
     }
-    printf( "Unknown Key: %u\n", (unsigned int)Key );
+    fprintf( stderr, "[xwl] Unknown Key: %u\n", (unsigned int)Key );
     return 0;
 }
 
@@ -919,9 +919,9 @@ void ProcessEvent( XEvent event, xwl_window_handle_t * window )
                         }
                         else
                         {
-                            printf( "Do UTF-8 -> UTF-32 Conversion!\n" );
-                            printf( "Length is: %i bytes.\n", length );
-                            printf( "%c\n", keybuffer[0] );
+                            fprintf( stderr, "[xwl] Do UTF-8 -> UTF-32 Conversion!\n" );
+                            fprintf( stderr, "[xwl] Length is: %i bytes.\n", length );
+                            fprintf( stderr, "[xwl] %c\n", keybuffer[0] );
                             //end = Unicode::
                         }
 

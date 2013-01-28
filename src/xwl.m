@@ -275,8 +275,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 }
 
 
-// the implementation for xwlDelegate is provided for the Mac version
-// however, the iPhone version requires a little more customization, so it is separate from XWL.
+// the implementation for xwlDelegate is provided by default and takes over as application delegate.
 @implementation xwlDelegate
 
 -(void)keyDown:(NSEvent*)event
@@ -312,8 +311,6 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 	ev.type = XWLE_CLOSED;
 
 	xwl_send_event( &ev );
-	//NSLog( @"Window should close?" );
-		
 	return YES;
 }
 -(void) windowDidResignKey:(NSNotification*)notification
@@ -368,7 +365,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 
 -(NSApplicationTerminateReply) applicationShouldTerminate:(NSApplication *)sender;
 {
-	//NSLog( @"ApplicationShouldTerminate" );
+//	NSLog( @"ApplicationShouldTerminate" );
 	return YES;
 }
 
@@ -379,7 +376,7 @@ unsigned int NonLocalizedKeys(unsigned short keycode)
 
 -(void) applicationDidFinishLaunching:(NSNotification*)notification
 {
-	//NSLog( @"Application finished launching?" );
+//	NSLog( @"Application finished launching?" );
 }
 @end
 
@@ -438,12 +435,12 @@ void attachMenu( const char * title )
 {
 	//NSLog( @"Application will finish launching?" );
 	
-	NSMenu * mainMenu = [[NSMenu alloc] initWithTitle: @"MainMenu"];
+	NSMenu * mainMenu = [[NSMenu alloc] initWithTitle: NSLocalizedString(@"MainMenu",nil)];
 	NSMenuItem * menuItem;
 	NSMenu * submenu;
 	
-	menuItem = [mainMenu addItemWithTitle: @"Apple" action: nil keyEquivalent:@""];
-	submenu = [[NSMenu alloc] initWithTitle:@"Apple"];
+	menuItem = [mainMenu addItemWithTitle: NSLocalizedString(@"Apple", nil) action: nil keyEquivalent:@""];
+	submenu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Apple",nil)];
 	[NSApp performSelector:@selector(setAppleMenu:) withObject: submenu];
 	// populate application menu
 	
@@ -481,7 +478,20 @@ void xwl_osx_startup( void )
 	
 
 	application = [NSApplication sharedApplication];
+	/*
+	float scaleFactor = 0;
+	NSWindow * window = [application mainWindow];
+	NSScreen * screen = [window screen];
+	if ( [screen respondsToSelector:@selector(backingScaleFactor)] )
+	{
+		scaleFactor = [screen backingScaleFactor];
+	}
 	
+	if ( scaleFactor < 1 )
+		scaleFactor = 1;
+	 
+	NSLog( @"backingScaleFactor for main screen is %g\n", scaleFactor );
+	*/
 	
 	// set application handler here
 	[application setDelegate: appDelegate];
@@ -593,7 +603,7 @@ int xwl_pollevent_osx( xwl_event_t * e )
 
 -(void) noResponderFor: (SEL)eventSelector
 {
-	NSLog( @"noResponderFor event!" );
+//	NSLog( @"noResponderFor event!" );
 	[super noResponderFor:eventSelector];
 }
 
@@ -1009,7 +1019,7 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 	
 	if ( format == nil )
 	{
-		NSLog( @"Unable to create pixel format!" );
+		NSLog( @"[xwl] Unable to create pixel format!" );
 		return 0;
 	}
 	
@@ -1018,7 +1028,7 @@ MyOpenGLView* setup_rendering( XWLWINDOW * handle, unsigned int * xwlattribs )
 	[format release];
 	if ( ctx == nil )
 	{
-		NSLog( @"Unable to create opengl context!" );
+		NSLog( @"[xwl] Unable to create opengl context!" );
 		return 0;
 	}
 	[ctx retain];
