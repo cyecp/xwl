@@ -181,11 +181,11 @@ int xwl_linux_calculate_output_attribs( unsigned int * attribs )
 				++i;
 				if ( attribs[i] == XWL_GLPROFILE_CORE3_2 )
 				{
-					total_output += 4;
+					total_output += 6;
 				}
 				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
 				{
-					total_output += 2;
+					total_output += 6;
 				}
 				++i;
 
@@ -228,6 +228,8 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 				++i;
 				if ( attribs[i] == XWL_GLPROFILE_CORE3_2 )
 				{
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;					
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MAJOR_VERSION_ARB;
 					modern_attribs[ current_attrib++ ] = 3;
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
@@ -237,6 +239,10 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 				{
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+					modern_attribs[ current_attrib++ ] = 2;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
+					modern_attribs[ current_attrib++ ] = 1;
 				}
 				++i;
 
