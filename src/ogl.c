@@ -185,7 +185,7 @@ int xwl_linux_calculate_output_attribs( unsigned int * attribs )
 				}
 				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
 				{
-					total_output += 6;
+					total_output += 2;
 				}
 				++i;
 
@@ -239,10 +239,6 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 				{
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MAJOR_VERSION_ARB;
-					modern_attribs[ current_attrib++ ] = 2;
-					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
-					modern_attribs[ current_attrib++ ] = 1;
 				}
 				++i;
 
