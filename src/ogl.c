@@ -96,6 +96,10 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 
 //#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 //#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
+#define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
+#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB	0x00000001
+#define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)( Display *, GLXFBConfig, GLXContext, Bool, const int * );
 GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = 0;
 
@@ -179,6 +183,10 @@ int xwl_linux_calculate_output_attribs( unsigned int * attribs )
 				{
 					total_output += 4;
 				}
+				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
+				{
+					total_output += 2;
+				}
 				++i;
 
 				break;
@@ -224,6 +232,11 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 					modern_attribs[ current_attrib++ ] = 3;
 					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
 					modern_attribs[ current_attrib++ ] = 2;
+				}
+				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
+				{
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 				}
 				++i;
 
