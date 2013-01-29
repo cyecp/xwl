@@ -717,7 +717,7 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
-			// destroy window
+			XDestroyWindow( currentDisplay, (Window)wh->handle.handle );
 		}
 
 		memset( wh, 0, sizeof(xwl_window_handle_t) );
@@ -1085,7 +1085,7 @@ int xwl_pollevent( xwl_event_t *event )
 	return result;
 }
 
-int xwl_linux_temp( xwl_renderer_settings_t * settings, unsigned int * attribs );
+Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
 
 xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, unsigned int * attribs )
 {
@@ -1214,15 +1214,9 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 #endif
 
 #ifdef LINUX
-	int status = 0;
     XSetWindowAttributes window_attribs;
     XVisualInfo * info;
     Window handle;
-    #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
-    #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
-    typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)( Display *, GLXFBConfig, GLXContext, Bool, const int * );
-    GLXCREATECONTEXTATTRIBSARBPOC glXCreateContextAttribsARB = 0;
-
 	Colormap colormap;
 	int cwattrs;
 
@@ -1244,25 +1238,6 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
     }
 
 
-    // to start, we need to create a temporary window to get a context and then link glXCreateContextAttribsARB.
-
-    status = xwl_linux_temp( &cfg, 0 );
-    if ( status )
-    {
-	fprintf( stdout, "[xwl] status is valid\n" );
-	window_attribs.event_mask = StructureNotifyMask;
-	colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone);
-        handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, 100, 100, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
-	XMapWindow( currentDisplay, handle );
-
-	// now try to get the new context creation pointer
-	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
-	fprintf( stdout, "[xwl] function is: %p\n", glXCreateContextAttribsARB );
-    }
-    else
-    {
-	fprintf( stderr, "[xwl] Unable to get temporary visual! This is FATAL.\n" );
-    }
 
     window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
     cfg.display = currentDisplay;
@@ -1271,13 +1246,18 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     cwattrs = CWEventMask;
 
+
+    // to start, we need to create a temporary window to get a context and then link glXCreateContextAttribsARB.
+    xwl_linux_create_window( &cfg, 0 );
+
+    fprintf( stdout, "[xwl] renderer_startup...\n" );
     xwl_renderer_startup( &cfg, attribs );
 
-    colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
-    window_attribs.colormap = colormap;
+    fprintf( stdout, "[xwl] Create a color map... \n");
+    window_attribs.colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
 
+    fprintf( stdout, "[xwl] Attempting to create a window" );
     handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
-
     if ( handle == 0 )
     {
         xwlPrintf( "[xwl::X11] XCreateWindow failed\n" );
