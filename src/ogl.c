@@ -90,6 +90,20 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 
 
 #if LINUX
+int xwl_linux_temp( xwl_renderer_settings_t * settings, unsigned int * attribs )
+{
+	GLint basic_attribs[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, 0 };
+	settings->visual = glxChooseVisual( settings->display, settings->screen, basic_attribs );
+
+	if ( !settings->visual )
+	{
+		fprintf( stderr, "[xwl] Unable to get temporary visual!\n" );
+		return 0;
+	}
+
+	return 1;
+}
+
 int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs )
 {
     XWindowAttributes att;
