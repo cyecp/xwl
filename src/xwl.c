@@ -652,6 +652,17 @@ int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 	}
 #endif
 
+#if LINUX
+int xwl_xserver_handler( Display * display, XErrorEvent * event )
+{
+	char msg[80];
+	XGetErrorText(display, event->error_code, msg, 80);
+	fprintf(stderr, "[xwl.XError] Error code %s\n", msg);
+	return 0;
+}
+#endif
+
+
 int xwl_startup()
 {
 	int i;
@@ -687,6 +698,9 @@ int xwl_startup()
         // "The standard behavior of the X server is to generate a KeyRelease event for every KeyPress event."
         // #include <X11/XKBlib.h>
         //XkbSetDetectableAutorepeat( currentDisplay, True, &detectable );
+
+        // install error handler
+        XSetErrorHandler( xwl_xserver_handler );
     }
 
 
