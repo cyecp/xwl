@@ -731,7 +731,9 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
+#if LINUX
 			XDestroyWindow( currentDisplay, (Window)wh->handle.handle );
+#endif
 		}
 
 		memset( wh, 0, sizeof(xwl_window_handle_t) );
@@ -1099,7 +1101,9 @@ int xwl_pollevent( xwl_event_t *event )
 	return result;
 }
 
-Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
+#if LINUX
+	Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
+#endif
 
 xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, unsigned int * attribs )
 {

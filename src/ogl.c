@@ -13,7 +13,7 @@
 	#include <string.h>
 #elif __APPLE__
 	#include <OpenGL/OpenGL.h>
-	#include <memory> // for malloc/free
+	#include <memory.h> // for malloc/free
 #endif
 
 #ifdef __cplusplus
