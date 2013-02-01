@@ -653,6 +653,7 @@ int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 #endif
 
 #if LINUX
+/*
 int xwl_xserver_handler( Display * display, XErrorEvent * event )
 {
 	char msg[80];
@@ -660,6 +661,7 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 	fprintf(stderr, "[xwl.XError] Error code %s\n", msg);
 	return 0;
 }
+*/
 #endif
 
 
@@ -700,7 +702,7 @@ int xwl_startup()
         //XkbSetDetectableAutorepeat( currentDisplay, True, &detectable );
 
         // install error handler
-        XSetErrorHandler( xwl_xserver_handler );
+        //XSetErrorHandler( xwl_xserver_handler );
     }
 
 
