@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <xwl/xwl.h>
+//#include <xwl/xwl.h>
+#include <xwl/xwl2.h>
 #include <string.h>
 
 int running = 1;
@@ -84,18 +85,17 @@ int main()
 {
 	xwl_window_t *w = 0;
 	xwl_event_t event;
-	u32 attribs[] = { XWL_GL_PROFILE, XWL_GLPROFILE_LEGACY, 0 }; // or 
-    p.flags = XWL_OPENGL;
-
-#if 0
-	p.width = 1920;
-	p.height = 1080;
-	p.flags |= XWL_FULLSCREEN;
-#else
-	p.width = 800;
-	p.height = 600;
-	p.flags |= XWL_WINDOWED;
-#endif
+   
+    u32 attribs[] = {
+        XWL_WINDOW_PROVIDER, XWL_WINDOW_PROVIDER_DEFAULT,
+        XWL_API_PROVIDER, XWL_API_PROVIDER_DEFAULT,
+        XWL_API, XWL_API_OPENGL,
+        XWL_API_MAJOR_VERSION, 3,
+        XWL_API_MINOR_VERSION, 2,
+        XWL_WINDOW_WIDTH, 800,
+        XWL_WINDOW_HEIGHT, 600,
+        0
+    };
 
 	xwl_startup();
 
