@@ -1,46 +1,45 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+	extern "C" {
 #endif
 
 // platform includes
 #if LINUX
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
-#include <X11/extensions/Xrandr.h>
+	#include <X11/Xlib.h>
+	#include <X11/keysym.h>
+	#include <X11/extensions/Xrandr.h>
 #elif _WIN32
-
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+	#ifndef _WIN32_WINNT
+	#define _WIN32_WINNT 0x0501
 #endif
 
 #include <windows.h>
 #ifndef MAPVK_VK_TO_VSC
-#define MAPVK_VK_TO_VSC 0
+	#define MAPVK_VK_TO_VSC 0
 #endif
 
 #elif __APPLE__
-#include <TargetConditionals.h>
+	#include <TargetConditionals.h>
 #endif
 
 #define XWL_MAX_TOUCHES 5
 #define XWL_MAX_WINDOW_ATTRIBS 10
 
 #ifndef Z_TYPES
-typedef signed char i8;
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned short u16;
-typedef short i16;
-typedef int i32;
+	typedef signed char i8;
+	typedef unsigned char u8;
+	typedef unsigned int u32;
+	typedef unsigned short u16;
+	typedef short i16;
+	typedef int i32;
 #endif
 
 #define XWL_DEBUG 1
 #if XWL_DEBUG
-#define xwlPrintf printf
+	#define xwlPrintf printf
 #else
-#define xwlPrintf //
+	#define xwlPrintf //
 #endif
 
 

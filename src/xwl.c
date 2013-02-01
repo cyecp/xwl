@@ -652,6 +652,19 @@ int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 	}
 #endif
 
+#if LINUX
+/*
+int xwl_xserver_handler( Display * display, XErrorEvent * event )
+{
+	char msg[80];
+	XGetErrorText(display, event->error_code, msg, 80);
+	fprintf(stderr, "[xwl.XError] Error code %s\n", msg);
+	return 0;
+}
+*/
+#endif
+
+
 int xwl_startup()
 {
 	int i;
@@ -687,6 +700,9 @@ int xwl_startup()
         // "The standard behavior of the X server is to generate a KeyRelease event for every KeyPress event."
         // #include <X11/XKBlib.h>
         //XkbSetDetectableAutorepeat( currentDisplay, True, &detectable );
+
+        // install error handler
+        //XSetErrorHandler( xwl_xserver_handler );
     }
 
 
@@ -717,7 +733,9 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
-			// destroy window
+#if LINUX
+			XDestroyWindow( currentDisplay, (Window)wh->handle.handle );
+#endif
 		}
 
 		memset( wh, 0, sizeof(xwl_window_handle_t) );
@@ -1085,6 +1103,9 @@ int xwl_pollevent( xwl_event_t *event )
 	return result;
 }
 
+#if LINUX
+	Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
+#endif
 
 xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, unsigned int * attribs )
 {
@@ -1216,7 +1237,6 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
     XSetWindowAttributes window_attribs;
     XVisualInfo * info;
     Window handle;
-
 	Colormap colormap;
 	int cwattrs;
 
@@ -1237,6 +1257,8 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
         return 0;
     }
 
+
+
     window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
     cfg.display = currentDisplay;
     cfg.screen = currentScreen;
@@ -1244,13 +1266,18 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     cwattrs = CWEventMask;
 
+
+    // to start, we need to create a temporary window to get a context and then link glXCreateContextAttribsARB.
+    xwl_linux_create_window( &cfg, 0 );
+
+    fprintf( stdout, "[xwl] renderer_startup...\n" );
     xwl_renderer_startup( &cfg, attribs );
 
-    colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
-    window_attribs.colormap = colormap;
+    fprintf( stdout, "[xwl] Create a color map... \n");
+    window_attribs.colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
 
+    fprintf( stdout, "[xwl] Attempting to create a window" );
     handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
-
     if ( handle == 0 )
     {
         xwlPrintf( "[xwl::X11] XCreateWindow failed\n" );
@@ -1271,6 +1298,7 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 
     // show the window
     XMapWindow( currentDisplay, handle );
+
     XFlush( currentDisplay );
 
 

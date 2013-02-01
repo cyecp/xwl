@@ -84,7 +84,7 @@ int main()
 {
 	xwl_window_t *w = 0;
 	xwl_event_t event;
-	u32 attribs[] = { XWL_GL_PROFILE, XWL_GLPROFILE_LEGACY, 0 };
+	u32 attribs[] = { XWL_GL_PROFILE, XWL_GLPROFILE_LEGACY, 0 }; // or 
     p.flags = XWL_OPENGL;
 
 #if 0

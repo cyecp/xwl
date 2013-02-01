@@ -9,8 +9,11 @@
 #elif LINUX
 	#include <GL/gl.h>
 	#include <GL/glx.h>
+	#include <stdlib.h> // for malloc/free
+	#include <string.h>
 #elif __APPLE__
 	#include <OpenGL/OpenGL.h>
+	#include <memory.h> // for malloc/free
 #endif
 
 #ifdef __cplusplus
@@ -90,28 +93,193 @@ void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 
 
 #if LINUX
+
+//#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
+//#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
+#define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
+#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB	0x00000001
+#define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+
+typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)( Display *, GLXFBConfig, GLXContext, Bool, const int * );
+GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = 0;
+
+int xwl_linux_temp( xwl_renderer_settings_t * settings, unsigned int * attribs )
+{
+
+
+	// intervene
+
+	// now try to get the new context creation pointer
+
+
+	return 1;
+}
+
+Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs )
+{
+    XSetWindowAttributes window_attribs;
+    Window handle;
+	Colormap colormap;
+	int cwattrs;
+
+
+	fprintf( stderr, "[xwl] Okay... trying to create a window\n" );
+
+	if ( !attribs )
+	{
+		// create a simple test window used to create a GL context.
+		GLint basic_attribs[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, None };
+
+		fprintf( stderr, "[xwl] Choosing visual...\n" );
+		settings->visual = glXChooseVisual( settings->display, settings->screen, basic_attribs );
+
+		if ( !settings->visual )
+		{
+			fprintf( stderr, "[xwl] Unable to get temporary visual!\n" );
+			return 0;
+		}
+
+		fprintf( stdout, "[xwl] status is valid\n" );
+		window_attribs.event_mask = StructureNotifyMask;
+		window_attribs.colormap = XCreateColormap( settings->display, RootWindow(settings->display, settings->screen), settings->visual->visual, AllocNone);
+        handle = XCreateWindow( settings->display, RootWindow(settings->display, settings->screen), 0, 0, 100, 100, 0, settings->visual->depth, InputOutput, settings->visual->visual, CWColormap | CWEventMask, &window_attribs );
+		XMapWindow( settings->display, handle );
+
+		if ( handle )
+		{
+			glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+			fprintf( stdout, "[xwl] function is: %p\n", glXCreateContextAttribsARB );
+
+			// we have the function pointer, destroy this window.
+			XDestroyWindow( settings->display, handle );
+		}
+		else
+		{
+			fprintf( stderr, "[xwl Error creating temporary window!\n" );
+		}
+	}
+
+	return handle;
+}
+
+
+int xwl_linux_calculate_output_attribs( unsigned int * attribs )
+{
+	unsigned int total_output = 0;
+	int i;
+	int total_attribs = 0;
+
+	// count how many total attribs we'll need
+	for( total_attribs = 0; attribs[total_attribs] != 0; ++total_attribs ) {}
+
+	// preprocess input attribs
+	for( i = 0; i < total_attribs; )
+	{
+		switch( attribs[i] )
+		{
+			case XWL_GL_PROFILE:
+				++i;
+				if ( attribs[i] == XWL_GLPROFILE_CORE3_2 )
+				{
+					total_output += 6;
+				}
+				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
+				{
+					total_output += 2;
+				}
+				++i;
+
+				break;
+
+			default: ++i; break;
+		}
+	}
+
+	return total_output+1; // plus one for the 0 terminator
+}
+
 int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs )
 {
-    XWindowAttributes att;
-    Window window = (Window)settings->window;
+	XWindowAttributes att;
+	Window window = (Window)settings->window;
+	int elements;
+	int i;
+	GLXFBConfig * fbc = 0;
+	unsigned int total_attribs = 0;
+	GLint * modern_attribs = 0;
+	int current_attrib = 0;
 
-     GLint   attrib[] = {GLX_RGBA, GLX_DOUBLEBUFFER, // need double buffering
-                            GLX_DEPTH_SIZE, 16,    // put in the depth size
-                                                        // that was passed to us
-                            GLX_RED_SIZE, 8,            // 8 bits pretty standard for our RGBA
-                            GLX_GREEN_SIZE, 8,
-                            GLX_BLUE_SIZE,8,
-                            GLX_ALPHA_SIZE, 8,
-                            None };
+	total_attribs = xwl_linux_calculate_output_attribs( attribs );
 
-    settings->visual = glXChooseVisual( settings->display, settings->screen, attrib );
+	fprintf( stderr, "[xwl] total attribs needed: %i\n", total_attribs );
+	modern_attribs = (GLint*)malloc( total_attribs * sizeof(GLint) );
+	if ( !modern_attribs )
+	{
+		fprintf( stderr, "[xwl] Failed to allocate %i attribs!\n", total_attribs );
+		return 0;
+	}
+	memset( modern_attribs, 0, total_attribs*sizeof(GLint) );
+
+	for( i = 0; i < total_attribs-1; )
+	{
+		switch( attribs[i] )
+		{
+			case XWL_GL_PROFILE:
+				++i;
+				if ( attribs[i] == XWL_GLPROFILE_CORE3_2 )
+				{
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;					
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+					modern_attribs[ current_attrib++ ] = 3;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
+					modern_attribs[ current_attrib++ ] = 2;
+				}
+				else if ( attribs[i] == XWL_GLPROFILE_LEGACY )
+				{
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+					modern_attribs[ current_attrib++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+				}
+				++i;
+
+				break;
+
+			//case XWL_GL_DEPTHSIZE:
+			//	break;
+
+			default: ++i; break;
+		}
+	}
+
+    fbc = glXChooseFBConfig( settings->display, settings->screen, 0, &elements );
+    if ( !fbc )
+    {
+    	fprintf( stderr, "[xwl] Failed to retrieve frame buffer configuration\n" );
+    	return 0;
+    }
+
+    //settings->visual = glXChooseVisual( settings->display, settings->screen, attrib );
+    settings->visual = glXGetVisualFromFBConfig( settings->display, fbc[0] );
     if ( !settings->visual )
     {
         fprintf( stderr, "[xwl] Unable to get visual!\n" );
         return 0;
     }
 
-    settings->window->context = glXCreateContext( settings->display, settings->visual, 0, 1 );
+    // see if we can create a context with the new function
+    if ( glXCreateContextAttribsARB )
+    {
+		modern_attribs[ current_attrib ] = 0;
+    	settings->window->context = glXCreateContextAttribsARB( settings->display, *fbc, 0, 1, modern_attribs );
+    }
+    else // otherwise, resort to the old way
+    {
+		settings->window->context = glXCreateContext( settings->display, settings->visual, 0, 1 );
+	}
+
+	// free the memory
+	free( modern_attribs );
+	modern_attribs = 0;	
 
     if ( !settings->window->context )
     {
