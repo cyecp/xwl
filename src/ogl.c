@@ -335,6 +335,8 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
 void xwl_renderer_post( xwl_renderer_settings_t * settings )
 {
 //	xwl_osx_finish( settings->window );
+
+
 }
 
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )

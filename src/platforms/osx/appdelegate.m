@@ -1,9 +1,15 @@
 #include <xwl/platforms/osx/appdelegate.h>
-
+#import <xwl/platforms/osx/xwlwindow.h>
 
 
 // the implementation for xwlDelegate is provided by default and takes over as application delegate.
 @implementation xwlDelegate
+
+-(void) dealloc
+{
+	NSLog( @"dealloc xwlDelegate" );
+	[super dealloc];
+}
 
 -(void) noResponderFor: (SEL)eventSelector
 {
@@ -92,25 +98,5 @@
 -(void) applicationDidFinishLaunching:(NSNotification*)notification
 {
 //	NSLog( @"Application finished launching?" );
-}
-@end
-
-
-
-@implementation xwlWindow
-@synthesize xwlhandle;
-@synthesize render;
-
-/* this is required when using the styleMask: NSBorderlessWindowMask */
-/* By default NSBorderlessWindowMask windows report that they cannot become the key (target of keyboard input) */
--(BOOL) canBecomeKeyWindow
-{
-	return YES;
-}
-
-/* By default NSBorderlessWindowMask windows report that they cannot become the main window without this override */
--(BOOL) canBecomeMainWindow
-{
-	return YES;
 }
 @end

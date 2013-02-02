@@ -1,10 +1,10 @@
 #import <xwl/platforms/osx.h>
 #import <xwl/platforms/osx/appdelegate.h>
+#import <xwl/platforms/osx/xwlwindow.h>
 
 NSApplication * application = 0;
 NSAutoreleasePool *pool = 0;
 xwlDelegate * appDelegate = 0;
-
 
 void populateApplicationMenu( NSMenu * aMenu, NSString * applicationName )
 {
@@ -68,13 +68,10 @@ void attachMenu( const char * title )
 	[NSApp performSelector:@selector(setAppleMenu:) withObject: submenu];
 	// populate application menu
 	
-	NSString * applicationName = [[[NSString alloc] retain] initWithCString: title encoding:NSUTF8StringEncoding];
+	NSString * applicationName = [[[NSString alloc] autorelease] initWithCString: title encoding:NSUTF8StringEncoding];
 	populateApplicationMenu( submenu, applicationName );
 	[applicationName release];
 	[mainMenu setSubmenu: submenu forItem: menuItem];
-	//NSLog( @"Controller: %@", [window windowController] );
-	
-	//[JJMenuPopulator populateMainMenu];
 	
 	[NSApp setMainMenu: mainMenu];
 	//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:@"/Developer/About Xcode Tools.pdf"]];
@@ -83,7 +80,7 @@ void attachMenu( const char * title )
 int cocoa_startup( xwl_api_provider_t * api )
 {
 	pool = [[NSAutoreleasePool alloc] init];
-	appDelegate = [[xwlDelegate alloc] init];
+	appDelegate = [[[xwlDelegate alloc] init] autorelease];
 	
 	// straight from SFML-2.0
 	ProcessSerialNumber psn;
@@ -131,13 +128,9 @@ int cocoa_startup( xwl_api_provider_t * api )
 
 void cocoa_shutdown( void )
 {
-	[pool release];
 	[application setDelegate: nil ];
 	
-	[appDelegate release];
-	appDelegate = 0;
-	
-	[application release];
+	[pool release];
 }
 
 void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, unsigned int * attributes )
@@ -176,29 +169,27 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	
 	// get this screen's dimensions
 	mainScreenFrame = [[NSScreen mainScreen] frame];
-	NSLog( @"[xwl] screen size: %g %g", mainScreenFrame.size.width, mainScreenFrame.size.height );
+//	NSLog( @"[xwl] screen size: %g %g", mainScreenFrame.size.width, mainScreenFrame.size.height );
 	
-	window = [[[xwlWindow alloc] initWithContentRect: frame styleMask: windowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
+	window = [[xwlWindow alloc] initWithContentRect: frame styleMask: windowMask backing:NSBackingStoreBuffered defer:NO];
 	if ( !window )
 	{
 		xwl_set_error( "Unable to create cocoa window!" );
 		return 0;
 	}
+
 	
 	// uncomment the next line to see a red color when the window is initially created
 	//[handle setBackgroundColor: [NSColor redColor]];
 	[window setBackgroundColor: [NSColor blackColor]];
 	[window makeKeyAndOrderFront: nil];
-	[window makeMainWindow];
-	[window makeKeyWindow];
-	[window orderFront: nil];
-	
+
 	[window setTitle: [NSString stringWithUTF8String: utf8_title] ];
 	[window setAcceptsMouseMovedEvents: YES];
-	[window setReleasedWhenClosed: NO];
+	[window setReleasedWhenClosed: YES];
 	
 	[window setDelegate: appDelegate ];
-	
+
 	// try to center the window
 	origin = NSMakePoint( (mainScreenFrame.size.width/2) - (window_width/2), (mainScreenFrame.size.height/2) - (window_height/2) );
 	
@@ -210,7 +201,6 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 		[window setLevel: CGShieldingWindowLevel() ];
 	}
 	
-
 	// keep track of the internal handle	
 	window.xwlhandle = wh;
 	
@@ -219,12 +209,6 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 
 void cocoa_destroy_window( xwl_window_t * handle )
 {
-	if ( handle )
-	{
-		NSLog( @"destroying a window" );
-		xwlWindow * window = (xwlWindow*)handle->handle;
-		[window release];
-	}
 }
 
 int cocoa_dispatch_events()
@@ -236,7 +220,6 @@ int cocoa_dispatch_events()
 										   dequeue: YES];
 	if ( event != nil )
 	{
-		//NSLog( @"Debug Event!" );
 		// dispatch the event!
 		[NSApp sendEvent: event ];
 		[event_pool release];

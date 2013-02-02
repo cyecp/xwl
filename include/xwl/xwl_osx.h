@@ -34,22 +34,6 @@ void *xwl_osx_rendering_context( xwl_window_t * window );
 -(BOOL) isOpaque;
 @end
 
-@interface xwlWindow : NSWindow
-{
-@public
-	xwl_window_handle_t * xwlhandle;
-	MyOpenGLView * render;
-}
-
-@property (nonatomic) xwl_window_handle_t *xwlhandle;
-@property (nonatomic, retain) MyOpenGLView *render;
-
--(BOOL) canBecomeKeyWindow;
--(BOOL) canBecomeMainWindow;
-
-@end
-
-
 
 @interface xwlDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 {}

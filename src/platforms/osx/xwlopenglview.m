@@ -1,6 +1,6 @@
 #include <xwl/platforms/osx/appdelegate.h>
 #include <xwl/platforms/osx/xwlopenglview.h>
-
+#import <xwl/platforms/osx/xwlwindow.h>
 
 unsigned int NonLocalizedKeys(unsigned short keycode);
 unsigned int LocalizedKeys(unichar ch);
@@ -41,7 +41,7 @@ unsigned int LocalizedKeys(unichar ch);
 
 -(void)dealloc
 {
-	[ctx release];
+	ctx = nil;
 	[super dealloc];
 }
 
@@ -83,11 +83,10 @@ unsigned int LocalizedKeys(unichar ch);
 	ev.height = [[wnd contentView] frame].size.height;
 	ev.window = &wnd.xwlhandle->handle;
 	
-	if ( [wnd render] != nil )
-		[[[wnd render] getContext] update];
+	xwlOpenGLView * view = (xwlOpenGLView*)[wnd contentView];
+	[[view getContext] update];
 	
 	xwl_send_event( &ev );
-	//NSLog( @"windowResized" );
 }
 
 void dispatchMouseMoveEvent(NSEvent * theEvent)

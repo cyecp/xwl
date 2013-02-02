@@ -96,13 +96,14 @@ typedef struct xwl_window_provider_s
 typedef void *(*xwl_api_provider_create_context)( void * native_window, struct xwl_window_provider_s * wapi, unsigned int * attributes, void * other_context );
 typedef void (*xwl_api_provider_destroy_context)( void * context, void * native_window, struct xwl_window_provider_s * wapi );
 typedef void (*xwl_api_provider_activate_context)( void * context, void * native_window );
+typedef void (*xwl_api_provider_swap_buffers)( void * native_window );
 
 typedef struct xwl_api_provider_s
 {
     xwl_api_provider_create_context create_context;
 	xwl_api_provider_destroy_context destroy_context;
 	xwl_api_provider_activate_context activate_context;
-	
+	xwl_api_provider_swap_buffers swap_buffers;
 } xwl_api_provider_t;
 
 // register functions for this provider
@@ -222,8 +223,11 @@ typedef void (*xwl_api_provider_register)( struct xwl_api_provider_s * api );
     void xwl_send_event( xwl_event_t * ev );
     void xwl_setup_rendering( xwl_window_t * window, u32 * attribs );
     void xwl_finish( void );
+	void xwl_swap_buffers( xwl_window_t * window );
     void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
     void *xwl_rendering_context( xwl_window_t * window );
+	
+	
     
     // -- platform specifics
     typedef struct xwl_renderer_settings_s

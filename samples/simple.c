@@ -85,13 +85,14 @@ int main()
 {
 	xwl_window_t *w = 0;
 	xwl_event_t event;
-   
+	int window_width = 800;
+	int window_height = 600;
     u32 attribs[] = {
         XWL_API, XWL_API_OPENGL,
-        XWL_API_MAJOR_VERSION, 3,
-        XWL_API_MINOR_VERSION, 2,
-        XWL_WINDOW_WIDTH, 800,
-        XWL_WINDOW_HEIGHT, 600,
+//        XWL_API_MAJOR_VERSION, 3,
+//        XWL_API_MINOR_VERSION, 2,
+        XWL_WINDOW_WIDTH, window_width,
+        XWL_WINDOW_HEIGHT, window_height,
 //		XWL_USE_FULLSCREEN, 1,
         XWL_NONE,
     };
@@ -135,15 +136,15 @@ int main()
 	while( running )
 	{
 		xwl_dispatch_events();
-#if 0
+#if 1
 		glClearColor(0.25, 0.25, 0.25, 1.0);
 		glClear( GL_COLOR_BUFFER_BIT );
-		glViewport( 0, 0, p.width, p.height );
+		glViewport( 0, 0, window_width, window_height );
 
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
 
-		glOrtho( 0, p.width, p.height, 0, -.01f, 256.0f );
+		glOrtho( 0, window_width, window_height, 0, -.01f, 256.0f );
 
 		glMatrixMode( GL_MODELVIEW );
 		glLoadIdentity();
@@ -156,7 +157,8 @@ int main()
 			glVertex3i( mx, my, 0 );
 		glEnd();
 #endif
-//		xwl_finish();
+
+		xwl_swap_buffers( w );
 	}
 
 	xwl_shutdown();

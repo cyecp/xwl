@@ -118,30 +118,6 @@ void xwl_activate( xwl_window_t * window )
 	xwl_renderer_activate( &cfg );
 }
 
-void xwl_finish()
-{
-	// loop through all windows and call finish
-	xwl_native_window_t * wh = 0;
-	xwl_renderer_settings_t cfg;
-	int i;
-
-#if LINUX
-	cfg.display = currentDisplay;
-	cfg.screen = currentScreen;
-#endif
-
-	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
-	{
-		wh = &xwl_windowHandles[i];
-		cfg.window = &wh->handle;
-
-
-		if ( wh->handle.handle != 0 )
-		{
-			xwl_renderer_post( &cfg );
-		}
-	}
-}
 
 const char * xwl_key_to_string( int key )
 {
@@ -836,6 +812,49 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider )
 	return result;
 }
 
+	
+	void xwl_swap_buffers( xwl_window_t * window )
+	{
+//		xwl_renderer_settings_t cfg;
+#if LINUX
+//		cfg.display = currentDisplay;
+//		cfg.screen = currentScreen;
+#endif
+		
+//		cfg.window = window;
+		
+		if ( window->handle != 0 )
+		{
+//			xwl_renderer_post( &cfg );
+			_api_provider.swap_buffers( window->handle );
+		}
+	}
+	
+	void xwl_finish()
+	{
+		// loop through all windows and call finish
+		xwl_native_window_t * wh = 0;
+		xwl_renderer_settings_t cfg;
+		int i;
+		
+#if LINUX
+		cfg.display = currentDisplay;
+		cfg.screen = currentScreen;
+#endif
+		
+		for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
+		{
+			wh = &xwl_windowHandles[i];
+			cfg.window = &wh->handle;
+			
+			
+			if ( wh->handle.handle != 0 )
+			{
+				xwl_renderer_post( &cfg );
+			}
+		}
+	}
+
 #if LINUX
 Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
 {
@@ -1259,11 +1278,22 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	
 	// create the native window
 	wh->handle.handle = _window_provider.create_window( wh, title, attributes );
+	if ( !wh->handle.handle )
+	{
+		return 0;
+	}
 
 
+	// create a context
 	void * context = _api_provider.create_context( wh->handle.handle, &_window_provider, attributes, 0 );
+	if ( !context )
+	{
+		return 0;
+	}
 
+	// activate the context with this window
 	_api_provider.activate_context( context, wh->handle.handle );
+
 
 #ifdef _WIN32
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;

@@ -1,6 +1,7 @@
 #import <xwl/platforms/osx.h>
 #import <xwl/platforms/osx/appdelegate.h>
 #import <xwl/platforms/osx/xwlopenglview.h>
+#import <xwl/platforms/osx/xwlwindow.h>
 
 #import <string.h>
 
@@ -44,7 +45,11 @@ void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t *
 	}
 	else
 	{
-		*outattribs++ = NSOpenGLPFAWindow;
+		// this does NOT allow a proper pixel format to be created if requesting Core 3.2 profile
+		if ( !(attributes[ XWL_API_MAJOR_VERSION ] == 3 && attributes[ XWL_API_MINOR_VERSION ] == 2) )
+		{
+			*outattribs++ = NSOpenGLPFAWindow;
+		}
 	}
 	
 	// add default attributes
@@ -58,7 +63,7 @@ void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t *
 	
 
 	// create an opengl pixel format
-	format = [[NSOpenGLPixelFormat alloc] initWithAttributes: outattribs];
+	format = [[NSOpenGLPixelFormat alloc] initWithAttributes: attrib_pointer];
 	free( attrib_pointer );
 	
 	if ( format == nil )
@@ -76,15 +81,15 @@ void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t *
 		xwl_set_error( "Unable to create NSOpenGLContext!" );
 		return 0;
 	}
-	[context retain];
 	
 	return context;
-}
+} // cocoa_opengl_create_context
 
 void cocoa_opengl_destroy_context( void * context, void * native_window, xwl_window_provider_t * wapi )
 {
 	NSLog( @"destroy opengl context" );
-}
+	[NSOpenGLContext clearCurrentContext];
+} // cocoa_opengl_destroy_context
 
 
 void cocoa_opengl_activate_context( void * context, void * native_window )
@@ -118,16 +123,23 @@ void cocoa_opengl_activate_context( void * context, void * native_window )
 											 selector:@selector(windowResized:) name:NSWindowDidResizeNotification
 											   object: window];
 	
-	// make the view this window's first responder and add it as a subview
-	[window makeFirstResponder: view];
-	[[window contentView] addSubview: view];
+	// make the view this window's first responder and add it as the content view
+	[window setContentView: view];
+	[window makeFirstResponder: [window contentView]];
+	[view release];
 } // cocoa_opengl_activate_context
+
+void cocoa_opengl_swap_buffers( void * native_window )
+{
+	xwlWindow * window = (xwlWindow*)native_window;	
+	xwlOpenGLView * view = [window contentView];
+	[[view getContext] flushBuffer];
+} // cocoa_opengl_swap_buffers
 
 void cocoa_opengl_register( xwl_api_provider_t * api )
 {
-	NSLog( @"registering API functions" );
-	
 	api->create_context = cocoa_opengl_create_context;
 	api->destroy_context = cocoa_opengl_destroy_context;
 	api->activate_context = cocoa_opengl_activate_context;
-}
+	api->swap_buffers = cocoa_opengl_swap_buffers;
+} // cocoa_opengl_register
