@@ -87,6 +87,8 @@ int main()
 	xwl_event_t event;
 	int window_width = 800;
 	int window_height = 600;
+	unsigned int screen_count = 0;
+	unsigned int i;
     u32 attribs[] = {
         XWL_API, XWL_API_OPENGL,
 //        XWL_API_MAJOR_VERSION, 3,
@@ -117,15 +119,25 @@ int main()
 	}
 	xwlPrintf( "-> Window created OK! (handle: %x)\n", (u32)w->handle );
 	
-	//	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", p.width, p.height );
+	xwl_get_window_size( w, &window_width, &window_height );
+	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", window_width, window_height );
+	
+	screen_count = xwl_get_screen_count();
+	xwlPrintf( "-> Total Screens: %i\n", screen_count );
+	
+	for( i = 0; i < screen_count; ++i )
+	{
+		int screen_width;
+		int screen_height;
+		xwl_get_screen_size( i, &screen_width, &screen_height );
+		
+		xwlPrintf( "-> screen %i, size: %i x %i\n", i, screen_width, screen_height );
+	}
 	
 	// set event callback
 	xwl_set_callback( callback );
-	
-	
 
-
-#if 0
+#if 1
 	xwlPrintf( "-> GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
 	xwlPrintf( "-> GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
 	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );

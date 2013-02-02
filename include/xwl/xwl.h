@@ -73,6 +73,16 @@ typedef void (*xwl_window_provider_destroy_window) ( xwl_window_t * window );
 // returns > 0 if one or more events were processed
 typedef int (*xwl_window_provider_dispatch_events)();
 
+// return the window width and height
+typedef void (*xwl_window_provider_get_window_size)( xwl_window_t * window, int * width, int * height );
+
+// return the screen width and height
+typedef void (*xwl_window_provider_get_screen_size)( unsigned int screen_index, int * width, int * height );
+
+// return the number of screens
+typedef unsigned int (*xwl_window_provider_get_screen_count)();
+
+
 // register functions for this provider
 typedef void (*xwl_window_provider_register)( struct xwl_window_provider_s * wapi );
 
@@ -86,6 +96,10 @@ typedef struct xwl_window_provider_s
 	xwl_window_provider_destroy_window destroy_window;
 	
 	xwl_window_provider_dispatch_events dispatch_events;
+	
+	xwl_window_provider_get_window_size get_window_size;
+	xwl_window_provider_get_screen_size get_screen_size;
+	xwl_window_provider_get_screen_count get_screen_count;	
 } xwl_window_provider_t;
 
 
@@ -205,7 +219,9 @@ typedef void (*xwl_api_provider_register)( struct xwl_api_provider_s * api );
 	
 //	void * xwl_get_native_window( xwl_window_t * window );
 //	void * xwl_get_api_context( xwl_window_t * window );
-//	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
+	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
+	void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
+	unsigned int xwl_get_screen_count();
     
     typedef struct xwl_native_window_s
     {

@@ -707,6 +707,22 @@ unsigned int _xwl_default_api_provider()
 } // _xwl_default_api_provider
 
 
+void xwl_get_window_size( xwl_window_t * window, int * width, int * height )
+{
+	_window_provider.get_window_size( window, width, height );
+}
+
+void xwl_get_screen_size( unsigned int screen_index, int * width, int * height )
+{
+	_window_provider.get_screen_size( screen_index, width, height );
+}
+
+unsigned int xwl_get_screen_count()
+{
+	return _window_provider.get_screen_count();
+}
+	
+	
 int _xwl_setup_window_provider( unsigned int window_provider )
 {
 	// choose default window provider for this platform: note this is not guaranteed to work!

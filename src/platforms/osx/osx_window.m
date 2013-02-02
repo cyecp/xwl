@@ -205,11 +205,11 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	window.xwlhandle = wh;
 	
 	return window;
-}
+} // cocoa_create_window
 
 void cocoa_destroy_window( xwl_window_t * handle )
 {
-}
+} // cocoa_destroy_window
 
 int cocoa_dispatch_events()
 {
@@ -228,7 +228,30 @@ int cocoa_dispatch_events()
 
 	[event_pool release];
 	return 0;
-}
+} // cocoa_dispatch_events
+
+
+
+void cocoa_get_window_size( xwl_window_t * window, int * width, int * height )
+{
+	xwlWindow * xwlwindow = (xwlWindow*)window->handle;
+	NSRect frame = [xwlwindow frame];
+	*width = frame.size.width;
+	*height = frame.size.height;
+} // cocoa_get_window_size
+
+void cocoa_get_screen_size( unsigned int screen_index, int * width, int * height )
+{
+	NSScreen * screen = [[ NSScreen screens] objectAtIndex: screen_index];
+	NSRect frame = [screen frame];
+	*width = frame.size.width;
+	*height = frame.size.height;
+} // cocoa_get_screen_size
+
+unsigned int cocoa_get_screen_count()
+{
+	return [[NSScreen screens] count];
+} // cocoa_get_screen_count
 
 void cocoa_register( xwl_window_provider_t * wapi )
 {
@@ -238,4 +261,8 @@ void cocoa_register( xwl_window_provider_t * wapi )
 	wapi->create_window = cocoa_create_window;
 	wapi->destroy_window = cocoa_destroy_window;
 	wapi->dispatch_events = cocoa_dispatch_events;
-}
+	
+	wapi->get_window_size = cocoa_get_window_size;
+	wapi->get_screen_size = cocoa_get_screen_size;
+	wapi->get_screen_count = cocoa_get_screen_count;
+} // cocoa_register
