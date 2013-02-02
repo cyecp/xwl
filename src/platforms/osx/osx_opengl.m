@@ -39,19 +39,6 @@ void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t *
 		*outattribs++ = NSOpenGLProfileVersionLegacy;
 	}
 	
-	if ( attributes[ XWL_USE_FULLSCREEN ] )
-	{
-		*outattribs++ = NSOpenGLPFAFullScreen;
-	}
-	else
-	{
-		// this does NOT allow a proper pixel format to be created if requesting Core 3.2 profile
-		if ( !(attributes[ XWL_API_MAJOR_VERSION ] == 3 && attributes[ XWL_API_MINOR_VERSION ] == 2) )
-		{
-			*outattribs++ = NSOpenGLPFAWindow;
-		}
-	}
-	
 	// add default attributes
 	*outattribs++ = NSOpenGLPFADepthSize;
 	*outattribs++ = depth_size;

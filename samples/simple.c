@@ -89,6 +89,8 @@ int main()
 	int window_height = 600;
 	unsigned int screen_count = 0;
 	unsigned int i;
+	int screen_width;
+	int screen_height;
     u32 attribs[] = {
         XWL_API, XWL_API_OPENGL,
 //        XWL_API_MAJOR_VERSION, 3,
@@ -106,6 +108,20 @@ int main()
 		return -1;
 	}
 	
+	screen_count = xwl_get_screen_count();
+	xwlPrintf( "-> Total Screens: %i\n", screen_count );
+	
+	for( i = 0; i < screen_count; ++i )
+	{
+
+		xwl_get_screen_size( i, &screen_width, &screen_height );
+		
+		xwlPrintf( "-> screen %i, size: %i x %i\n", i, screen_width, screen_height );
+	}
+	
+//	attribs[3] = screen_width;
+//	attribs[5] = screen_height;
+	
 	
     xwlPrintf( "-> xwl_create_window...\n" );
 	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
@@ -122,17 +138,7 @@ int main()
 	xwl_get_window_size( w, &window_width, &window_height );
 	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", window_width, window_height );
 	
-	screen_count = xwl_get_screen_count();
-	xwlPrintf( "-> Total Screens: %i\n", screen_count );
-	
-	for( i = 0; i < screen_count; ++i )
-	{
-		int screen_width;
-		int screen_height;
-		xwl_get_screen_size( i, &screen_width, &screen_height );
-		
-		xwlPrintf( "-> screen %i, size: %i x %i\n", i, screen_width, screen_height );
-	}
+
 	
 	// set event callback
 	xwl_set_callback( callback );

@@ -141,10 +141,19 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	int windowMask;
 	NSRect mainScreenFrame;	
 	CGFloat window_width, window_height;
-
+	CGFloat window_x = 0, window_y = 0;
 	
 	window_width = attributes[ XWL_WINDOW_WIDTH ];
 	window_height = attributes[ XWL_WINDOW_HEIGHT ];
+
+	if ( attributes[ XWL_WINDOW_X ] != XWL_NOTSET )
+	{
+		window_x = attributes[ XWL_WINDOW_X ];
+	}
+	if ( attributes[ XWL_WINDOW_Y ] != XWL_NOTSET )
+	{
+		window_y = attributes[ XWL_WINDOW_Y ];
+	}
 	
 	// is this window using fullscreen?
 	if ( attributes[ XWL_USE_FULLSCREEN ] )
@@ -165,7 +174,7 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	// setup a basic menu
 	attachMenu( utf8_title );
 	
-	frame = NSMakeRect( 0, 0, window_width, window_height );
+	frame = NSMakeRect( window_x, window_y, window_width, window_height );
 	
 	// get this screen's dimensions
 	mainScreenFrame = [[NSScreen mainScreen] frame];
@@ -191,10 +200,12 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	[window setDelegate: appDelegate ];
 
 	// try to center the window
-	origin = NSMakePoint( (mainScreenFrame.size.width/2) - (window_width/2), (mainScreenFrame.size.height/2) - (window_height/2) );
-	
-	[window center];
-	[window setFrameOrigin: origin];
+	if ( attributes[ XWL_WINDOW_X ] == XWL_NOTSET && attributes[ XWL_WINDOW_Y ] == XWL_NOTSET )
+	{
+		origin = NSMakePoint( (mainScreenFrame.size.width/2) - (window_width/2), (mainScreenFrame.size.height/2) - (window_height/2) );
+		[window center];
+		[window setFrameOrigin: origin];
+	}
 	
 	if ( attributes[ XWL_USE_FULLSCREEN ] )
 	{

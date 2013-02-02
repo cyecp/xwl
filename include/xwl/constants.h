@@ -1,6 +1,8 @@
 #pragma once
 
 
+#define XWL_NOTSET 0xFFFFFFF0
+
 // keys
 enum
 {
@@ -163,7 +165,9 @@ enum
 	XWL_STENCIL_SIZE,
     XWL_WINDOW_WIDTH,
     XWL_WINDOW_HEIGHT,
-    
+    XWL_WINDOW_X,
+	XWL_WINDOW_Y,
+	
 #if _WIN32
 	XWL_WIN32_ICON = 8,
 	XWL_WIN32_ICONSM = 16,

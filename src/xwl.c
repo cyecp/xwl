@@ -1277,6 +1277,9 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	
 	//	_xwl_translate_attributes( attribs, attributes );
 	
+	attributes[ XWL_WINDOW_X ] = XWL_NOTSET;
+	attributes[ XWL_WINDOW_Y ] = XWL_NOTSET;
+	
 	int current_attrib = -1;
 	for( unsigned int i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
 	{
