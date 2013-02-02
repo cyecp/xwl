@@ -5,33 +5,18 @@
 
 #if __OBJC__
 #import <Cocoa/Cocoa.h>
-@interface MyOpenGLView : NSView
-{
-@public
-	NSOpenGLContext * ctx;
-}
 
-@property (nonatomic, retain) NSOpenGLContext * context;
-
--(id)initWithFrame:(NSRect)frameRect;
--(void)dealloc;
--(NSOpenGLContext*) getContext;
--(void)setContext:(NSOpenGLContext*)context;
--(BOOL) isOpaque;
-@end
-
-
-
+@class xwlOpenGLView;
 
 @interface xwlWindow : NSWindow
 {
 @public
-	xwl_window_handle_t * xwlhandle;
-	MyOpenGLView * render;
+	xwl_native_window_t * xwlhandle;
+	xwlOpenGLView * render;
 }
 
-@property (nonatomic) xwl_window_handle_t *xwlhandle;
-@property (nonatomic, retain) MyOpenGLView *render;
+@property (nonatomic) xwl_native_window_t *xwlhandle;
+@property (nonatomic, retain) xwlOpenGLView *render;
 
 -(BOOL) canBecomeKeyWindow;
 -(BOOL) canBecomeMainWindow;

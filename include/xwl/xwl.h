@@ -4,6 +4,9 @@
 extern "C" {
 #endif
     
+	
+// define XWL_RASPBERRYPI 1 to enable the Raspberry Pi.
+	
     // platform includes
 #if LINUX
 #include <X11/Xlib.h>
@@ -52,13 +55,25 @@ typedef struct xwl_window_s
 
 struct xwl_api_provider_s;
 struct xwl_window_provider_s;
+struct xwl_native_window_s;
+	
+// Window Provider functions
+// startup the window provider
+typedef int (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
 
-typedef void (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
+// shutdown the window provider
 typedef void (*xwl_window_provider_shutdown)( void );
 
-typedef xwl_window_t (*xwl_window_provider_create_window)( const char * utf8_title, unsigned int * attribs );
-typedef void (*xwl_window_provier_destroy_window) ( xwl_window_t window );
+// create a window; return the native window handle
+typedef void *(*xwl_window_provider_create_window)( struct xwl_native_window_s * handle, const char * utf8_title, unsigned int * attribs );
 
+// destroy a window
+typedef void (*xwl_window_provider_destroy_window) ( xwl_window_t * window );
+
+// returns > 0 if one or more events were processed
+typedef int (*xwl_window_provider_dispatch_events)();
+
+// register functions for this provider
 typedef void (*xwl_window_provider_register)( struct xwl_window_provider_s * wapi );
 
 
@@ -68,14 +83,30 @@ typedef struct xwl_window_provider_s
     xwl_window_provider_shutdown shutdown;
 	
 	xwl_window_provider_create_window create_window;
-	xwl_window_provier_destroy_window destroy_window;
+	xwl_window_provider_destroy_window destroy_window;
+	
+	xwl_window_provider_dispatch_events dispatch_events;
 } xwl_window_provider_t;
+
+
+
+// API Provider functions
+
+
+typedef void *(*xwl_api_provider_create_context)( void * native_window, struct xwl_window_provider_s * wapi, unsigned int * attributes, void * other_context );
+typedef void (*xwl_api_provider_destroy_context)( void * context, void * native_window, struct xwl_window_provider_s * wapi );
+typedef void (*xwl_api_provider_activate_context)( void * context, void * native_window );
 
 typedef struct xwl_api_provider_s
 {
-    
+    xwl_api_provider_create_context create_context;
+	xwl_api_provider_destroy_context destroy_context;
+	xwl_api_provider_activate_context activate_context;
+	
 } xwl_api_provider_t;
-    
+
+// register functions for this provider
+typedef void (*xwl_api_provider_register)( struct xwl_api_provider_s * api );
     
     
     struct xwl_event_s;
@@ -101,21 +132,6 @@ typedef struct xwl_api_provider_s
 #endif
     } xwl_window_t;
 #endif
-    typedef struct xwl_windowparams_s
-    {
-        u32 width;
-        u32 height;
-        u32 flags;
-        u32 x;
-        u32 y;
-        void * userdata;
-        char * title;
-        
-#if _WIN32
-        HICON hIcon;
-        HICON hIconSm;
-#endif
-    } xwl_windowparams_t;
 	
     typedef struct
     {
@@ -169,8 +185,8 @@ typedef struct xwl_api_provider_s
     void xwl_shutdown( void );
     
     // returns 0 if no events are queued
-    // returns 1 if an event is removed from the queue
-    i32 xwl_pollevent( xwl_event_t *event );
+	// returns > 0 if one or more events were dispatched
+    int xwl_dispatch_events();
     
     // returns 0 on failure
     // title is a UTF-8 encoded string
@@ -185,8 +201,12 @@ typedef struct xwl_api_provider_s
     
     const char * xwl_get_error( void );
 	void xwl_set_error( const char * error );
+	
+//	void * xwl_get_native_window( xwl_window_t * window );
+//	void * xwl_get_api_context( xwl_window_t * window );
+//	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
     
-    typedef struct xwl_window_handle_s
+    typedef struct xwl_native_window_s
     {
         xwl_window_t handle;
         
@@ -196,9 +216,9 @@ typedef struct xwl_api_provider_s
         XEvent lastKeyRelease;
 #endif
         
-    } xwl_window_handle_t;
+    } xwl_native_window_t;
     
-    xwl_window_handle_t *xwl_get_unused_window( void );
+    xwl_native_window_t *xwl_get_unused_window( void );
     void xwl_send_event( xwl_event_t * ev );
     void xwl_setup_rendering( xwl_window_t * window, u32 * attribs );
     void xwl_finish( void );

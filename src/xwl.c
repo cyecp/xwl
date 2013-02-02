@@ -33,7 +33,7 @@ void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
 void xwl_renderer_activate( xwl_renderer_settings_t * settings );
 
 #define XWL_MAX_WINDOW_HANDLES 4
-static xwl_window_handle_t xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
+static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
 const char * xwlerror;
@@ -54,7 +54,7 @@ unsigned int event_read_ptr = 0;
 unsigned int last_index = 0;
 static xwl_event_t eventList[ XWL_MAX_EVENTS ];
 
-xwl_window_handle_t *xwl_get_unused_window()
+xwl_native_window_t *xwl_get_unused_window()
 {
 	int i;
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
@@ -121,7 +121,7 @@ void xwl_activate( xwl_window_t * window )
 void xwl_finish()
 {
 	// loop through all windows and call finish
-	xwl_window_handle_t * wh = 0;
+	xwl_native_window_t * wh = 0;
 	xwl_renderer_settings_t cfg;
 	int i;
 
@@ -259,7 +259,6 @@ const char * xwl_key_to_string( int key )
 
 const char * xwl_event_to_string( int event_type )
 {
-#if 0
 	switch( event_type )
 	{
 		case XWLE_INVALID: return "XWLE_INVALID";
@@ -269,16 +268,16 @@ const char * xwl_event_to_string( int event_type )
 		case XWLE_MOUSEWHEEL: return "XWLE_MOUSEWHEEL";
 		case XWLE_KEYPRESSED: return "XWLE_KEYPRESSED";
 		case XWLE_KEYRELEASED: return "XWLE_KEYRELEASED";
-		case XWLE_JOYSTICK_MOVE: return "XWLE_JOYSTICK_MOVE";
-		case XWLE_JOYSTICKBUTTON_PRESSED: return "XWLE_JOYSTICKBUTTON_PRESSED";
-		case XWLE_JOYSTICKBUTTON_RELEASED: return "XWLE_JOYSTICKBUTTON_RELEASED";
+//		case XWLE_JOYSTICK_MOVE: return "XWLE_JOYSTICK_MOVE";
+//		case XWLE_JOYSTICKBUTTON_PRESSED: return "XWLE_JOYSTICKBUTTON_PRESSED";
+//		case XWLE_JOYSTICKBUTTON_RELEASED: return "XWLE_JOYSTICKBUTTON_RELEASED";
 		case XWLE_SIZE: return "XWLE_SIZE";
 		case XWLE_CLOSED: return "XWLE_CLOSED";
 		case XWLE_LOSTFOCUS: return "XWLE_LOSTFOCUS";
 		case XWLE_GAINFOCUS: return "XWLE_GAINFOCUS";
 		case XWLE_TEXT: return "XWLE_TEXT";
 	}
-#endif
+
 	return "";
 }
 
@@ -679,7 +678,8 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 #endif
 
 xwl_window_provider_t _window_provider;
-
+xwl_api_provider_t _api_provider;
+	
 // this list must sync up with the XWL_WINDOW_PROVIDER_* list
 xwl_window_provider_register _window_providers[] = {
 	0, // invalid
@@ -692,7 +692,15 @@ xwl_window_provider_register _window_providers[] = {
 	0, // Raspberry Pi
 };
 
-
+// this list must sync up with the XWL_API_PROVIDER_* list
+xwl_api_provider_register _api_providers[] = {
+	0, // invalid
+	0, // default
+	0, // EGL
+	0, // X11,
+	cocoa_opengl_register,
+	0, // Win32
+};
 
 unsigned int _xwl_default_window_provider()
 {
@@ -709,23 +717,22 @@ unsigned int _xwl_default_window_provider()
 
 unsigned int _xwl_default_api_provider()
 {
+#if __APPLE__
+	return XWL_API_PROVIDER_COCOA;
+#elif XWL_RASPBERRYPI
+	return XWL_API_PROVIDER_EGL;
+#elif LINUX
+	return XWL_API_PROVIDER_X11;
+#elif WIN32
+	return XWL_API_PROVIDER_WIN32;
+#endif
+	
 	return 0;
 } // _xwl_default_api_provider
 
 
-int xwl_startup( unsigned int window_provider, unsigned int api_provider )
+int _xwl_setup_window_provider( unsigned int window_provider )
 {
-	int i;
-	xwl_window_handle_t * wh;
-
-	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
-	{
-		wh = &xwl_windowHandles[i];
-		memset( wh, 0, sizeof(xwl_window_handle_t) );
-	}
-    
-    memset( &_window_provider, 0, sizeof(xwl_window_provider_t) );
-
 	// choose default window provider for this platform: note this is not guaranteed to work!
     if ( window_provider == XWL_WINDOW_PROVIDER_DEFAULT )
 	{
@@ -735,18 +742,63 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider )
     xwl_window_provider_register wp_register = _window_providers[ window_provider ];
 	if ( !wp_register )
 	{
-		xwlerror = "No valid window provider found!";
-		return -1;
+		return 0;
 	}
     
 	// register with the selected provider
     wp_register( &_window_provider );
-    
 	
+	return 1;
+} // _xwl_setup_window_provider
+
+
+int _xwl_setup_api_provider( unsigned int api_provider )
+{
+	// choose default api provider
+	if ( api_provider == XWL_API_PROVIDER_DEFAULT )
+	{
+		api_provider = _xwl_default_api_provider();
+	}
+	
+	xwl_api_provider_register api_register = _api_providers[ api_provider ];
+	if ( !api_register )
+	{
+		return 0;
+	}
+	
+	api_register( &_api_provider );
+	
+	return 1;
+} // _xwl_setup_api_provider
+
+int xwl_startup( unsigned int window_provider, unsigned int api_provider )
+{
+	int i;
+	xwl_native_window_t * wh;
+	int result = 0;
+
+	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
+	{
+		wh = &xwl_windowHandles[i];
+		memset( wh, 0, sizeof(xwl_native_window_t) );
+	}
+    
+    memset( &_window_provider, 0, sizeof(xwl_window_provider_t) );
+
+	if ( !_xwl_setup_window_provider( window_provider ) )
+	{
+		xwlerror = "No valid window provider found!";
+		return 0;
+	}
+    	
 	// perform startup
-	_window_provider.startup( 0 );
-    
-    
+	result = _window_provider.startup( 0 );
+        
+	if ( !_xwl_setup_api_provider( api_provider ) )
+	{
+		xwl_set_error( "No valid API provider found!" );
+		return 0;
+	}
     
 #ifdef _WIN32
 	// initialize key map
@@ -781,7 +833,7 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider )
 #endif
 
 
-	return 1;
+	return result;
 }
 
 #if LINUX
@@ -794,7 +846,7 @@ Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
 void xwl_shutdown( void )
 {
 	int i;
-	xwl_window_handle_t * wh;
+	xwl_native_window_t * wh;
 
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
@@ -805,9 +857,11 @@ void xwl_shutdown( void )
 #if LINUX
 			XDestroyWindow( currentDisplay, (Window)wh->handle.handle );
 #endif
+			_window_provider.destroy_window( &wh->handle );
+			wh->handle.handle = 0;
 		}
 
-		memset( wh, 0, sizeof(xwl_window_handle_t) );
+		memset( wh, 0, sizeof(xwl_native_window_t) );
 	}
 
 
@@ -950,7 +1004,7 @@ unsigned int X11KeyToXWL( KeySym sym )
 }
 
 
-void ProcessEvent( XEvent event, xwl_window_handle_t * window )
+void ProcessEvent( XEvent event, xwl_native_window_t * window )
 {
     xwl_event_t ev = {0};
     int length;
@@ -1091,9 +1145,11 @@ void ProcessEvent( XEvent event, xwl_window_handle_t * window )
 }
 #endif
 
-int xwl_pollevent( xwl_event_t *event )
+int xwl_dispatch_events()
 {
 	int result;
+	
+	result = _window_provider.dispatch_events();
 	
 #ifdef _WIN32
 	MSG msg;
@@ -1108,7 +1164,7 @@ int xwl_pollevent( xwl_event_t *event )
 #if LINUX
     XEvent ev;
     int i;
-    xwl_window_handle_t *wh = 0;
+    xwl_native_window_t *wh = 0;
     XEvent lastKeyReleaseEvent;
 
     for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
@@ -1155,22 +1211,6 @@ int xwl_pollevent( xwl_event_t *event )
 
 #endif
 
-	
-#if __APPLE__
-//	xwl_pollevent_osx( event );
-#endif
-
-
-	result = 0;
-	if ( last_index != event_index )
-	{
-		result = 1;
-		// get the last event off our event list
-		memcpy( event, &eventList[ event_read_ptr++ ], sizeof(xwl_event_t) );
-		event_read_ptr = event_read_ptr % XWL_MAX_EVENTS;
-		last_index = event_read_ptr;
-	}
-	
 	return result;
 }
 
@@ -1180,18 +1220,50 @@ int xwl_pollevent( xwl_event_t *event )
 
 xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 {
-	xwl_window_handle_t * wh = 0;
+	xwl_native_window_t * wh = 0;
 //    xwl_renderer_settings_t cfg;
 
 	if ( title == 0 )
 	{
-		title = "Untitled Window";
+		title = "xwl window";
 	}
 	
-	xwl_window_t handle = _window_provider.create_window( title, attribs );
+	// see if we can get an unused window handle
+	wh = xwl_get_unused_window();
+	if ( !wh )
+	{
+		xwl_set_error( "Failed to find an unused window handle!" );
+		return 0;
+	}
 	
 	
-	return 0;
+	// translate all attribs into a single array we can check uniformly.
+	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
+	
+	//	_xwl_translate_attributes( attribs, attributes );
+	
+	int current_attrib = -1;
+	for( unsigned int i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
+	{
+		if ( current_attrib == -1 )
+		{
+			current_attrib = *attribs;
+		}
+		else
+		{
+			attributes[ current_attrib ] = *attribs;
+			current_attrib = -1;
+		}
+		++attribs;
+	}
+	
+	// create the native window
+	wh->handle.handle = _window_provider.create_window( wh, title, attributes );
+
+
+	void * context = _api_provider.create_context( wh->handle.handle, &_window_provider, attributes, 0 );
+
+	_api_provider.activate_context( context, wh->handle.handle );
 
 #ifdef _WIN32
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -1404,10 +1476,6 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 #endif
 
 #if __APPLE__
-	if ( title == 0 )
-		title = "Untitled Window";
-
-
 //	wh = xwl_create_osx_window( params, title );
 //	cfg.window = &wh->handle;
 

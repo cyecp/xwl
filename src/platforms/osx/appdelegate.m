@@ -5,15 +5,6 @@
 // the implementation for xwlDelegate is provided by default and takes over as application delegate.
 @implementation xwlDelegate
 
--(void)keyDown:(NSEvent*)event
-{
-	//NSLog( @"xwlDelegate keyDown" );
-}
-
--(void)keyUp:(NSEvent*)event
-{
-	//NSLog( @"xwlDelegate keyUp" );
-}
 -(void) noResponderFor: (SEL)eventSelector
 {
 	NSLog( @"xwlDelegate: noResponderFor event!" );
@@ -22,7 +13,7 @@
 
 -(void) windowWillMiniaturize:(NSNotification*)notification
 {
-	//NSLog( @"Window will miniaturize" );
+//	NSLog( @"Window will miniaturize" );
 }
 
 -(void) windowDidMiniaturize:(NSNotification*)notification
@@ -30,40 +21,37 @@
 	//NSLog( @"Window did miniaturize!" );
 }
 
+- (void)windowDidDeminiaturize:(NSNotification *)notification
+{
+	//NSLog( @"Window Did Deminiaturize!" );
+}
+
+
 -(BOOL) windowShouldClose:(id)windowIn
 {
-#if 0
 	xwl_event_t ev = {0};
-	//XWLWINDOW * wnd = (XWLWINDOW*)[notification object];
-	//ev.window = &wnd.xwlhandle->handle;
+	xwlWindow * wnd = (xwlWindow*)windowIn;
+	ev.window = &wnd.xwlhandle->handle;
 	ev.type = XWLE_CLOSED;
-	
 	xwl_send_event( &ev );
-#endif
 	return YES;
 }
 -(void) windowDidResignKey:(NSNotification*)notification
 {
-#if 0
 	xwl_event_t ev = {0};
-	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];
+	xwlWindow * wnd = (xwlWindow*)[notification object];
 	ev.window = &wnd.xwlhandle->handle;
 	ev.type = XWLE_LOSTFOCUS;
 	xwl_send_event( &ev );
-#endif
-	//NSLog( @"Window did resign key %@", [notification object] );
 }
 
 -(void) windowDidBecomeKey:(NSNotification*)notification
 {
-#if 0
 	xwl_event_t ev = {0};
-	XWLWINDOW * wnd = (XWLWINDOW*)[notification object];
+	xwlWindow * wnd = (xwlWindow*)[notification object];
 	ev.window = &wnd.xwlhandle->handle;
 	ev.type = XWLE_GAINFOCUS;
 	xwl_send_event( &ev );
-#endif
-	//NSLog( @"Window did become key %@", [notification object] );
 }
 
 -(void)windowDidBecomeMain:(NSNotification*)notification
@@ -88,10 +76,6 @@
 	//NSLog( @"Window did end sheet!" );
 }
 
-- (void)windowDidDeminiaturize:(NSNotification *)notification
-{
-	//NSLog( @"Window Did Deminiaturize!" );
-}
 
 
 -(NSApplicationTerminateReply) applicationShouldTerminate:(NSApplication *)sender;
@@ -107,7 +91,7 @@
 
 -(void) applicationDidFinishLaunching:(NSNotification*)notification
 {
-	//	NSLog( @"Application finished launching?" );
+//	NSLog( @"Application finished launching?" );
 }
 @end
 

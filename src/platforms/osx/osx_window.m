@@ -80,10 +80,8 @@ void attachMenu( const char * title )
 	//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:@"/Developer/About Xcode Tools.pdf"]];
 }
 
-void cocoa_startup( xwl_api_provider_t * api )
+int cocoa_startup( xwl_api_provider_t * api )
 {
-	NSLog( @"cocoa startup" );
-	
 	pool = [[NSAutoreleasePool alloc] init];
 	appDelegate = [[xwlDelegate alloc] init];
 	
@@ -126,12 +124,13 @@ void cocoa_startup( xwl_api_provider_t * api )
 	
 	// setup the app menu
 	[application finishLaunching];
-}
+	
+	return 1;
+} // cocoa_startup
 
 
 void cocoa_shutdown( void )
 {
-	NSLog( @"cocoa shutdown" );
 	[pool release];
 	[application setDelegate: nil ];
 	
@@ -141,41 +140,15 @@ void cocoa_shutdown( void )
 	[application release];
 }
 
-xwl_window_t cocoa_create_window( const char * utf8_title, unsigned int * attribs )
+void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, unsigned int * attributes )
 {
-	xwl_window_t handle;
-	handle.handle = 0;
-	NSWindow * window;
+	xwlWindow *window;
 	NSRect frame;
 	NSPoint origin;
 	int windowMask;
-	NSRect mainScreenFrame;
-	
-	
+	NSRect mainScreenFrame;	
 	CGFloat window_width, window_height;
-	
-	// translate all attribs into a single array we can check uniformly.
-	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
-	
-//	_xwl_translate_attributes( attribs, attributes );
-	
-	int current_attrib = -1;
-	for( unsigned int i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
-	{
-		if ( current_attrib == -1 )
-		{
-			current_attrib = *attribs;
-		}
-		else
-		{
-			attributes[ current_attrib ] = *attribs;
-			current_attrib = -1;
-		}
-		++attribs;
-	}
-	
-	
-	
+
 	
 	window_width = attributes[ XWL_WINDOW_WIDTH ];
 	window_height = attributes[ XWL_WINDOW_HEIGHT ];
@@ -209,8 +182,7 @@ xwl_window_t cocoa_create_window( const char * utf8_title, unsigned int * attrib
 	if ( !window )
 	{
 		xwl_set_error( "Unable to create cocoa window!" );
-		handle.handle = 0;
-		return handle;
+		return 0;
 	}
 	
 	// uncomment the next line to see a red color when the window is initially created
@@ -238,26 +210,39 @@ xwl_window_t cocoa_create_window( const char * utf8_title, unsigned int * attrib
 		[window setLevel: CGShieldingWindowLevel() ];
 	}
 	
-	
-#if 0
 
-	// stuff this window into an unused handle
+	// keep track of the internal handle	
+	window.xwlhandle = wh;
+	
+	return window;
+}
+
+void cocoa_destroy_window( xwl_window_t * handle )
+{
 	if ( handle )
 	{
-		wh = xwl_get_unused_window();
-		wh->handle.handle = handle;
-		handle.xwlhandle = wh;
+		NSLog( @"destroying a window" );
+		xwlWindow * window = (xwlWindow*)handle->handle;
+		[window release];
 	}
-#endif
-	
-	return handle;
 }
 
-void cocoa_destroy_window( xwl_window_t handle )
+int cocoa_dispatch_events()
 {
+	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask
+										 untilDate: [NSDate distantPast]
+											inMode: NSDefaultRunLoopMode
+										   dequeue: YES];
+	if ( event != nil )
+	{
+		//NSLog( @"Debug Event!" );
+		// dispatch the event!
+		[NSApp sendEvent: event ];
+		return 1;
+	}
 	
+	return 0;
 }
-
 
 void cocoa_register( xwl_window_provider_t * wapi )
 {
@@ -266,4 +251,5 @@ void cocoa_register( xwl_window_provider_t * wapi )
 	
 	wapi->create_window = cocoa_create_window;
 	wapi->destroy_window = cocoa_destroy_window;
+	wapi->dispatch_events = cocoa_dispatch_events;
 }
