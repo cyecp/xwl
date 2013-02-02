@@ -19,10 +19,6 @@ static XIM currentInputMethod = 0;
 static XComposeStatus currentKeyboardStatus;
 #endif
 
-#if __APPLE__
-#include <xwl/xwl_osx.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
