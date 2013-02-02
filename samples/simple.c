@@ -1,6 +1,5 @@
 #include <stdio.h>
-//#include <xwl/xwl.h>
-#include <xwl/xwl2.h>
+#include <xwl/xwl.h>
 #include <string.h>
 
 int running = 1;
@@ -87,8 +86,6 @@ int main()
 	xwl_event_t event;
    
     u32 attribs[] = {
-        XWL_WINDOW_PROVIDER, XWL_WINDOW_PROVIDER_DEFAULT,
-        XWL_API_PROVIDER, XWL_API_PROVIDER_DEFAULT,
         XWL_API, XWL_API_OPENGL,
         XWL_API_MAJOR_VERSION, 3,
         XWL_API_MINOR_VERSION, 2,
@@ -96,11 +93,11 @@ int main()
         XWL_WINDOW_HEIGHT, 600,
         0
     };
-
-	xwl_startup();
-
+        
+	xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT );
+#if 0
     xwlPrintf( "-> xwl_create_window...\n" );
-	w = xwl_create_window( &p, "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
+	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 
 	if ( !w )
 	{
@@ -148,7 +145,7 @@ int main()
 
 		xwl_finish();
 	}
-
+#endif
 	xwl_shutdown();
 	return 0;
 } // main

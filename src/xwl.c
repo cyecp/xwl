@@ -86,14 +86,15 @@ void xwl_setup_rendering( xwl_window_t * window, unsigned int * attribs )
 #endif
 
 #if __APPLE__
-	xwl_setup_osx_rendering( window, attribs );
+//	xwl_setup_osx_rendering( window, attribs );
 #endif
 }
 	
 void *xwl_rendering_context(xwl_window_t * window )
 {
 #if __APPLE__ && TARGET_OS_MAC
-	return xwl_osx_rendering_context( window );
+//	return xwl_osx_rendering_context( window );
+    return 0;
 #else
 	return 0;
 #endif
@@ -253,6 +254,7 @@ const char * xwl_key_to_string( int key )
 
 const char * xwl_event_to_string( int event_type )
 {
+#if 0
 	switch( event_type )
 	{
 		case XWLE_INVALID: return "XWLE_INVALID";
@@ -271,6 +273,7 @@ const char * xwl_event_to_string( int event_type )
 		case XWLE_GAINFOCUS: return "XWLE_GAINFOCUS";
 		case XWLE_TEXT: return "XWLE_TEXT";
 	}
+#endif
 	return "";
 }
 
@@ -663,9 +666,50 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 }
 */
 #endif
+	
+// include relevant headers for platforms
+
+#if __APPLE__
+	#include <xwl/platforms/osx.h>
+#endif
+
+	
+	
+xwl_window_provider_t _window_provider;
+
+// this list must sync up with the XWL_WINDOW_PROVIDER_* list
+xwl_window_provider_register _window_providers[] = {
+	0, // default
+	0, // EGL
+	0, // X11
+	0, // Wayland
+	cocoa_wp_register,
+	0, // Win32
+	0, // Raspberry Pi
+};
 
 
-int xwl_startup()
+
+unsigned int _xwl_default_window_provider()
+{
+#if __APPLE__
+	return XWL_WINDOW_PROVIDER_COCOA;
+#elif LINUX
+	return XWL_WINDOW_PROVIDER_X11;
+#elif WIN32
+	return XWL_WINDOW_PROVIDER_WIN32;
+#endif
+
+	return 0;
+} // _xwl_default_window_provider
+
+unsigned int _xwl_default_api_provider()
+{
+	return 0;
+} // _xwl_default_api_provider
+
+
+int xwl_startup( unsigned int window_provider, unsigned int api_provider )
 {
 	int i;
 	xwl_window_handle_t * wh;
@@ -675,7 +719,31 @@ int xwl_startup()
 		wh = &xwl_windowHandles[i];
 		memset( wh, 0, sizeof(xwl_window_handle_t) );
 	}
+    
+    memset( &_window_provider, 0, sizeof(xwl_window_provider_t) );
 
+	// choose default window provider for this platform: note this is not guaranteed to work!
+    if ( window_provider == XWL_WINDOW_PROVIDER_DEFAULT )
+	{
+		window_provider = _xwl_default_window_provider();
+	}
+    
+    xwl_window_provider_register wp_register = _window_providers[ window_provider ];
+	if ( !wp_register )
+	{
+		xwlerror = "No valid window provider found!";
+		return -1;
+	}
+    
+	// register with the selected provider
+    wp_register( &_window_provider );
+    
+	
+	// perform startup
+	_window_provider.startup( 0 );
+    
+    
+    
 #ifdef _WIN32
 	// initialize key map
 	lshift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
@@ -708,9 +776,6 @@ int xwl_startup()
 
 #endif
 
-#if __APPLE__
-	xwl_osx_startup();
-#endif
 
 	return 1;
 }
@@ -741,6 +806,11 @@ void xwl_shutdown( void )
 		memset( wh, 0, sizeof(xwl_window_handle_t) );
 	}
 
+
+
+	_window_provider.shutdown();
+
+
 #if LINUX
     if ( currentInputMethod )
     {
@@ -752,7 +822,7 @@ void xwl_shutdown( void )
 #endif
 
 #if __APPLE__
-	xwl_osx_shutdown();
+//	xwl_osx_shutdown();
 #endif
 }
 
@@ -1086,7 +1156,7 @@ int xwl_pollevent( xwl_event_t *event )
 
 	
 #if __APPLE__
-	xwl_pollevent_osx( event );
+//	xwl_pollevent_osx( event );
 #endif
 
 
@@ -1107,10 +1177,10 @@ int xwl_pollevent( xwl_event_t *event )
 	Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
 #endif
 
-xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, unsigned int * attribs )
+xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 {
 	xwl_window_handle_t * wh = 0;
-    xwl_renderer_settings_t cfg;
+//    xwl_renderer_settings_t cfg;
 
 #ifdef _WIN32
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -1326,13 +1396,13 @@ xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title,
 	if ( title == 0 )
 		title = "Untitled Window";
 
-	wh = xwl_create_osx_window( params, title );
-	cfg.window = &wh->handle;
+//	wh = xwl_create_osx_window( params, title );
+//	cfg.window = &wh->handle;
 
-    if ( (params->flags & XWL_OPENGL) )
-    {
-        xwl_renderer_startup( &cfg, attribs );
-    }
+//    if ( (params->flags & XWL_OPENGL) )
+//    {
+//        xwl_renderer_startup( &cfg, attribs );
+//    }
 
 #endif
 

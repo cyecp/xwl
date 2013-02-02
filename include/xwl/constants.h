@@ -182,14 +182,6 @@ enum
 	XWL_API_GLES3
 };
 
-// on linux, there are several options with regards to setting up the graphics context
-// Other platforms assume the default selection.
-enum
-{
-    XWL_API_PROVIDER_DEFAULT,
-    XWL_API_PROVIDER_EGL,
-    XWL_API_PROVIDER_X11,
-};
 
 // on linux, there are several options with regards to creating the window
 // Other platforms always assume the default selection.
@@ -202,4 +194,14 @@ enum
     XWL_WINDOW_PROVIDER_COCOA,
     XWL_WINDOW_PROVIDER_WIN32,
     XWL_WINDOW_PROVIDER_RASPBERRYPI
+};
+
+
+// on linux, there are several options with regards to setting up the graphics context
+// Other platforms assume the default selection.
+enum
+{
+    XWL_API_PROVIDER_DEFAULT,
+    XWL_API_PROVIDER_EGL,
+    XWL_API_PROVIDER_X11,
 };

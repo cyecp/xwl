@@ -327,14 +327,14 @@ void xwl_osx_activate( xwl_window_t * window );
 int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs )
 {
 	// setup an opengl view
-	xwl_setup_osx_rendering( settings->window, attribs );
+//	xwl_setup_osx_rendering( settings->window, attribs );
 
 	return 1;
 }
 
 void xwl_renderer_post( xwl_renderer_settings_t * settings )
 {
-	xwl_osx_finish( settings->window );
+//	xwl_osx_finish( settings->window );
 }
 
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )
@@ -344,7 +344,7 @@ void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )
 
 void xwl_renderer_activate( xwl_renderer_settings_t * settings )
 {
-	xwl_osx_activate( settings->window );
+//	xwl_osx_activate( settings->window );
 }
 #endif
 
