@@ -657,31 +657,44 @@ xwl_input_provider_t _input_provider;
 xwl_window_provider_register _window_providers[] = {
 	0, // invalid
 	0, // default
+#if LINUX
 	0, // EGL
 	0, // X11
 	0, // Wayland
+#elif __APPLE__
 	cocoa_register,
+#elif WIN32
 	0, // Win32
+#elif XWL_RASPBERRYPI
 	0, // Raspberry Pi
+#endif
 };
 
 // this list must sync up with the XWL_API_PROVIDER_* list
 xwl_api_provider_register _api_providers[] = {
 	0, // invalid
 	0, // default
+#if LINUX
 	0, // EGL
 	0, // X11,
+#elif __APPLE__
 	cocoa_opengl_register,
+#elif WIN32
 	0, // Win32
+#endif
 };
 
 // this list must sync up with the XWL_INPUT_PROVIDER_* list
 xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
+#if LINUX
 	0, // X11 (XKb)
+#elif __APPLE__
 	cocoa_input_register,
+#elif WIN32
 	0, // Win32
+#endif
 };
 
 unsigned int _xwl_default_window_provider()
@@ -1298,8 +1311,10 @@ int xwl_dispatch_events()
 xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 {
 	xwl_native_window_t * wh = 0;
+	unsigned int i;
 //    xwl_renderer_settings_t cfg;
-
+	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
+	int current_attrib = -1;
 	if ( title == 0 )
 	{
 		title = "xwl window";
@@ -1313,17 +1328,11 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 		return 0;
 	}
 	
-	
-	// translate all attribs into a single array we can check uniformly.
-	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
-	
-	//	_xwl_translate_attributes( attribs, attributes );
-	
 	attributes[ XWL_WINDOW_X ] = XWL_NOTSET;
 	attributes[ XWL_WINDOW_Y ] = XWL_NOTSET;
 	
-	int current_attrib = -1;
-	for( unsigned int i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
+	// translate all attribs into a single array we can check uniformly.
+	for( i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
 	{
 		if ( current_attrib == -1 )
 		{
@@ -1477,7 +1486,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	}
 #endif
 
-#ifdef LINUX
+#if LINUX && 0
     XSetWindowAttributes window_attribs;
     XVisualInfo * info;
     Window handle;

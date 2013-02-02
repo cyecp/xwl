@@ -165,6 +165,7 @@ Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int
 
 int xwl_linux_calculate_output_attribs( unsigned int * attribs )
 {
+	#if 0
 	unsigned int total_output = 0;
 	int i;
 	int total_attribs = 0;
@@ -196,10 +197,13 @@ int xwl_linux_calculate_output_attribs( unsigned int * attribs )
 	}
 
 	return total_output+1; // plus one for the 0 terminator
+	#endif
+	return 0;
 }
 
 int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs )
 {
+	#if 0
 	XWindowAttributes att;
 	Window window = (Window)settings->window;
 	int elements;
@@ -292,7 +296,7 @@ int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * att
         fprintf( stderr, "[xwl] Direct rendering is NOT enabled!\n" );
         return 0;
     }
-
+#endif
 	return 1;
 }
 
@@ -306,8 +310,10 @@ void xwl_renderer_post( xwl_renderer_settings_t * settings )
 
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings )
 {
+	#if 0
     glXMakeCurrent( settings->display, None, 0 );
     glXDestroyContext( settings->display, settings->window->context );
+   #endif
 }
 	
 void xwl_renderer_activate( xwl_renderer_settings_t * settings )

@@ -21,7 +21,7 @@ project "xwl"
 	
 	files
 	{
-		"src/**.c",	
+		"src/*.c",	
 		"src/**.h",
 		"include/**.h"
 	}
@@ -40,6 +40,11 @@ project "xwl"
 			"Xinerama",
 			"X11",
 			"GL"
+		}
+		files
+		{
+			"src/platforms/x11/**.c",
+			"include/platforms/x11/**.h"
 		}
 
 	configuration{ "macosx" }
