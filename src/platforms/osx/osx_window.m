@@ -246,7 +246,7 @@ int cocoa_dispatch_events()
 void cocoa_get_window_size( xwl_window_t * window, int * width, int * height )
 {
 	xwlWindow * xwlwindow = (xwlWindow*)window->handle;
-	NSRect frame = [xwlwindow frame];
+	NSRect frame = [[xwlwindow contentView] bounds];
 	*width = frame.size.width;
 	*height = frame.size.height;
 } // cocoa_get_window_size

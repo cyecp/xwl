@@ -5,12 +5,6 @@
 // the implementation for xwlDelegate is provided by default and takes over as application delegate.
 @implementation xwlDelegate
 
--(void) dealloc
-{
-	NSLog( @"dealloc xwlDelegate" );
-	[super dealloc];
-}
-
 -(void) noResponderFor: (SEL)eventSelector
 {
 	NSLog( @"xwlDelegate: noResponderFor event!" );
