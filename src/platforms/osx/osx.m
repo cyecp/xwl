@@ -80,7 +80,7 @@ void attachMenu( const char * title )
 	//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:@"/Developer/About Xcode Tools.pdf"]];
 }
 
-void cocoa_wp_startup( xwl_api_provider_t * api )
+void cocoa_startup( xwl_api_provider_t * api )
 {
 	NSLog( @"cocoa startup" );
 	
@@ -129,7 +129,7 @@ void cocoa_wp_startup( xwl_api_provider_t * api )
 }
 
 
-void cocoa_wp_shutdown( void )
+void cocoa_shutdown( void )
 {
 	NSLog( @"cocoa shutdown" );
 	[pool release];
@@ -141,9 +141,129 @@ void cocoa_wp_shutdown( void )
 	[application release];
 }
 
-
-void cocoa_wp_register( xwl_window_provider_t * wapi )
+xwl_window_t cocoa_create_window( const char * utf8_title, unsigned int * attribs )
 {
-    wapi->startup = cocoa_wp_startup;
-    wapi->shutdown = cocoa_wp_shutdown;
+	xwl_window_t handle;
+	handle.handle = 0;
+	NSWindow * window;
+	NSRect frame;
+	NSPoint origin;
+	int windowMask;
+	NSRect mainScreenFrame;
+	
+	
+	CGFloat window_width, window_height;
+	
+	// translate all attribs into a single array we can check uniformly.
+	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
+	
+//	_xwl_translate_attributes( attribs, attributes );
+	
+	int current_attrib = -1;
+	for( unsigned int i = 0; *attribs && i < XWL_ATTRIBUTE_COUNT; ++i )
+	{
+		if ( current_attrib == -1 )
+		{
+			current_attrib = *attribs;
+		}
+		else
+		{
+			attributes[ current_attrib ] = *attribs;
+			current_attrib = -1;
+		}
+		++attribs;
+	}
+	
+	
+	
+	
+	window_width = attributes[ XWL_WINDOW_WIDTH ];
+	window_height = attributes[ XWL_WINDOW_HEIGHT ];
+	
+	// is this window using fullscreen?
+	if ( attributes[ XWL_USE_FULLSCREEN ] )
+	{
+		windowMask = NSBorderlessWindowMask;
+	}
+	else
+	{
+		windowMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask;
+	}
+	
+	if ( attributes[ XWL_DISABLE_RESIZE ] )
+	{
+		// remove this flag
+		windowMask &= ~NSResizableWindowMask;
+	}
+	
+	// setup a basic menu
+	attachMenu( utf8_title );
+	
+	frame = NSMakeRect( 0, 0, window_width, window_height );
+	
+	// get this screen's dimensions
+	mainScreenFrame = [[NSScreen mainScreen] frame];
+	NSLog( @"[xwl] screen size: %g %g", mainScreenFrame.size.width, mainScreenFrame.size.height );
+	
+	window = [[[xwlWindow alloc] initWithContentRect: frame styleMask: windowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
+	if ( !window )
+	{
+		xwl_set_error( "Unable to create cocoa window!" );
+		handle.handle = 0;
+		return handle;
+	}
+	
+	// uncomment the next line to see a red color when the window is initially created
+	//[handle setBackgroundColor: [NSColor redColor]];
+	[window setBackgroundColor: [NSColor blackColor]];
+	[window makeKeyAndOrderFront: nil];
+	[window makeMainWindow];
+	[window makeKeyWindow];
+	[window orderFront: nil];
+	
+	[window setTitle: [NSString stringWithUTF8String: utf8_title] ];
+	[window setAcceptsMouseMovedEvents: YES];
+	[window setReleasedWhenClosed: NO];
+	
+	[window setDelegate: appDelegate ];
+	
+	// try to center the window
+	origin = NSMakePoint( (mainScreenFrame.size.width/2) - (window_width/2), (mainScreenFrame.size.height/2) - (window_height/2) );
+	
+	[window center];
+	[window setFrameOrigin: origin];
+	
+	if ( attributes[ XWL_USE_FULLSCREEN ] )
+	{
+		[window setLevel: CGShieldingWindowLevel() ];
+	}
+	
+	
+#if 0
+
+	// stuff this window into an unused handle
+	if ( handle )
+	{
+		wh = xwl_get_unused_window();
+		wh->handle.handle = handle;
+		handle.xwlhandle = wh;
+	}
+#endif
+	
+	return handle;
+}
+
+void cocoa_destroy_window( xwl_window_t handle )
+{
+	
+}
+
+
+void cocoa_register( xwl_window_provider_t * wapi )
+{
+    wapi->startup = cocoa_startup;
+    wapi->shutdown = cocoa_shutdown;
+	
+	wapi->create_window = cocoa_create_window;
+	wapi->destroy_window = cocoa_destroy_window;
 }

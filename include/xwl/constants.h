@@ -147,6 +147,8 @@ enum
 
 enum
 {
+	XWL_NONE,
+	
     // enum attributes
 	XWL_API,
     XWL_API_PROVIDER,
@@ -171,11 +173,12 @@ enum
 	XWL_USE_FULLSCREEN,
 	XWL_DISABLE_RESIZE,
    
-
+	XWL_ATTRIBUTE_COUNT
 };
 
 enum
 {
+	XWL_API_INVALID,
 	XWL_API_OPENGL,
 	XWL_API_GLES1,
 	XWL_API_GLES2,
@@ -187,6 +190,7 @@ enum
 // Other platforms always assume the default selection.
 enum
 {
+	XWL_WINDOW_PROVIDER_INVALID,
     XWL_WINDOW_PROVIDER_DEFAULT,
     XWL_WINDOW_PROVIDER_EGL,
     XWL_WINDOW_PROVIDER_X11,
@@ -201,6 +205,7 @@ enum
 // Other platforms assume the default selection.
 enum
 {
+	XWL_API_PROVIDER_INVALID,
     XWL_API_PROVIDER_DEFAULT,
     XWL_API_PROVIDER_EGL,
     XWL_API_PROVIDER_X11,

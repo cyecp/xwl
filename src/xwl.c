@@ -43,6 +43,11 @@ const char * xwl_get_error()
     return xwlerror;
 }
 
+void xwl_set_error( const char * error )
+{
+	xwlerror = error;
+}
+
 #define XWL_MAX_EVENTS 256
 unsigned int event_index = 0;
 unsigned int event_read_ptr = 0;
@@ -673,17 +678,16 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 	#include <xwl/platforms/osx.h>
 #endif
 
-	
-	
 xwl_window_provider_t _window_provider;
 
 // this list must sync up with the XWL_WINDOW_PROVIDER_* list
 xwl_window_provider_register _window_providers[] = {
+	0, // invalid
 	0, // default
 	0, // EGL
 	0, // X11
 	0, // Wayland
-	cocoa_wp_register,
+	cocoa_register,
 	0, // Win32
 	0, // Raspberry Pi
 };
@@ -821,9 +825,6 @@ void xwl_shutdown( void )
     }
 #endif
 
-#if __APPLE__
-//	xwl_osx_shutdown();
-#endif
 }
 
 #ifdef LINUX
@@ -1182,6 +1183,16 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	xwl_window_handle_t * wh = 0;
 //    xwl_renderer_settings_t cfg;
 
+	if ( title == 0 )
+	{
+		title = "Untitled Window";
+	}
+	
+	xwl_window_t handle = _window_provider.create_window( title, attribs );
+	
+	
+	return 0;
+
 #ifdef _WIN32
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	RECT clientrect;
@@ -1395,6 +1406,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 #if __APPLE__
 	if ( title == 0 )
 		title = "Untitled Window";
+
 
 //	wh = xwl_create_osx_window( params, title );
 //	cfg.window = &wh->handle;

@@ -91,14 +91,16 @@ int main()
         XWL_API_MINOR_VERSION, 2,
         XWL_WINDOW_WIDTH, 800,
         XWL_WINDOW_HEIGHT, 600,
-        0
+        XWL_NONE,
     };
         
 	xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT );
-#if 0
+	
+	
+
     xwlPrintf( "-> xwl_create_window...\n" );
 	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
-
+#if 0
 	if ( !w )
 	{
 		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );

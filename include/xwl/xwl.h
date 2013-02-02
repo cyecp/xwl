@@ -50,21 +50,27 @@ typedef struct xwl_window_s
     void * handle;
 } xwl_window_t;
 
-    
 struct xwl_api_provider_s;
 struct xwl_window_provider_s;
-    
+
 typedef void (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
 typedef void (*xwl_window_provider_shutdown)( void );
-    
+
+typedef xwl_window_t (*xwl_window_provider_create_window)( const char * utf8_title, unsigned int * attribs );
+typedef void (*xwl_window_provier_destroy_window) ( xwl_window_t window );
+
 typedef void (*xwl_window_provider_register)( struct xwl_window_provider_s * wapi );
+
 
 typedef struct xwl_window_provider_s
 {
     xwl_window_provider_startup startup;
     xwl_window_provider_shutdown shutdown;
+	
+	xwl_window_provider_create_window create_window;
+	xwl_window_provier_destroy_window destroy_window;
 } xwl_window_provider_t;
-    
+
 typedef struct xwl_api_provider_s
 {
     
@@ -178,6 +184,7 @@ typedef struct xwl_api_provider_s
     const char * xwl_mouse_to_string( i32 mouse );
     
     const char * xwl_get_error( void );
+	void xwl_set_error( const char * error );
     
     typedef struct xwl_window_handle_s
     {
