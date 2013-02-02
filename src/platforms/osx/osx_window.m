@@ -1,4 +1,4 @@
-#import <xwl/platforms/osx.h>
+#import <xwl/platforms/osx/osx.h>
 #import <xwl/platforms/osx/appdelegate.h>
 #import <xwl/platforms/osx/xwlwindow.h>
 
@@ -222,27 +222,6 @@ void cocoa_destroy_window( xwl_window_t * handle )
 {
 } // cocoa_destroy_window
 
-int cocoa_dispatch_events()
-{
-	NSAutoreleasePool * event_pool = [[NSAutoreleasePool alloc] init];
-	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask
-										 untilDate: [NSDate distantPast]
-											inMode: NSDefaultRunLoopMode
-										   dequeue: YES];
-	if ( event != nil )
-	{
-		// dispatch the event!
-		[NSApp sendEvent: event ];
-		[event_pool release];
-		return 1;
-	}
-
-	[event_pool release];
-	return 0;
-} // cocoa_dispatch_events
-
-
-
 void cocoa_get_window_size( xwl_window_t * window, int * width, int * height )
 {
 	xwlWindow * xwlwindow = (xwlWindow*)window->handle;
@@ -271,7 +250,6 @@ void cocoa_register( xwl_window_provider_t * wapi )
 	
 	wapi->create_window = cocoa_create_window;
 	wapi->destroy_window = cocoa_destroy_window;
-	wapi->dispatch_events = cocoa_dispatch_events;
 	
 	wapi->get_window_size = cocoa_get_window_size;
 	wapi->get_screen_size = cocoa_get_screen_size;

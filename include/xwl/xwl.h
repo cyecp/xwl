@@ -45,85 +45,65 @@ extern "C" {
     #define xwlPrintf //
 #endif
     
-    
-#include "constants.h"
+	
+#define XWL_NOTSET 0xFFFFFFF0
+
+enum
+{
+	XWL_NONE,
+	
+	// enum attributes
+	XWL_API,
+	XWL_API_PROVIDER,
+	XWL_WINDOW_PROVIDER,
+	
+	// integer attributes
+	XWL_API_MAJOR_VERSION,
+	XWL_API_MINOR_VERSION,
+	XWL_DEPTH_SIZE,
+	XWL_COLOR_SIZE,
+	XWL_ALPHA_SIZE,
+	XWL_STENCIL_SIZE,
+	XWL_WINDOW_WIDTH,
+	XWL_WINDOW_HEIGHT,
+	XWL_WINDOW_X,
+	XWL_WINDOW_Y,
+	
+#if _WIN32
+	XWL_WIN32_ICON = 8,
+	XWL_WIN32_ICONSM = 16,
+#endif
+	
+	// boolean attributes
+	XWL_USE_FULLSCREEN,
+	XWL_DISABLE_RESIZE,
+	
+	XWL_ATTRIBUTE_COUNT
+};
+
+enum
+{
+	XWL_API_INVALID,
+	XWL_API_OPENGL,
+	XWL_API_GLES1,
+	XWL_API_GLES2,
+	XWL_API_GLES3
+};
+
+#include "keys.h"
 
 typedef struct xwl_window_s
 {
     void * handle;
 } xwl_window_t;
 
-struct xwl_api_provider_s;
-struct xwl_window_provider_s;
-struct xwl_native_window_s;
-	
-// Window Provider functions
-// startup the window provider
-typedef int (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
-
-// shutdown the window provider
-typedef void (*xwl_window_provider_shutdown)( void );
-
-// create a window; return the native window handle
-typedef void *(*xwl_window_provider_create_window)( struct xwl_native_window_s * handle, const char * utf8_title, unsigned int * attribs );
-
-// destroy a window
-typedef void (*xwl_window_provider_destroy_window) ( xwl_window_t * window );
-
-// returns > 0 if one or more events were processed
-typedef int (*xwl_window_provider_dispatch_events)();
-
-// return the window width and height
-typedef void (*xwl_window_provider_get_window_size)( xwl_window_t * window, int * width, int * height );
-
-// return the screen width and height
-typedef void (*xwl_window_provider_get_screen_size)( unsigned int screen_index, int * width, int * height );
-
-// return the number of screens
-typedef unsigned int (*xwl_window_provider_get_screen_count)();
-
-
-// register functions for this provider
-typedef void (*xwl_window_provider_register)( struct xwl_window_provider_s * wapi );
-
-
-typedef struct xwl_window_provider_s
-{
-    xwl_window_provider_startup startup;
-    xwl_window_provider_shutdown shutdown;
-	
-	xwl_window_provider_create_window create_window;
-	xwl_window_provider_destroy_window destroy_window;
-	
-	xwl_window_provider_dispatch_events dispatch_events;
-	
-	xwl_window_provider_get_window_size get_window_size;
-	xwl_window_provider_get_screen_size get_screen_size;
-	xwl_window_provider_get_screen_count get_screen_count;	
-} xwl_window_provider_t;
-
-
-
-// API Provider functions
-
-
-typedef void *(*xwl_api_provider_create_context)( void * native_window, struct xwl_window_provider_s * wapi, unsigned int * attributes, void * other_context );
-typedef void (*xwl_api_provider_destroy_context)( void * context, void * native_window, struct xwl_window_provider_s * wapi );
-typedef void (*xwl_api_provider_activate_context)( void * context, void * native_window );
-typedef void (*xwl_api_provider_swap_buffers)( void * native_window );
-
-typedef struct xwl_api_provider_s
-{
-    xwl_api_provider_create_context create_context;
-	xwl_api_provider_destroy_context destroy_context;
-	xwl_api_provider_activate_context activate_context;
-	xwl_api_provider_swap_buffers swap_buffers;
-} xwl_api_provider_t;
-
-// register functions for this provider
-typedef void (*xwl_api_provider_register)( struct xwl_api_provider_s * api );
     
-    
+#include <xwl/window_provider.h>
+#include <xwl/api_provider.h>
+#include <xwl/input_provider.h>
+	
+	
+	
     struct xwl_event_s;
     typedef void (*xwl_event_callback)( struct xwl_event_s * );
 	
@@ -194,7 +174,7 @@ typedef void (*xwl_api_provider_register)( struct xwl_api_provider_s * api );
 	
     // returns 0 on failure
     // returns 1 on success
-    i32 xwl_startup( unsigned int window_provider, unsigned int api_provider );
+    i32 xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider );
     
     // shutdown system
     void xwl_shutdown( void );

@@ -1,4 +1,4 @@
-#import <xwl/platforms/osx.h>
+#import <xwl/platforms/osx/osx.h>
 #import <xwl/platforms/osx/appdelegate.h>
 
 unsigned int LocalizedKeys(unichar ch)

@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <xwl/platforms/osx.h>
+#include <xwl/platforms/osx/osx.h>
 
 #if __OBJC__
 #import <Cocoa/Cocoa.h>

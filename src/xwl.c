@@ -650,12 +650,13 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 // include relevant headers for platforms
 
 #if __APPLE__
-	#include <xwl/platforms/osx.h>
+	#include <xwl/platforms/osx/osx.h>
 #endif
 
 xwl_window_provider_t _window_provider;
 xwl_api_provider_t _api_provider;
-	
+xwl_input_provider_t _input_provider;
+
 // this list must sync up with the XWL_WINDOW_PROVIDER_* list
 xwl_window_provider_register _window_providers[] = {
 	0, // invalid
@@ -675,6 +676,15 @@ xwl_api_provider_register _api_providers[] = {
 	0, // EGL
 	0, // X11,
 	cocoa_opengl_register,
+	0, // Win32
+};
+
+// this list must sync up with the XWL_INPUT_PROVIDER_* list
+xwl_input_provider_register _input_providers[] = {
+	0, // invalid
+	0, // default
+	0, // X11 (XKb)
+	cocoa_input_register,
 	0, // Win32
 };
 
@@ -706,6 +716,19 @@ unsigned int _xwl_default_api_provider()
 	return 0;
 } // _xwl_default_api_provider
 
+
+unsigned int _xwl_default_input_provider()
+{
+#if __APPLE__
+	return XWL_INPUT_PROVIDER_COCOA;
+#elif LINUX
+	return XWL_API_PROVIDER_X11;
+#elif WIN32
+	return XWL_API_PROVIDER_WIN32;
+#endif
+	
+	return 0;
+} // _xwl_default_input_provider
 
 void xwl_get_window_size( xwl_window_t * window, int * width, int * height )
 {
@@ -743,7 +766,6 @@ int _xwl_setup_window_provider( unsigned int window_provider )
 	return 1;
 } // _xwl_setup_window_provider
 
-
 int _xwl_setup_api_provider( unsigned int api_provider )
 {
 	// choose default api provider
@@ -763,7 +785,26 @@ int _xwl_setup_api_provider( unsigned int api_provider )
 	return 1;
 } // _xwl_setup_api_provider
 
-int xwl_startup( unsigned int window_provider, unsigned int api_provider )
+int _xwl_setup_input_provider( unsigned int input_provider )
+{
+	// choose default api provider
+	if ( input_provider == XWL_INPUT_PROVIDER_DEFAULT )
+	{
+		input_provider = _xwl_default_input_provider();
+	}
+	
+	xwl_input_provider_register input_register = _input_providers[ input_provider ];
+	if ( !input_register )
+	{
+		return 0;
+	}
+	
+	input_register( &_input_provider );
+	
+	return 1;
+} // _xwl_setup_input_provider
+
+int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider )
 {
 	int i;
 	xwl_native_window_t * wh;
@@ -789,6 +830,12 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider )
 	if ( !_xwl_setup_api_provider( api_provider ) )
 	{
 		xwl_set_error( "No valid API provider found!" );
+		return 0;
+	}
+	
+	if ( !_xwl_setup_input_provider( input_provider ) )
+	{
+		xwl_set_error ( "No valid Input provider found!" );
 		return 0;
 	}
     
@@ -902,7 +949,7 @@ void xwl_shutdown( void )
 
 
 	_window_provider.shutdown();
-
+	_input_provider.shutdown();
 
 #if LINUX
     if ( currentInputMethod )
@@ -1184,8 +1231,7 @@ int xwl_dispatch_events()
 {
 	int result;
 	
-	result = _window_provider.dispatch_events();
-	
+	result = _input_provider.dispatch_events();
 #ifdef _WIN32
 	MSG msg;
 

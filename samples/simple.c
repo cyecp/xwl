@@ -102,7 +102,7 @@ int main()
     };
 	
 	
-	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT ) )
+	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT, XWL_INPUT_PROVIDER_DEFAULT ) )
 	{
 		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );
 		return -1;

@@ -1,7 +1,6 @@
 #pragma once
 
 
-#define XWL_NOTSET 0xFFFFFFF0
 
 // keys
 enum
@@ -147,72 +146,4 @@ enum
 	XWLE_TEXT
 };
 
-enum
-{
-	XWL_NONE,
-	
-    // enum attributes
-	XWL_API,
-    XWL_API_PROVIDER,
-    XWL_WINDOW_PROVIDER,
-    
-    // integer attributes
-	XWL_API_MAJOR_VERSION,
-	XWL_API_MINOR_VERSION,
-	XWL_DEPTH_SIZE,
-	XWL_COLOR_SIZE,
-	XWL_ALPHA_SIZE,
-	XWL_STENCIL_SIZE,
-    XWL_WINDOW_WIDTH,
-    XWL_WINDOW_HEIGHT,
-    XWL_WINDOW_X,
-	XWL_WINDOW_Y,
-	
-#if _WIN32
-	XWL_WIN32_ICON = 8,
-	XWL_WIN32_ICONSM = 16,
-#endif
-    
-    // boolean attributes
-	XWL_USE_FULLSCREEN,
-	XWL_DISABLE_RESIZE,
-   
-	XWL_ATTRIBUTE_COUNT
-};
 
-enum
-{
-	XWL_API_INVALID,
-	XWL_API_OPENGL,
-	XWL_API_GLES1,
-	XWL_API_GLES2,
-	XWL_API_GLES3
-};
-
-
-// on linux, there are several options with regards to creating the window
-// Other platforms always assume the default selection.
-enum
-{
-	XWL_WINDOW_PROVIDER_INVALID,
-    XWL_WINDOW_PROVIDER_DEFAULT,
-    XWL_WINDOW_PROVIDER_EGL,
-    XWL_WINDOW_PROVIDER_X11,
-    XWL_WINDOW_PROVIDER_WAYLAND,
-    XWL_WINDOW_PROVIDER_COCOA,
-    XWL_WINDOW_PROVIDER_WIN32,
-    XWL_WINDOW_PROVIDER_RASPBERRYPI
-};
-
-
-// on linux, there are several options with regards to setting up the graphics context
-// Other platforms assume the default selection.
-enum
-{
-	XWL_API_PROVIDER_INVALID,
-    XWL_API_PROVIDER_DEFAULT,
-    XWL_API_PROVIDER_EGL,
-    XWL_API_PROVIDER_X11,
-	XWL_API_PROVIDER_COCOA,
-	XWL_API_PROVIDER_WIN32,
-};

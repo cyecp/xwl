@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <xwl/platforms/osx.h>
+#include <xwl/platforms/osx/osx.h>
 
 
 @interface xwlWindow : NSWindow
