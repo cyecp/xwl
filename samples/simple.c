@@ -6,7 +6,7 @@ int running = 1;
 
 i32 mx;
 i32 my;
-xwl_windowparams_t p;
+
 
 // temporary OpenGL tests
 #if _WIN32
@@ -26,7 +26,6 @@ xwl_windowparams_t p;
 
 void callback( xwl_event_t * e )
 {
-
     xwlPrintf( "event: %s\n", xwl_event_to_string(e->type) );
 
 	if ( e->type == XWLE_GAINFOCUS )
@@ -59,10 +58,10 @@ void callback( xwl_event_t * e )
 	}
 	else if ( e->type == XWLE_SIZE )
 	{
-		p.width = e->width;
-		p.height = e->height;
-		xwlPrintf( "\t-> width: %i\n", p.width );
-		xwlPrintf( "\t-> height: %i\n", p.height );
+//		p.width = e->width;
+//		p.height = e->height;
+		xwlPrintf( "\t-> width: %i\n", e->width );
+		xwlPrintf( "\t-> height: %i\n", e->height );
 	}
 	else if ( e->type == XWLE_CLOSED )
 	{
@@ -77,7 +76,9 @@ void callback( xwl_event_t * e )
 
 
 	if ( e->type == XWLE_KEYRELEASED && e->key == XWLK_ESCAPE )
+	{
 		running = 0;
+	}
 }
 
 int main()
@@ -91,28 +92,39 @@ int main()
         XWL_API_MINOR_VERSION, 2,
         XWL_WINDOW_WIDTH, 800,
         XWL_WINDOW_HEIGHT, 600,
+//		XWL_USE_FULLSCREEN, 1,
         XWL_NONE,
     };
-        
-	xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT );
+	
+	
+	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT ) )
+	{
+		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );
+		return -1;
+	}
+	
+	
+    xwlPrintf( "-> xwl_create_window...\n" );
+	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 	
 	
 
-    xwlPrintf( "-> xwl_create_window...\n" );
-	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
-#if 0
 	if ( !w )
 	{
 		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );
 		return -1;
 	}
 	xwlPrintf( "-> Window created OK! (handle: %x)\n", (u32)w->handle );
-	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", p.width, p.height );
-
+	
+	//	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", p.width, p.height );
+	
 	// set event callback
 	xwl_set_callback( callback );
+	
+	
 
-#if 1
+
+#if 0
 	xwlPrintf( "-> GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
 	xwlPrintf( "-> GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
 	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );
@@ -122,9 +134,8 @@ int main()
 	memset( &event, 0, sizeof(xwl_event_t) );
 	while( running )
 	{
-		xwl_pollevent( &event );
-		//callback( &event );
-
+		xwl_dispatch_events();
+#if 0
 		glClearColor(0.25, 0.25, 0.25, 1.0);
 		glClear( GL_COLOR_BUFFER_BIT );
 		glViewport( 0, 0, p.width, p.height );
@@ -144,10 +155,10 @@ int main()
 		glBegin( GL_POINTS );
 			glVertex3i( mx, my, 0 );
 		glEnd();
-
-		xwl_finish();
-	}
 #endif
+//		xwl_finish();
+	}
+
 	xwl_shutdown();
 	return 0;
 } // main

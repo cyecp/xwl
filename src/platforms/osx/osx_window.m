@@ -229,6 +229,7 @@ void cocoa_destroy_window( xwl_window_t * handle )
 
 int cocoa_dispatch_events()
 {
+	NSAutoreleasePool * event_pool = [[NSAutoreleasePool alloc] init];
 	NSEvent * event = [NSApp nextEventMatchingMask:NSAnyEventMask
 										 untilDate: [NSDate distantPast]
 											inMode: NSDefaultRunLoopMode
@@ -238,9 +239,11 @@ int cocoa_dispatch_events()
 		//NSLog( @"Debug Event!" );
 		// dispatch the event!
 		[NSApp sendEvent: event ];
+		[event_pool release];
 		return 1;
 	}
-	
+
+	[event_pool release];
 	return 0;
 }
 
