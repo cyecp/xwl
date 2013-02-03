@@ -7,10 +7,6 @@
 // #include <X11/extensions/Xrandr.h>
 //#include <X11/XKBlib.h>
 
-
-static XIM currentInputMethod = 0;
-static XComposeStatus currentKeyboardStatus;
-
 #include <string.h>
 
 //////////////////
@@ -26,7 +22,6 @@ int x11_window_startup( xwl_api_provider_t * api )
 	if ( x11_current_display() )
 	{
 		x11_set_current_screen( DefaultScreen( x11_current_display() ) );
-		currentInputMethod = XOpenIM( x11_current_display(), 0, 0, 0 );
 	}
 	else
 	{
@@ -47,13 +42,7 @@ int x11_window_startup( xwl_api_provider_t * api )
 
 void x11_window_shutdown()
 {
-	if ( currentInputMethod )
-	{
-		XCloseIM( currentInputMethod );
-
-		currentInputMethod = 0;
-		x11_close_display();
-	}
+	x11_close_display();
 } // x11_window_shutdown
 
 
@@ -143,15 +132,6 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 
 	handle->handle.handle = (void*)native_window;
 	//wh->handle.userdata = params->userdata;
-
-	if ( currentInputMethod )
-	{
-		handle->inputContext = XCreateIC( currentInputMethod, XNClientWindow, native_window, XNFocusWindow, native_window, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
-		if ( !handle->inputContext )
-		{
-			xwlPrintf( "[xwl::X11] Failed to create input context!\n" );
-		}
-	}
 
 	return (void*)native_window;
 } // x11_window_create_window

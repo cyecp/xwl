@@ -133,7 +133,9 @@ int egl_api_pixel_format( unsigned int * attribs )
 
 	fprintf( stdout, "egl_api_pixel_format\n" );
 
-	display = eglGetDisplay( x11_current_display() );  // EGL_DEFAULT_DISPLAY
+	// I've read this needs the X11 display, the raspberry pi doesn't like it, but it does work on a desktop.
+	
+	display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
 	if ( display == EGL_NO_DISPLAY )
 	{
 		xwl_set_error( "eglGetDisplay failed" );

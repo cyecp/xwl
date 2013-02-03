@@ -12,14 +12,6 @@ static wchar_t xwl_windowClassName[] = L"xwl_window";
 
 #endif
 
-
-#if LINUX
-static Display *currentDisplay = 0;
-static int currentScreen = 0;
-static XIM currentInputMethod = 0;
-static XComposeStatus currentKeyboardStatus;
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -905,7 +897,15 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
     	
 	// perform startup
 	result = _window_provider.startup( 0 );
-        
+	if ( !result )
+	{
+		if ( !xwl_get_error() )
+		{
+			xwl_set_error( "Window provider startup failed!" );
+		}
+		return 0;
+	}
+
 	if ( !_xwl_setup_api_provider( api_provider ) )
 	{
 		xwl_set_error( "No valid API provider found!" );
@@ -918,7 +918,15 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		return 0;
 	}
 
-
+	result = _input_provider.startup();
+	if ( !result )
+	{
+		if ( !xwl_get_error() )
+		{
+			xwl_set_error( "Input provider startup failed!" );
+		}
+		return 0;
+	}
     
 
 	// open a handle to the correct API library
@@ -1039,150 +1047,6 @@ void xwl_shutdown( void )
 	_input_provider.shutdown();
 } // xwl_shutdown
 
-#ifdef LINUX
-
-
-void ProcessEvent( XEvent event, xwl_native_window_t * window )
-{
-    xwl_event_t ev = {0};
-    int length;
-    unsigned int *end;
-    char keybuffer[16];
-    char buffer[32];
-    unsigned int unicode[2];
-    KeySym sym;
-    Status returnedStatus;
-
-    ev.target = &window->handle;
-    switch( event.type )
-    {
-        case DestroyNotify:
-            break;
-        case FocusIn:
-            ev.type = XWLE_GAINFOCUS;
-            xwl_send_event( &ev );
-            break;
-
-        case FocusOut:
-            ev.type = XWLE_LOSTFOCUS;
-            xwl_send_event( &ev );
-            break;
-
-        case ConfigureNotify:
-            ev.type = XWLE_SIZE;
-            ev.width = event.xconfigure.width;
-            ev.height = event.xconfigure.height;
-            xwl_send_event( &ev );
-            break;
-
-        case ClientMessage:
-            break;
-
-        case KeyPress:
-            XLookupString( &event.xkey, buffer, 32, &sym, &currentKeyboardStatus );
-            ev.type = XWLE_KEYPRESSED;
-            ev.key = X11KeyToXWL( sym );
-            xwl_send_event( &ev );
-
-            // generate a text event with unicode value
-            if ( !XFilterEvent( &event, None ) )
-            {
-                #ifdef X_HAVE_UTF8_STRING
-                if ( window->inputContext )
-                {
-                    length = Xutf8LookupString( window->inputContext, &event.xkey, keybuffer, 16, 0, &returnedStatus );
-
-                    if ( length > 0 )
-                    {
-                        if ( length == 1 ) // straight to ASCII
-                        {
-                            ev.unicode = (int)keybuffer[0];
-                        }
-                        else
-                        {
-                            fprintf( stderr, "[xwl] Do UTF-8 -> UTF-32 Conversion!\n" );
-                            fprintf( stderr, "[xwl] Length is: %i bytes.\n", length );
-                            fprintf( stderr, "[xwl] %c\n", keybuffer[0] );
-                            //end = Unicode::
-                        }
-
-                        // send a text event
-                        ev.type = XWLE_TEXT;
-                        xwl_send_event( &ev );
-                    }
-                }
-
-                #endif
-            }
-
-            break;
-
-        case KeyRelease:
-            XLookupString( &event.xkey, buffer, 32, &sym, 0 );
-            ev.type = XWLE_KEYRELEASED;
-            ev.key = X11KeyToXWL( sym );
-            xwl_send_event( &ev );
-            break;
-
-        case ButtonPress:
-            // support for 5 mouse buttons
-            if ( event.xbutton.button > 0 && event.xbutton.button < 4 || (event.xbutton.button == 8) || (event.xbutton.button == 9) )
-            {
-                ev.type = XWLE_MOUSEBUTTON_PRESSED;
-                switch( event.xbutton.button )
-                {
-                    case Button1: ev.button = XWLMB_LEFT; break;
-                    case Button2: ev.button = XWLMB_MIDDLE; break;
-                    case Button3: ev.button = XWLMB_RIGHT; break;
-                    case 8: ev.button = XWLMB_MOUSE4; break;
-                    case 9: ev.button = XWLMB_MOUSE5; break;
-                }
-                xwl_send_event( &ev );
-            }
-            break;
-
-        case ButtonRelease:
-            // support for 5 mouse buttons
-            if ( event.xbutton.button > 0 && event.xbutton.button < 4 || (event.xbutton.button == 8) || (event.xbutton.button == 9) )
-            {
-                ev.type = XWLE_MOUSEBUTTON_RELEASED;
-                switch( event.xbutton.button )
-                {
-                    case Button1: ev.button = XWLMB_LEFT; break;
-                    case Button2: ev.button = XWLMB_MIDDLE; break;
-                    case Button3: ev.button = XWLMB_RIGHT; break;
-                    case 8: ev.button = XWLMB_MOUSE4; break;
-                    case 9: ev.button = XWLMB_MOUSE5; break;
-                }
-                xwl_send_event( &ev );
-            }
-            else if ( event.xbutton.button == Button4 || event.xbutton.button == Button5 )
-            {
-                // -1 is towards the user
-                // 1 is away from the user
-                ev.type = XWLE_MOUSEWHEEL;
-                ev.wheelDelta = (event.xbutton.button == 4) ? 1 : -1;
-                xwl_send_event( &ev );
-            }
-            break;
-
-        case MotionNotify:
-            ev.type = XWLE_MOUSEMOVE;
-            ev.mx = event.xmotion.x;
-            ev.my = event.xmotion.y;
-            xwl_send_event( &ev );
-            break;
-
-        case EnterNotify:
-            break;
-
-        case LeaveNotify:
-            break;
-    }
-
-}
-#endif
-
 int xwl_dispatch_events()
 {
 	int result;
@@ -1266,6 +1130,9 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 		xwl_set_error( "window creation failed" );
 		return 0;
 	}
+
+	// tell the input system we've created a window
+	_input_provider.post_window_creation( wh );
 
 	// create a context
 	void * context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );

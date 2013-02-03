@@ -46,6 +46,7 @@ int rpi_window_startup( xwl_api_provider_t * api )
 
 void rpi_window_shutdown()
 {
+	bcm_host_deinit();
 } // rpi_window_shutdown
 
 

@@ -1,15 +1,19 @@
 #include <xwl/xwl.h>
 
+#include <xwl/platforms/x11/x11.h>
 #include <stdio.h>
 // #include <X11/Xlib.h>
 // #include <X11/keysym.h>
 // #include <X11/extensions/Xrandr.h>
 
-Display * x11_current_display();
-int x11_current_screen();
-XVisualInfo * x11_fetch_visual( int pixel_format );
+static Display *currentDisplay = 0;
+static int currentScreen = 0;
+static XIM currentInputMethod = 0;
+static XComposeStatus currentKeyboardStatus;
+
 xwl_native_window_t *_xwl_window_at_index( int index );
 
+void ProcessEvent( XEvent event, xwl_native_window_t * window );
 
 Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
 {
@@ -29,12 +33,25 @@ int x11_input_startup( void )
 		return 0;
 	}
 
+	currentInputMethod = XOpenIM( x11_current_display(), 0, 0, 0 );
+	if ( !currentInputMethod )
+	{
+		xwl_set_error( "Unable to Open X Input Method!" );
+		return 0;
+	}
+
 	return 1;
 }
 
 void x11_input_shutdown( void )
 {
+	if ( currentInputMethod )
+	{
+		XCloseIM( currentInputMethod );
 
+		currentInputMethod = 0;
+		
+	}
 }
 
 int x11_input_dispatch_events( void )
@@ -90,6 +107,7 @@ int x11_input_dispatch_events( void )
 					}
 				}
 
+				fprintf( stderr, "Processing Event\n", i );
 				ProcessEvent( ev, wh );
 			}
 		}
@@ -97,7 +115,29 @@ int x11_input_dispatch_events( void )
 
 
 	return 0;
-}
+} // x11_input_dispatch_events
+
+
+void x11_input_post_window_creation( xwl_native_window_t * native_window )
+{
+	Window wind;
+	return;
+	if ( currentInputMethod )
+	{
+		wind = (Window)native_window->handle.handle;
+
+		fprintf( stdout, "input post window creation...(%i)\n", (int)wind );
+		native_window->inputContext = XCreateIC( currentInputMethod, XNClientWindow, wind, XNFocusWindow, wind, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
+		if ( !native_window->inputContext )
+		{
+			fprintf( stderr, "[xwl] Failed to create input context!\n" );
+		}
+	}
+	else
+	{
+		fprintf( stderr, "currentInputMethod is INVALID\n" );
+	}
+} // x11_input_post_window_creation
 
 
 void x11_input_register( xwl_input_provider_t * input )
@@ -105,6 +145,7 @@ void x11_input_register( xwl_input_provider_t * input )
 	input->startup = x11_input_startup;
 	input->shutdown = x11_input_shutdown;
 	input->dispatch_events = x11_input_dispatch_events;
+	input->post_window_creation = x11_input_post_window_creation;
 }
 
 
@@ -227,4 +268,144 @@ unsigned int X11KeyToXWL( KeySym sym )
 	}
 	fprintf( stderr, "[xwl] Unknown Key: %u\n", (unsigned int)Key );
 	return 0;
-}
+} // X11KeyToXWL
+
+void ProcessEvent( XEvent event, xwl_native_window_t * window )
+{
+    xwl_event_t ev = {0};
+    int length;
+    unsigned int *end;
+    char keybuffer[16];
+    char buffer[32];
+    unsigned int unicode[2];
+    KeySym sym;
+    Status returnedStatus;
+
+    ev.target = &window->handle;
+    switch( event.type )
+    {
+        case DestroyNotify:
+            break;
+        case FocusIn:
+            ev.type = XWLE_GAINFOCUS;
+            xwl_send_event( &ev );
+            break;
+
+        case FocusOut:
+            ev.type = XWLE_LOSTFOCUS;
+            xwl_send_event( &ev );
+            break;
+
+        case ConfigureNotify:
+            ev.type = XWLE_SIZE;
+            ev.width = event.xconfigure.width;
+            ev.height = event.xconfigure.height;
+            xwl_send_event( &ev );
+            break;
+
+        case ClientMessage:
+            break;
+
+        case KeyPress:
+            XLookupString( &event.xkey, buffer, 32, &sym, &currentKeyboardStatus );
+            ev.type = XWLE_KEYPRESSED;
+            ev.key = X11KeyToXWL( sym );
+            xwl_send_event( &ev );
+
+            // generate a text event with unicode value
+            if ( !XFilterEvent( &event, None ) )
+            {
+                #ifdef X_HAVE_UTF8_STRING
+                if ( window->inputContext )
+                {
+                    length = Xutf8LookupString( window->inputContext, &event.xkey, keybuffer, 16, 0, &returnedStatus );
+
+                    if ( length > 0 )
+                    {
+                        if ( length == 1 ) // straight to ASCII
+                        {
+                            ev.unicode = (int)keybuffer[0];
+                        }
+                        else
+                        {
+                            fprintf( stderr, "[xwl] Do UTF-8 -> UTF-32 Conversion!\n" );
+                            fprintf( stderr, "[xwl] Length is: %i bytes.\n", length );
+                            fprintf( stderr, "[xwl] %c\n", keybuffer[0] );
+                            //end = Unicode::
+                        }
+
+                        // send a text event
+                        ev.type = XWLE_TEXT;
+                        xwl_send_event( &ev );
+                    }
+                }
+
+                #endif
+            }
+
+            break;
+
+        case KeyRelease:
+            XLookupString( &event.xkey, buffer, 32, &sym, 0 );
+            ev.type = XWLE_KEYRELEASED;
+            ev.key = X11KeyToXWL( sym );
+            xwl_send_event( &ev );
+            break;
+
+        case ButtonPress:
+            // support for 5 mouse buttons
+            if ( event.xbutton.button > 0 && event.xbutton.button < 4 || (event.xbutton.button == 8) || (event.xbutton.button == 9) )
+            {
+                ev.type = XWLE_MOUSEBUTTON_PRESSED;
+                switch( event.xbutton.button )
+                {
+                    case Button1: ev.button = XWLMB_LEFT; break;
+                    case Button2: ev.button = XWLMB_MIDDLE; break;
+                    case Button3: ev.button = XWLMB_RIGHT; break;
+                    case 8: ev.button = XWLMB_MOUSE4; break;
+                    case 9: ev.button = XWLMB_MOUSE5; break;
+                }
+                xwl_send_event( &ev );
+            }
+            break;
+
+        case ButtonRelease:
+            // support for 5 mouse buttons
+            if ( event.xbutton.button > 0 && event.xbutton.button < 4 || (event.xbutton.button == 8) || (event.xbutton.button == 9) )
+            {
+                ev.type = XWLE_MOUSEBUTTON_RELEASED;
+                switch( event.xbutton.button )
+                {
+                    case Button1: ev.button = XWLMB_LEFT; break;
+                    case Button2: ev.button = XWLMB_MIDDLE; break;
+                    case Button3: ev.button = XWLMB_RIGHT; break;
+                    case 8: ev.button = XWLMB_MOUSE4; break;
+                    case 9: ev.button = XWLMB_MOUSE5; break;
+                }
+                xwl_send_event( &ev );
+            }
+            else if ( event.xbutton.button == Button4 || event.xbutton.button == Button5 )
+            {
+                // -1 is towards the user
+                // 1 is away from the user
+                ev.type = XWLE_MOUSEWHEEL;
+                ev.wheelDelta = (event.xbutton.button == 4) ? 1 : -1;
+                xwl_send_event( &ev );
+            }
+            break;
+
+        case MotionNotify:
+            ev.type = XWLE_MOUSEMOVE;
+            ev.mx = event.xmotion.x;
+            ev.my = event.xmotion.y;
+            xwl_send_event( &ev );
+            break;
+
+        case EnterNotify:
+            break;
+
+        case LeaveNotify:
+            break;
+    }
+
+} // ProcessEvent
