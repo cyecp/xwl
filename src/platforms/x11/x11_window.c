@@ -176,7 +176,7 @@ void x11_window_destroy_window( xwl_window_t * window )
 {
 	if ( window && window->handle )
 	{
-		XDestroyWindow( x11_current_display(), (Window)->handle );
+		XDestroyWindow( x11_current_display(), (Window)window->handle );
 	}
 } // x11_window_destroy_window
 
