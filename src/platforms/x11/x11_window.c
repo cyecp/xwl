@@ -66,6 +66,7 @@ int x11_window_startup( xwl_api_provider_t * api )
 	}
 	else
 	{
+		xwl_set_error( "Unable to open an X display" );
 		return 0;
 	}
 
