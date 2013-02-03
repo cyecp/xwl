@@ -1,5 +1,8 @@
 #include <xwl/xwl.h>
 #include <string.h>
+#include <stdio.h>
+
+#include <EGL/egl.h>
 
 #if RASPBERRYPI
 	#include <bcm_host.h>
@@ -69,9 +72,9 @@ void * rpi_window_create_window( xwl_native_window_t * handle, const char * utf8
 	dispman_update = vc_dispmanx_update_start( 0 );
 
 	dispman_element = vc_dispmanx_element_add( dispman_update, dispman_display,
-		0, /* layer */, &dst_rect, 0 /* src */,
+		0 /* layer */, &dst_rect, 0 /* src */,
 		&src_rect, DISPMANX_PROTECTION_NONE, 0 /* alpha */,
-		0, /* clamp */, 0, /* transform */ );
+		0 /* clamp */, 0 /* transform */ );
 
 	native_window.element = dispman_element;
 	native_window.width = window_width;

@@ -1,3 +1,42 @@
+newoption {
+	trigger = "raspberrypi",
+	value = nil,
+	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1, plus platform files."
+}
+
+function setup_raspberry_pi()
+			print( "Compiling for raspberry pi" )
+			defines
+			{
+				"RASPBERRYPI=1"
+			}
+
+			files
+			{
+				"src/platforms/rpi/**.c",
+				"include/platforms/rpi/**.h"
+			}
+
+			libdirs
+			{
+				"/opt/vc/lib"
+			}
+
+			includedirs
+			{
+				"/opt/vc/include",
+				"includes/platforms/rpi/"
+			}
+
+			links
+			{
+				"EGL",
+				"GLESv2"
+			}
+
+end
+
+
 solution "xwl"
 configurations { "debug", "release" }
 
@@ -46,6 +85,12 @@ project "xwl"
 			"src/platforms/x11/**.c",
 			"include/platforms/x11/**.h"
 		}
+
+		if _OPTIONS["raspberrypi"] ~= nil then
+			setup_raspberry_pi()
+		else
+			
+		end
 
 	configuration{ "macosx" }
 		files
@@ -119,6 +164,13 @@ project "sample"
 			"X11",
 			"GL"
 		}
+
+		if _OPTIONS["raspberrypi"] ~= nil then
+			setup_raspberry_pi()
+		else
+		end
+
+
 	configuration{ "macosx" }
 		defines { "__MACH__", baseDefines }
 		linkoptions

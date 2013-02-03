@@ -90,6 +90,7 @@ int main()
 	unsigned int i;
 	int screen_width;
 	int screen_height;
+	unsigned int window_provider = XWL_WINDOW_PROVIDER_DEFAULT;
     u32 attribs[] = {
         XWL_API, XWL_API_OPENGL,
 //        XWL_API_MAJOR_VERSION, 3,
@@ -101,6 +102,10 @@ int main()
     };
 	
 	
+	#if RASPBERRYPI
+		window_provider = XWL_WINDOW_PROVIDER_RASPBERRYPI;
+	#endif
+
 	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT, XWL_INPUT_PROVIDER_DEFAULT ) )
 	{
 		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );

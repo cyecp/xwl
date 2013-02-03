@@ -696,7 +696,7 @@ xwl_window_provider_register _window_providers[] = {
 #endif
 
 #if RASPBERRYPI
-	0, // Raspberry Pi
+	rpi_window_register, // Raspberry Pi
 #endif
 };
 
