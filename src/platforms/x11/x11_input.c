@@ -46,6 +46,12 @@ int x11_input_dispatch_events( void )
 	xwl_native_window_t *wh = 0;
 	XEvent lastKeyReleaseEvent;
 
+	if ( !x11_current_display() )
+	{
+		fprintf( stderr, "x11 display is INVALID\n" );
+		return 0;
+	}
+
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
 //		wh = &xwl_windowHandles[i];
