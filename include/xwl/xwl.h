@@ -5,7 +5,7 @@ extern "C" {
 #endif
     
 	
-// define XWL_RASPBERRYPI 1 to enable the Raspberry Pi.
+// define RASPBERRYPI 1 to enable the Raspberry Pi.
 	
     // platform includes
 #if LINUX

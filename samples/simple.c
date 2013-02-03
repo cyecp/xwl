@@ -10,17 +10,17 @@ i32 my;
 
 // temporary OpenGL tests
 #if _WIN32
-#include <windows.h>
-#include <gl/gl.h>
-#pragma comment( lib, "opengl32.lib" )
+	#include <windows.h>
+	#include <gl/gl.h>
+	#pragma comment( lib, "opengl32.lib" )
 #elif LINUX
-#include <GL/gl.h>
-#include <GL/glx.h>
+	#include <GL/gl.h>
+	#include <GL/glx.h>
 #elif __APPLE__
-// for OSX 10.6
-#include <OpenGL/OpenGL.h>
-// for OSX 10.7+
-#include <OpenGL/gl.h>
+	// for OSX 10.6
+	#include <OpenGL/OpenGL.h>
+	// for OSX 10.7+
+	#include <OpenGL/gl.h>
 #endif
 
 
@@ -129,7 +129,7 @@ int main()
 		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );
 		return -1;
 	}
-	xwlPrintf( "-> Window created OK! (handle: %x)\n", (u32)w->handle );
+	xwlPrintf( "-> Window created OK! (handle: %p)\n", w->handle );
 	
 	xwl_get_window_size( w, &window_width, &window_height );
 	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", window_width, window_height );

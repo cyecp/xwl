@@ -659,6 +659,11 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 #if __APPLE__
 	#include <xwl/platforms/osx/osx.h>
 #elif LINUX
+
+	#if RASPBERRYPI
+		#include <xwl/platforms/rpi/rpi.h>
+	#endif
+
 	#include <xwl/platforms/x11/x11.h>
 #endif
 
@@ -674,11 +679,23 @@ xwl_window_provider_register _window_providers[] = {
 	0, // EGL
 	x11_window_register, // X11
 	0, // Wayland
-#elif __APPLE__
+#else
+	0, 0, 0
+#endif
+
+#if __APPLE__
 	cocoa_register,
-#elif WIN32
+#else
+	0,
+#endif
+
+#if WIN32
 	0, // Win32
-#elif XWL_RASPBERRYPI
+#else
+	0,
+#endif
+
+#if RASPBERRYPI
 	0, // Raspberry Pi
 #endif
 };
@@ -690,10 +707,20 @@ xwl_api_provider_register _api_providers[] = {
 #if LINUX
 	0, // EGL
 	x11_opengl_register, // X11,
-#elif __APPLE__
+#else
+	0, 0,
+#endif
+
+#if __APPLE__
 	cocoa_opengl_register,
-#elif WIN32
+#else
+	0,
+#endif
+
+#if WIN32
 	0, // Win32
+#else
+	0,
 #endif
 };
 
@@ -701,12 +728,22 @@ xwl_api_provider_register _api_providers[] = {
 xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
-#if LINUX	
+#if LINUX
 	x11_input_register, // X11
-#elif __APPLE__
+#else
+	0,
+#endif
+
+#if __APPLE__
 	cocoa_input_register,
-#elif WIN32
+#else
+	0,
+#endif
+
+#if WIN32
 	0, // Win32
+#else
+	0,
 #endif
 };
 
@@ -714,6 +751,8 @@ unsigned int _xwl_default_window_provider()
 {
 #if __APPLE__
 	return XWL_WINDOW_PROVIDER_COCOA;
+#elif RASPBERRYPI
+	return XWL_WINDOW_PROVIDER_RASPBERRYPI;
 #elif LINUX
 	return XWL_WINDOW_PROVIDER_X11;
 #elif WIN32
@@ -727,7 +766,7 @@ unsigned int _xwl_default_api_provider()
 {
 #if __APPLE__
 	return XWL_API_PROVIDER_COCOA;
-#elif XWL_RASPBERRYPI
+#elif RASPBERRYPI
 	return XWL_API_PROVIDER_EGL;
 #elif LINUX
 	return XWL_API_PROVIDER_X11;
@@ -743,7 +782,7 @@ unsigned int _xwl_default_input_provider()
 {
 #if __APPLE__
 	return XWL_INPUT_PROVIDER_COCOA;
-#elif LINUX
+#elif LINUX || RASPBERRYPI
 	return XWL_INPUT_PROVIDER_X11;
 #elif WIN32
 	return XWL_INPUT_PROVIDER_WIN32;
