@@ -20,13 +20,10 @@ typedef int (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
 typedef void (*xwl_window_provider_shutdown)( void );
 
 // create a window; return the native window handle
-typedef void *(*xwl_window_provider_create_window)( struct xwl_native_window_s * handle, const char * utf8_title, unsigned int * attribs );
+typedef void *(*xwl_window_provider_create_window)( struct xwl_native_window_s * handle, const char * utf8_title, unsigned int * attribs, int pixel_format );
 
 // destroy a window
 typedef void (*xwl_window_provider_destroy_window) ( xwl_window_t * window );
-
-// returns > 0 if one or more events were processed
-typedef int (*xwl_window_provider_dispatch_events)();
 
 // return the window width and height
 typedef void (*xwl_window_provider_get_window_size)( xwl_window_t * window, int * width, int * height );
@@ -49,8 +46,6 @@ typedef struct xwl_window_provider_s
 	
 	xwl_window_provider_create_window create_window;
 	xwl_window_provider_destroy_window destroy_window;
-	
-	xwl_window_provider_dispatch_events dispatch_events;
 	
 	xwl_window_provider_get_window_size get_window_size;
 	xwl_window_provider_get_screen_size get_screen_size;

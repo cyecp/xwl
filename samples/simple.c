@@ -84,7 +84,6 @@ void callback( xwl_event_t * e )
 int main()
 {
 	xwl_window_t *w = 0;
-	xwl_event_t event;
 	int window_width = 800;
 	int window_height = 600;
 	unsigned int screen_count = 0;
@@ -125,9 +124,6 @@ int main()
 	
     xwlPrintf( "-> xwl_create_window...\n" );
 	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
-	
-	
-
 	if ( !w )
 	{
 		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );
@@ -149,8 +145,6 @@ int main()
 	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );
 #endif
 
-
-	memset( &event, 0, sizeof(xwl_event_t) );
 	while( running )
 	{
 		xwl_dispatch_events();

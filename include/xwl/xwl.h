@@ -25,9 +25,7 @@ extern "C" {
 #elif __APPLE__
     #include <TargetConditionals.h>
 #endif
-    
-#define XWL_MAX_TOUCHES 5
-#define XWL_MAX_WINDOW_ATTRIBS 10
+
     
 #ifndef Z_TYPES
 	typedef signed char i8;
@@ -45,7 +43,7 @@ extern "C" {
     #define xwlPrintf //
 #endif
     
-	
+#define XWL_MAX_WINDOW_HANDLES 4
 #define XWL_NOTSET 0xFFFFFFF0
 
 enum
@@ -95,6 +93,9 @@ enum
 typedef struct xwl_window_s
 {
     void * handle;
+    void * context;
+    int pixel_format;
+    unsigned int id;
 } xwl_window_t;
 
     
@@ -128,13 +129,7 @@ typedef struct xwl_window_s
     } xwl_window_t;
 #endif
 	
-    typedef struct
-    {
-        float x;
-        float y;
-        
-    } xwl_touch_t;
-    
+
     typedef struct xwl_event_s
     {
         // target window
@@ -166,8 +161,7 @@ typedef struct xwl_window_s
         i16 wheelDelta;
         i16 button;
         i16 keymods;
-        
-        xwl_touch_t touches[ XWL_MAX_TOUCHES ];
+
         struct xwl_window_s * window;
     } xwl_event_t;
     

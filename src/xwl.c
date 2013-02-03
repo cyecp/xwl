@@ -28,7 +28,7 @@ void xwl_renderer_post( xwl_renderer_settings_t * settings );
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
 void xwl_renderer_activate( xwl_renderer_settings_t * settings );
 
-#define XWL_MAX_WINDOW_HANDLES 4
+
 static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
@@ -43,6 +43,17 @@ void xwl_set_error( const char * error )
 {
 	xwlerror = error;
 }
+
+
+xwl_native_window_t *_xwl_window_at_index( int index )
+{
+	if ( index > XWL_MAX_WINDOW_HANDLES-1 )
+	{
+		return 0;
+	}
+
+	return &xwl_windowHandles[ index ];
+} // _xwl_window_at_index
 
 #define XWL_MAX_EVENTS 256
 unsigned int event_index = 0;
@@ -647,6 +658,8 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 
 #if __APPLE__
 	#include <xwl/platforms/osx/osx.h>
+#elif LINUX
+	#include <xwl/platforms/x11/x11.h>
 #endif
 
 xwl_window_provider_t _window_provider;
@@ -659,7 +672,7 @@ xwl_window_provider_register _window_providers[] = {
 	0, // default
 #if LINUX
 	0, // EGL
-	0, // X11
+	x11_window_register, // X11
 	0, // Wayland
 #elif __APPLE__
 	cocoa_register,
@@ -676,7 +689,7 @@ xwl_api_provider_register _api_providers[] = {
 	0, // default
 #if LINUX
 	0, // EGL
-	0, // X11,
+	x11_opengl_register, // X11,
 #elif __APPLE__
 	cocoa_opengl_register,
 #elif WIN32
@@ -688,8 +701,8 @@ xwl_api_provider_register _api_providers[] = {
 xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
-#if LINUX
-	0, // X11 (XKb)
+#if LINUX	
+	x11_input_register, // X11
 #elif __APPLE__
 	cocoa_input_register,
 #elif WIN32
@@ -731,9 +744,9 @@ unsigned int _xwl_default_input_provider()
 #if __APPLE__
 	return XWL_INPUT_PROVIDER_COCOA;
 #elif LINUX
-	return XWL_API_PROVIDER_X11;
+	return XWL_INPUT_PROVIDER_X11;
 #elif WIN32
-	return XWL_API_PROVIDER_WIN32;
+	return XWL_INPUT_PROVIDER_WIN32;
 #endif
 	
 	return 0;
@@ -742,19 +755,19 @@ unsigned int _xwl_default_input_provider()
 void xwl_get_window_size( xwl_window_t * window, int * width, int * height )
 {
 	_window_provider.get_window_size( window, width, height );
-}
+} // xwl_get_window_size
 
 void xwl_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 	_window_provider.get_screen_size( screen_index, width, height );
-}
+} // xwl_get_screen_size
 
 unsigned int xwl_get_screen_count()
 {
 	return _window_provider.get_screen_count();
-}
-	
-	
+} // xwl_get_screen_count
+
+
 int _xwl_setup_window_provider( unsigned int window_provider )
 {
 	// choose default window provider for this platform: note this is not guaranteed to work!
@@ -804,7 +817,7 @@ int _xwl_setup_input_provider( unsigned int input_provider )
 	
 	xwl_input_provider_register input_register = _input_providers[ input_provider ];
 	if ( !input_register )
-	{
+	{	
 		return 0;
 	}
 	
@@ -823,6 +836,7 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	{
 		wh = &xwl_windowHandles[i];
 		memset( wh, 0, sizeof(xwl_native_window_t) );
+		wh->handle.id = i;
 	}
     
     memset( &_window_provider, 0, sizeof(xwl_window_provider_t) );
@@ -844,7 +858,7 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	
 	if ( !_xwl_setup_input_provider( input_provider ) )
 	{
-		xwl_set_error ( "No valid Input provider found!" );
+		xwl_set_error( "No valid Input provider found!" );
 		return 0;
 	}
     
@@ -853,36 +867,8 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	lshift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
 #endif
 
-#if LINUX
-    {
-        Bool detectable;
-        currentDisplay = XOpenDisplay( 0 );
-
-        if ( currentDisplay )
-        {
-            currentScreen = DefaultScreen( currentDisplay );
-            currentInputMethod = XOpenIM( currentDisplay, 0, 0, 0 );
-        }
-        else
-        {
-            return 0;
-        }
-
-        // disable auto-repeats
-        // "The standard behavior of the X server is to generate a KeyRelease event for every KeyPress event."
-        // #include <X11/XKBlib.h>
-        //XkbSetDetectableAutorepeat( currentDisplay, True, &detectable );
-
-        // install error handler
-        //XSetErrorHandler( xwl_xserver_handler );
-    }
-
-
-#endif
-
-
 	return result;
-}
+} // xwl_startup
 
 	
 	void xwl_swap_buffers( xwl_window_t * window )
@@ -892,13 +878,18 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 //		cfg.display = currentDisplay;
 //		cfg.screen = currentScreen;
 #endif
+
+		//fprintf( stdout, "[xwl] swap buffers...\n" );
 		
 //		cfg.window = window;
+		xwl_native_window_t * wh;
+		//fprintf( stdout, "[xwl] swap buffers on window: %i\n", window->id );
+		wh = &xwl_windowHandles[ window->id ];
 		
-		if ( window->handle != 0 )
+		if ( wh && wh->handle.handle != 0 )
 		{
 //			xwl_renderer_post( &cfg );
-			_api_provider.swap_buffers( window->handle );
+			_api_provider.swap_buffers( wh );
 		}
 	}
 	
@@ -927,12 +918,6 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		}
 	}
 
-#if LINUX
-Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
-{
-    return event->xany.window == (Window)userdata;
-}
-#endif
 
 void xwl_shutdown( void )
 {
@@ -945,9 +930,7 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
-#if LINUX
-			XDestroyWindow( currentDisplay, (Window)wh->handle.handle );
-#endif
+			//_api_provider.destroy_context( &wh->handle );
 			_window_provider.destroy_window( &wh->handle );
 			wh->handle.handle = 0;
 		}
@@ -959,140 +942,9 @@ void xwl_shutdown( void )
 
 	_window_provider.shutdown();
 	_input_provider.shutdown();
-
-#if LINUX
-    if ( currentInputMethod )
-    {
-        XCloseIM( currentInputMethod );
-        XCloseDisplay( currentDisplay );
-        currentInputMethod = 0;
-        currentDisplay = 0;
-    }
-#endif
-
-}
+} // xwl_shutdown
 
 #ifdef LINUX
-
-// this code taken straight from SFML-1.6
-unsigned int X11KeyToXWL( KeySym sym )
-{
-    // First convert to uppercase (to avoid dealing with two different keysyms for the same key)
-    KeySym Lower, Key;
-    XConvertCase(sym, &Lower, &Key);
-
-    switch (Key)
-    {
-        case XK_Shift_L :      return XWLK_LSHIFT;
-        case XK_Shift_R :      return XWLK_RSHIFT;
-        case XK_Control_L :    return XWLK_LCONTROL;
-        case XK_Control_R :    return XWLK_RCONTROL;
-        case XK_Alt_L :        return XWLK_LALT;
-        case XK_Alt_R :        return XWLK_RALT;
-        case XK_Super_L :      return XWLK_LSYSTEM;
-        case XK_Super_R :      return XWLK_RSYSTEM;
-        case XK_Menu :         return XWLK_MENU;
-        case XK_Escape :       return XWLK_ESCAPE;
-        case XK_semicolon :    return XWLK_SEMICOLON;
-        case XK_slash :        return XWLK_SLASH;
-        case XK_equal :        return XWLK_EQUALS;
-        case XK_minus :        return XWLK_MINUS;
-        case XK_bracketleft :  return XWLK_LBRACKET;
-        case XK_bracketright : return XWLK_RBRACKET;
-        case XK_comma :        return XWLK_COMMA;
-        case XK_period :       return XWLK_PERIOD;
-        case XK_apostrophe :   return XWLK_QUOTE;
-        case XK_backslash :    return XWLK_BACKSLASH;
-        case XK_grave :        return XWLK_TILDE;
-        case XK_space :        return XWLK_SPACE;
-        case XK_Return :       return XWLK_RETURN;
-        case XK_KP_Enter :     return XWLK_RETURN;
-        case XK_BackSpace :    return XWLK_BACKSPACE;
-        case XK_Tab :          return XWLK_TAB;
-        case XK_Prior :        return XWLK_PAGEUP;
-        case XK_Next :         return XWLK_PAGEDN;
-        case XK_End :          return XWLK_END;
-        case XK_Home :         return XWLK_HOME;
-        case XK_Insert :       return XWLK_INSERT;
-        case XK_Delete :       return XWLK_DELETE;
-        case XK_KP_Add :       return XWLK_ADD;
-        case XK_KP_Subtract :  return XWLK_SUBTRACT;
-        case XK_KP_Multiply :  return XWLK_MULTIPLY;
-        case XK_KP_Divide :    return XWLK_DIVIDE;
-        case XK_Pause :        return XWLK_PAUSE;
-        case XK_F1 :           return XWLK_F1;
-        case XK_F2 :           return XWLK_F2;
-        case XK_F3 :           return XWLK_F3;
-        case XK_F4 :           return XWLK_F4;
-        case XK_F5 :           return XWLK_F5;
-        case XK_F6 :           return XWLK_F6;
-        case XK_F7 :           return XWLK_F7;
-        case XK_F8 :           return XWLK_F8;
-        case XK_F9 :           return XWLK_F9;
-        case XK_F10 :          return XWLK_F10;
-        case XK_F11 :          return XWLK_F11;
-        case XK_F12 :          return XWLK_F12;
-        case XK_F13 :          return XWLK_F13;
-        case XK_F14 :          return XWLK_F14;
-        case XK_F15 :          return XWLK_F15;
-        case XK_Left :         return XWLK_LEFT;
-        case XK_Right :        return XWLK_RIGHT;
-        case XK_Up :           return XWLK_UP;
-        case XK_Down :         return XWLK_DOWN;
-        case XK_KP_0 :         return XWLK_NUMPAD0;
-        case XK_KP_1 :         return XWLK_NUMPAD1;
-        case XK_KP_2 :         return XWLK_NUMPAD2;
-        case XK_KP_3 :         return XWLK_NUMPAD3;
-        case XK_KP_4 :         return XWLK_NUMPAD4;
-        case XK_KP_5 :         return XWLK_NUMPAD5;
-        case XK_KP_6 :         return XWLK_NUMPAD6;
-        case XK_KP_7 :         return XWLK_NUMPAD7;
-        case XK_KP_8 :         return XWLK_NUMPAD8;
-        case XK_KP_9 :         return XWLK_NUMPAD9;
-        case XK_A :            return XWLK_A;
-        case XK_Z :            return XWLK_Z;
-        case XK_E :            return XWLK_E;
-        case XK_R :            return XWLK_R;
-        case XK_T :            return XWLK_T;
-        case XK_Y :            return XWLK_Y;
-        case XK_U :            return XWLK_U;
-        case XK_I :            return XWLK_I;
-        case XK_O :            return XWLK_O;
-        case XK_P :            return XWLK_P;
-        case XK_Q :            return XWLK_Q;
-        case XK_S :            return XWLK_S;
-        case XK_D :            return XWLK_D;
-        case XK_F :            return XWLK_F;
-        case XK_G :            return XWLK_G;
-        case XK_H :            return XWLK_H;
-        case XK_J :            return XWLK_J;
-        case XK_K :            return XWLK_K;
-        case XK_L :            return XWLK_L;
-        case XK_M :            return XWLK_M;
-        case XK_W :            return XWLK_W;
-        case XK_X :            return XWLK_X;
-        case XK_C :            return XWLK_C;
-        case XK_V :            return XWLK_V;
-        case XK_B :            return XWLK_B;
-        case XK_N :            return XWLK_N;
-        case XK_0 :            return XWLK_0;
-        case XK_1 :            return XWLK_1;
-        case XK_2 :            return XWLK_2;
-        case XK_3 :            return XWLK_3;
-        case XK_4 :            return XWLK_4;
-        case XK_5 :            return XWLK_5;
-        case XK_6 :            return XWLK_6;
-        case XK_7 :            return XWLK_7;
-        case XK_8 :            return XWLK_8;
-        case XK_9 :            return XWLK_9;
-        case XK_Num_Lock:	   return XWLK_NUMLOCK;
-
-        // this does not match with the caps lock button
-        //case XK_Caps_Lock:		return XWLK_CAPSLOCK;
-    }
-    fprintf( stderr, "[xwl] Unknown Key: %u\n", (unsigned int)Key );
-    return 0;
-}
 
 
 void ProcessEvent( XEvent event, xwl_native_window_t * window )
@@ -1240,6 +1092,12 @@ int xwl_dispatch_events()
 {
 	int result;
 	
+	if ( !_input_provider.dispatch_events )
+	{
+		fprintf( stderr, "input provider dispatch_events is NULL\n" );
+		return 0;
+	}
+
 	result = _input_provider.dispatch_events();
 #ifdef _WIN32
 	MSG msg;
@@ -1249,56 +1107,6 @@ int xwl_dispatch_events()
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
 	}
-#endif
-
-#if LINUX
-    XEvent ev;
-    int i;
-    xwl_native_window_t *wh = 0;
-    XEvent lastKeyReleaseEvent;
-
-    for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
-    {
-        wh = &xwl_windowHandles[i];
-        if ( wh->handle.handle != 0 )
-        {
-            while (XCheckIfEvent( currentDisplay, &ev, &CheckEvent, wh->handle.handle) )
-            {
-                if ((ev.type == KeyPress) || (ev.type == KeyRelease) )
-                {
-                    if ( ev.xkey.keycode < 256 )
-                    {
-                        // To detect if it is a repeated key event, we check the current state of the key.
-                        // - If the state is "down", KeyReleased events must obviously be discarded.
-                        // - KeyPress events are a little bit harder to handle: they depend on the EnableKeyRepeat state,
-                        //   and we need to properly forward the first one.
-                        char keys[32];
-                        XQueryKeymap(currentDisplay, keys);
-                        if (keys[ev.xkey.keycode >> 3] & (1 << (ev.xkey.keycode % 8)))
-                        {
-                            // KeyRelease event + key down = repeated event --> discard
-                            if (ev.type == KeyRelease)
-                            {
-                                lastKeyReleaseEvent = ev;
-                                continue;
-                            }
-
-                            // KeyPress event + key repeat disabled + matching KeyRelease event = repeated event --> discard
-                            if ((ev.type == KeyPress) &&
-                                (lastKeyReleaseEvent.xkey.keycode == ev.xkey.keycode) &&
-                                (lastKeyReleaseEvent.xkey.time == ev.xkey.time))
-                            {
-                                continue;
-                            }
-                        }
-                    }
-                }
-
-                ProcessEvent( ev, wh );
-            }
-        }
-    }
-
 #endif
 
 	return result;
@@ -1346,23 +1154,31 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 		++attribs;
 	}
 	
+
+	// give the API first crack at creating a pixel format
+	int pixel_format = _api_provider.pixel_format( attributes );
+
+	// cache the pixel format
+	wh->handle.pixel_format = pixel_format;
+
 	// create the native window
-	wh->handle.handle = _window_provider.create_window( wh, title, attributes );
+	wh->handle.handle = _window_provider.create_window( wh, title, attributes, pixel_format );
 	if ( !wh->handle.handle )
 	{
+		xwl_set_error( "window creation failed" );
 		return 0;
 	}
 
-
 	// create a context
-	void * context = _api_provider.create_context( wh->handle.handle, &_window_provider, attributes, 0 );
+	void * context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );
 	if ( !context )
 	{
+		xwl_set_error( "context creation failed" );
 		return 0;
 	}
 
 	// activate the context with this window
-	_api_provider.activate_context( context, wh->handle.handle );
+	_api_provider.activate_context( context, wh );
 
 
 #ifdef _WIN32

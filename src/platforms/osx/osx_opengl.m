@@ -5,7 +5,7 @@
 
 #import <string.h>
 
-void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
+void *cocoa_opengl_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
 	NSOpenGLPixelFormatAttribute * outattribs = 0;
 	NSOpenGLPixelFormatAttribute * attrib_pointer = 0;
@@ -72,16 +72,16 @@ void *cocoa_opengl_create_context( void * native_window, xwl_window_provider_t *
 	return context;
 } // cocoa_opengl_create_context
 
-void cocoa_opengl_destroy_context( void * context, void * native_window, xwl_window_provider_t * wapi )
+void cocoa_opengl_destroy_context( void * context, xwl_native_window_t * native_window, xwl_window_provider_t * wapi )
 {
 	NSLog( @"destroy opengl context" );
 	[NSOpenGLContext clearCurrentContext];
 } // cocoa_opengl_destroy_context
 
 
-void cocoa_opengl_activate_context( void * context, void * native_window )
+void cocoa_opengl_activate_context( void * context, xwl_native_window_t * native_window )
 {
-	xwlWindow * window = (xwlWindow*)native_window;
+	xwlWindow * window = (xwlWindow*)native_window->handle;
 	xwlOpenGLView * view = nil;
 	NSOpenGLContext * ctx = (NSOpenGLContext*)context;
 	
@@ -116,9 +116,9 @@ void cocoa_opengl_activate_context( void * context, void * native_window )
 	[view release];
 } // cocoa_opengl_activate_context
 
-void cocoa_opengl_swap_buffers( void * native_window )
+void cocoa_opengl_swap_buffers( xwl_native_window_t * native_window )
 {
-	xwlWindow * window = (xwlWindow*)native_window;	
+	xwlWindow * window = (xwlWindow*)native_window->handle;	
 	xwlOpenGLView * view = [window contentView];
 	[[view getContext] flushBuffer];
 } // cocoa_opengl_swap_buffers

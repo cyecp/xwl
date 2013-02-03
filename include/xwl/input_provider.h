@@ -13,6 +13,8 @@ struct xwl_native_window_s;
 // Input functions
 typedef int (*xwl_input_provider_startup)( void );
 typedef void (*xwl_input_provider_shutdown)( void );
+
+// returns > 0 if one or more events were processed
 typedef int (*xwl_input_provider_dispatch_events)( void );
 	
 typedef struct xwl_input_provider_s
