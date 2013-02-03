@@ -1,39 +1,73 @@
 newoption {
-	trigger = "raspberrypi",
+	trigger = "rpi",
 	value = nil,
-	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1, plus platform files."
+	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1,-DEGL=1, plus platform files."
 }
 
+newoption {
+	trigger = "egl",
+	value = nil,
+	description = "Enable EGL support, adds -DEGL=1, plus platform files."
+}
+
+if _OPTIONS["rpi"] then
+	print( "Compiling for the RaspberryPi..." )
+end
+
+if _OPTIONS["egl"] then
+	print( "Compiling with EGL..." )
+end
+
 function setup_raspberry_pi()
-			print( "Compiling for raspberry pi" )
-			defines
-			{
-				"RASPBERRYPI=1"
-			}
+	defines
+	{
+		"RASPBERRYPI=1",
+		"EGL=1",
+	}
 
-			files
-			{
-				"src/platforms/rpi/**.c",
-				"include/platforms/rpi/**.h"
-			}
+	files
+	{
+		"src/platforms/egl/**.c",
+		"include/platforms/egl/**.h",
+		"src/platforms/rpi/**.c",
+		"include/platforms/rpi/**.h",
+	}
 
-			libdirs
-			{
-				"/opt/vc/lib"
-			}
+	libdirs
+	{
+		"/opt/vc/lib"
+	}
 
-			includedirs
-			{
-				"/opt/vc/include",
-				"includes/platforms/rpi/"
-			}
+	includedirs
+	{
+		"/opt/vc/include",
+		"includes/platforms/rpi/",
+		"includes/platforms/egl/"
+	}
 
-			links
-			{
-				"EGL",
-				"GLESv2"
-			}
+	links
+	{
+		"EGL",
+		"GLESv2"
+	}
+end
 
+function setup_egl()
+	defines
+	{
+		"EGL=1"
+	}
+
+	files
+	{
+		"src/platforms/egl/**.c",
+		"include/platforms/egl/**.h"
+	}
+
+	links
+	{
+		"EGL"
+	}
 end
 
 
@@ -86,10 +120,10 @@ project "xwl"
 			"include/platforms/x11/**.h"
 		}
 
-		if _OPTIONS["raspberrypi"] ~= nil then
+		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		else
-			
+		elseif _OPTIONS["egl"] ~= nil then
+			setup_egl()
 		end
 
 	configuration{ "macosx" }
@@ -165,9 +199,10 @@ project "sample"
 			"GL"
 		}
 
-		if _OPTIONS["raspberrypi"] ~= nil then
+		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		else
+		elseif _OPTIONS["egl"] ~= nil then
+			setup_egl()
 		end
 
 

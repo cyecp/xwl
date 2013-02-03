@@ -53,7 +53,7 @@ void x11_opengl_activate_context( void * context, xwl_native_window_t * native_w
 	success = glXMakeCurrent( x11_current_display(), window, (GLXContext)context );
 	if ( !success )
 	{
-		fprintf( stdout, "glXMakeCurrent failed on context %p\n", context );	
+		fprintf( stdout, "glXMakeCurrent failed on context %p\n", context );
 	}
 	
 } // x11_opengl_activate_context
@@ -68,6 +68,7 @@ void x11_opengl_swap_buffers( xwl_native_window_t * window )
 
 int x11_opengl_pixel_format( unsigned int * attribs )
 {
+	fprintf( stdout, "x11_opengl_pixel_format\n" );
 	int attrib[] = {GLX_RGBA, GLX_DOUBLEBUFFER, // need double buffering
 							GLX_RGBA,
                             GLX_DEPTH_SIZE, 16,    // put in the depth size

@@ -664,6 +664,10 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 		#include <xwl/platforms/rpi/rpi.h>
 	#endif
 
+	#if EGL
+		#include <xwl/platforms/egl/egl.h>
+	#endif
+
 	#include <xwl/platforms/x11/x11.h>
 #endif
 
@@ -705,7 +709,13 @@ xwl_api_provider_register _api_providers[] = {
 	0, // invalid
 	0, // default
 #if LINUX
-	0, // EGL
+
+	#if EGL
+		egl_api_register,
+	#else
+		0, // EGL
+	#endif
+
 	x11_opengl_register, // X11,
 #else
 	0, 0,
@@ -1196,6 +1206,10 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 
 	// give the API first crack at creating a pixel format
 	int pixel_format = _api_provider.pixel_format( attributes );
+	if ( pixel_format < 0 )
+	{
+		return 0;
+	}
 
 	// cache the pixel format
 	wh->handle.pixel_format = pixel_format;
@@ -1212,7 +1226,10 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	void * context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );
 	if ( !context )
 	{
-		xwl_set_error( "context creation failed" );
+		if ( !xwl_get_error() )
+		{
+			xwl_set_error( "context creation failed" );
+		}
 		return 0;
 	}
 

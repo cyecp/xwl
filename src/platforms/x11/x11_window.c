@@ -121,8 +121,8 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 
 
 	fprintf( stdout, "[xwl] Attempting to create a window\n" );
-	native_window = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, CWColormap | CWEventMask, &window_attribs );
-
+	native_window = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, CWBackPixel | CWBorderPixel | CWColormap | CWEventMask, &window_attribs );
+	fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
 
 	// free the visual
 	fprintf( stdout, "[xwl] Freeing visual...\n" );
