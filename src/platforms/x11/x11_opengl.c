@@ -86,6 +86,12 @@ int x11_opengl_pixel_format( unsigned int * attribs )
 	return visual->visualid; 
 } // x11_opengl_pixel_format
 
+void * x11_opengl_get_symbol( const char * symbol_name )
+{
+	return (void*)glXGetProcAddress( (const GLubyte*)symbol_name );
+} // x11_opengl_get_symbol
+
+
 void x11_opengl_register( xwl_api_provider_t * api )
 {
 	api->create_context = x11_opengl_create_context;
@@ -94,4 +100,5 @@ void x11_opengl_register( xwl_api_provider_t * api )
 	api->swap_buffers = x11_opengl_swap_buffers;
 
 	api->pixel_format = x11_opengl_pixel_format;
+	api->get_symbol = x11_opengl_get_symbol;
 }

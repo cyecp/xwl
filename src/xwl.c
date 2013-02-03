@@ -4,6 +4,7 @@
 #include <string.h> // for memset
 #include <wchar.h>
 
+#include <xlib.h>
 
 #if _WIN32
 
@@ -33,6 +34,8 @@ static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
 const char * xwlerror;
+
+xlib_t api_lib;
 
 const char * xwl_get_error()
 {
@@ -122,7 +125,7 @@ void xwl_activate( xwl_window_t * window )
 	}
 	
 	cfg.window = window;
-	xwl_renderer_activate( &cfg );
+//	xwl_renderer_activate( &cfg );
 }
 
 
@@ -716,7 +719,11 @@ xwl_api_provider_register _api_providers[] = {
 		0, // EGL
 	#endif
 
-	x11_opengl_register, // X11,
+	#if 1
+		x11_opengl_register, // X11,
+	#else
+		0,
+	#endif
 #else
 	0, 0,
 #endif
@@ -910,7 +917,39 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		xwl_set_error( "No valid Input provider found!" );
 		return 0;
 	}
+
+
     
+
+	// open a handle to the correct API library
+
+	const char * library_name = "";
+#if LINUX
+	#if RASPBERRYPI
+		library_name = "libGLESv2.so";
+	#else
+		library_name = "libGL.so";
+	#endif
+
+	if ( api_provider == XWL_API_PROVIDER_EGL )
+	{
+		library_name = "libGLESv2.so";
+	}
+#elif __APPLE__
+		// sure.
+#elif _WIN32
+		library_name = "OpenGL32.dll";
+#endif
+
+	fprintf( stdout, "Linking with library '%s'\n", library_name );
+	if ( !xlib_open( &api_lib, library_name ) )
+	{
+		xwl_set_error( "Unable to link with API library" );
+		return 0;
+	}
+
+
+
 #ifdef _WIN32
 	// initialize key map
 	lshift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
@@ -920,52 +959,56 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 } // xwl_startup
 
 	
-	void xwl_swap_buffers( xwl_window_t * window )
-	{
-//		xwl_renderer_settings_t cfg;
-#if LINUX
-//		cfg.display = currentDisplay;
-//		cfg.screen = currentScreen;
-#endif
 
-		//fprintf( stdout, "[xwl] swap buffers...\n" );
-		
-//		cfg.window = window;
-		xwl_native_window_t * wh;
-		//fprintf( stdout, "[xwl] swap buffers on window: %i\n", window->id );
-		wh = &xwl_windowHandles[ window->id ];
-		
-		if ( wh && wh->handle.handle != 0 )
-		{
-//			xwl_renderer_post( &cfg );
-			_api_provider.swap_buffers( wh );
-		}
+void * xwl_findsymbol( const char * symbol_name )
+{
+	// first try to get the symbol with the API specific implementation.
+	void * func = _api_provider.get_symbol( symbol_name );
+
+	// if that fails, try to get it from the dynamic library
+	if ( !func )
+	{
+		fprintf( stderr, "Find symbol '%s' failed with api provider. Attempting library.\n", symbol_name );
+		func = xlib_find_symbol( &api_lib, symbol_name );
 	}
 	
-	void xwl_finish()
+	if ( !func )
 	{
-		// loop through all windows and call finish
-		xwl_native_window_t * wh = 0;
-		xwl_renderer_settings_t cfg;
-		int i;
-		
-#if LINUX
-		cfg.display = currentDisplay;
-		cfg.screen = currentScreen;
-#endif
-		
-		for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
+		fprintf( stderr, "Symbol, '%s' NOT FOUND!\n", symbol_name );
+	}
+
+	return func;
+}
+
+void xwl_swap_buffers( xwl_window_t * window )
+{
+	xwl_native_window_t * wh;
+	//fprintf( stdout, "[xwl] swap buffers on window: %i\n", window->id );
+	wh = &xwl_windowHandles[ window->id ];
+	if ( wh && wh->handle.handle != 0 )
+	{
+		_api_provider.swap_buffers( wh );
+	}
+}
+
+void xwl_finish()
+{
+	// loop through all windows and call finish
+	xwl_native_window_t * wh = 0;
+	int i;
+	
+	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
+	{
+		wh = &xwl_windowHandles[i];
+//		cfg.window = &wh->handle;
+					
+		if ( wh->handle.handle != 0 )
 		{
-			wh = &xwl_windowHandles[i];
-			cfg.window = &wh->handle;
-			
-			
-			if ( wh->handle.handle != 0 )
-			{
-				xwl_renderer_post( &cfg );
-			}
+			xwl_swap_buffers( &wh->handle );
+//			xwl_renderer_post( &cfg );
 		}
 	}
+}
 
 
 void xwl_shutdown( void )
@@ -987,6 +1030,9 @@ void xwl_shutdown( void )
 		memset( wh, 0, sizeof(xwl_native_window_t) );
 	}
 
+
+	// close the library
+	xlib_close( &api_lib );
 
 
 	_window_provider.shutdown();
@@ -1203,7 +1249,6 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 		++attribs;
 	}
 	
-
 	// give the API first crack at creating a pixel format
 	int pixel_format = _api_provider.pixel_format( attributes );
 	if ( pixel_format < 0 )

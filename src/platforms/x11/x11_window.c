@@ -101,6 +101,7 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	XSetWindowAttributes window_attribs;
 	int window_width;
 	int window_height;
+	int cwmask;
 
 	XVisualInfo * visual = x11_fetch_visual( pixel_format );
 	if ( !visual )
@@ -113,15 +114,19 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	window_width = attributes[ XWL_WINDOW_WIDTH ];
 	window_height = attributes[ XWL_WINDOW_HEIGHT ];
 
+	window_attribs.background_pixel = 0;
+	window_attribs.border_pixel = 0;
+
 	// we now have the visual; move on to creating the window now...
 	window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
 
 	fprintf( stdout, "[xwl] Create a color map... \n");
 	window_attribs.colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), visual->visual, AllocNone );
 
+	cwmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
 	fprintf( stdout, "[xwl] Attempting to create a window\n" );
-	native_window = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, CWBackPixel | CWBorderPixel | CWColormap | CWEventMask, &window_attribs );
+	native_window = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, cwmask, &window_attribs );
 	fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
 
 	// free the visual
@@ -142,17 +147,35 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 					XInternAtom(currentDisplay, "UTF8_STRING", False),
 					8, PropModeReplace, (unsigned char*)utf8_title, strlen(utf8_title) );
 
+	// send a message to the xserver to convert this window to fullscreen
+	if ( attributes[ XWL_USE_FULLSCREEN ] )
+	{
+		Atom wm_state = XInternAtom( currentDisplay, "_NET_WM_STATE", False );
+		Atom fullscreen = XInternAtom( currentDisplay, "_NET_WM_STATE_FULLSCREEN", False );
+
+		XEvent ev;
+		memset( &ev, 0, sizeof(XEvent) );
+		ev.type = ClientMessage;
+		ev.xclient.window = native_window;
+		ev.xclient.message_type = wm_state;
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = 1;
+		ev.xclient.data.l[1] = fullscreen;
+		ev.xclient.data.l[2] = 0;
+
+		fprintf( stdout, "[xwl] converting window to fullscreen...\n" );
+		XSendEvent( currentDisplay, DefaultRootWindow(currentDisplay), False,
+			SubstructureRedirectMask | SubstructureNotifyMask, &ev );
+	}
+
 	// show the window
 	XMapWindow( currentDisplay, native_window );
 
 	XFlush( currentDisplay );
 
-
 	// standard init
 	//myAtomClose = XInternAtom( currentDisplay, "WM_DELETE_WINDOW", 0 );
 	//XSetWMProtocols( currentDisplay, handle, &myAtomClose, 1 );
-
-
 
 	handle->handle.handle = (void*)native_window;
 	//wh->handle.userdata = params->userdata;
@@ -165,9 +188,6 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 			xwlPrintf( "[xwl::X11] Failed to create input context!\n" );
 		}
 	}
-
-
-
 
 	return (void*)native_window;
 } // x11_window_create_window

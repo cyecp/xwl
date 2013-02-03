@@ -14,8 +14,9 @@ i32 my;
 	#include <gl/gl.h>
 	#pragma comment( lib, "opengl32.lib" )
 #elif LINUX
-	#include <GL/gl.h>
-	#include <GL/glx.h>
+	//#include <GL/gl.h>
+	//#include <GL/glx.h>
+	#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
 #elif __APPLE__
 	// for OSX 10.6
 	#include <OpenGL/OpenGL.h>
@@ -81,6 +82,12 @@ void callback( xwl_event_t * e )
 	}
 }
 
+typedef unsigned int GLbitfield;
+
+typedef const GLubyte * (*getString)( GLenum );
+typedef void (*clearColor)( GLfloat, GLfloat, GLfloat, GLfloat );
+typedef void (*clear)( GLbitfield mask );
+
 int main()
 {
 	xwl_window_t *w = 0;
@@ -97,16 +104,18 @@ int main()
 //        XWL_API_MINOR_VERSION, 2,
         XWL_WINDOW_WIDTH, window_width,
         XWL_WINDOW_HEIGHT, window_height,
-//		XWL_USE_FULLSCREEN, 1,
+		XWL_USE_FULLSCREEN, 1,
         XWL_NONE,
     };
-	
+	getString gl_getstring = 0;
+	clearColor gl_clearcolor = 0;
+	clear gl_clear = 0;
 	
 	#if RASPBERRYPI
 		window_provider = XWL_WINDOW_PROVIDER_RASPBERRYPI;
 	#endif
 
-	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_DEFAULT, XWL_INPUT_PROVIDER_DEFAULT ) )
+	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_X11, XWL_INPUT_PROVIDER_DEFAULT ) )
 	{
 		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );
 		return -1;
@@ -144,17 +153,28 @@ int main()
 	// set event callback
 	xwl_set_callback( callback );
 
-#if 1
-	xwlPrintf( "-> GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
-	xwlPrintf( "-> GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
-	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );
-#endif
+	
+	gl_getstring = xwl_findsymbol( "glGetString" );
+	if ( gl_getstring )
+	{
+		xwlPrintf( "-> GL_VENDOR: %s\n", gl_getstring( GL_VENDOR ) );
+		xwlPrintf( "-> GL_RENDERER: %s\n", gl_getstring( GL_RENDERER ) );
+		xwlPrintf( "-> GL_VERSION: %s\n", gl_getstring( GL_VERSION ) );
+	}
+
+	gl_clearcolor = xwl_findsymbol( "glClearColor" );
+	gl_clear = xwl_findsymbol( "glClear" );
 
 	while( running )
 	{
 		xwl_dispatch_events();
-#if 1
-		glClearColor(0.25, 0.25, 0.25, 1.0);
+
+		// show a purple screen to indicate success
+		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
+		gl_clear( GL_COLOR_BUFFER_BIT );
+
+// legacy opengl api
+#if 0
 		glClear( GL_COLOR_BUFFER_BIT );
 		glViewport( 0, 0, window_width, window_height );
 

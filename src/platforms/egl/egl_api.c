@@ -2,30 +2,35 @@
 #include <stdio.h>
 
 #include <EGL/egl.h>
+#include <assert.h>
+
+static EGLDisplay display;
+static EGLConfig config;
+static EGLSurface surface;
 
 
-EGLDisplay display;
-EGLConfig config;
-EGLSurface surface;
+Display * x11_current_display();
 
 void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
 	EGLint api_type = EGL_OPENGL_API;
 	EGLContext context;
 	EGLBoolean result;
-
-	EGLint eglattribs[] = {
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_CONFIG_CAVEAT, EGL_NONE,
-		EGL_DEPTH_SIZE, 16,
-		EGL_BUFFER_SIZE, 32,
-		EGL_NONE
-	};
+	int major_api_version = 2;
 
 	EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
+
+	EGLint value;
+
+
+	if ( attributes[ XWL_API_MAJOR_VERSION ] )
+	{
+		major_api_version = attributes[ XWL_API_MAJOR_VERSION ];
+		context_attribs[ 1 ] = major_api_version;
+	}
 
 	//if ( attributes[ XWL_API ] == XWL_API_GLES2 )
 	//{
@@ -49,8 +54,13 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 		return 0;
 	}
 
-
-
+	eglQueryContext( display, context, EGL_CONTEXT_CLIENT_VERSION, &value);
+	if ( value != major_api_version )
+	{
+		xwl_set_error( "Context returned a different version than requested!" );
+		eglDestroyContext( display, context );
+		return 0;
+	}
 
 	surface = eglCreateWindowSurface( display, config, (EGLNativeWindowType)native_window->handle.handle, 0 );
 	if ( surface == EGL_NO_SURFACE )
@@ -58,7 +68,6 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 		xwl_set_error( "eglCreateWindowSurface failed" );
 		return 0;
 	}
-
 
 	fprintf( stdout, "egl_api_create_context\n" );
 	return context;
@@ -110,18 +119,21 @@ int egl_api_pixel_format( unsigned int * attribs )
 	EGLBoolean result;
 	EGLint num_configs;
 	EGLint visual_id;
+	const char * eglstring;
 
 	EGLint eglattribs[] = {
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_CONFIG_CAVEAT, EGL_NONE,
-		EGL_DEPTH_SIZE, 16,
-		EGL_BUFFER_SIZE, 32,
+		//EGL_CONFIG_CAVEAT, EGL_NONE,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
 		EGL_NONE
 	};
 
 	fprintf( stdout, "egl_api_pixel_format\n" );
 
-	display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+	display = eglGetDisplay( x11_current_display() );  // EGL_DEFAULT_DISPLAY
 	if ( display == EGL_NO_DISPLAY )
 	{
 		xwl_set_error( "eglGetDisplay failed" );
@@ -156,8 +168,29 @@ int egl_api_pixel_format( unsigned int * attribs )
 
 	fprintf( stdout, "EGL config chosen, visual: %i\n", visual_id );
 
+	eglstring = (const char*) eglQueryString( display, EGL_VENDOR );
+	fprintf( stdout, "EGL_VENDOR: %s\n", eglstring );
+
+	eglstring = (const char*) eglQueryString( display, EGL_VERSION );
+	fprintf( stdout, "EGL_VERSION: %s\n", eglstring );
+
+	eglstring = (const char*) eglQueryString( display, EGL_CLIENT_APIS );
+	fprintf( stdout, "EGL_CLIENT_APIS: %s\n", eglstring );
+
+	eglstring = (const char*) eglQueryString( display, EGL_EXTENSIONS );
+	fprintf( stdout, "EGL_EXTENSIONS: %s\n", eglstring );	
+
 	return visual_id;
 } // egl_api_pixel_format
+
+void * egl_api_get_symbol( const char * symbol_name )
+{
+	//return 0;
+	// VERIFY THIS
+	// Watch the output of this, we may need to force this to always return 0,
+	// because eglGetProcAddress may not be suitable for Core Profile functions in the future.
+	return eglGetProcAddress( symbol_name );
+} // egl_api_get_symbol
 
 void egl_api_register( xwl_api_provider_t * api )
 {
@@ -167,4 +200,5 @@ void egl_api_register( xwl_api_provider_t * api )
 	api->swap_buffers = egl_api_swap_buffers;
 
 	api->pixel_format = egl_api_pixel_format;
+	api->get_symbol = egl_api_get_symbol;
 }

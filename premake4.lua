@@ -5,7 +5,7 @@ newoption {
 }
 
 newoption {
-	trigger = "egl",
+	trigger = "with-egl",
 	value = nil,
 	description = "Enable EGL support, adds -DEGL=1, plus platform files."
 }
@@ -14,7 +14,7 @@ if _OPTIONS["rpi"] then
 	print( "Compiling for the RaspberryPi..." )
 end
 
-if _OPTIONS["egl"] then
+if _OPTIONS["with-egl"] then
 	print( "Compiling with EGL..." )
 end
 
@@ -99,7 +99,7 @@ project "xwl"
 		"include/**.h"
 	}
 
-	excludes { "samples/**.c" }
+	excludes { "samples/**.c", "src/ogl.c" }
 	
 	includedirs 
 	{ 
@@ -122,7 +122,7 @@ project "xwl"
 
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		elseif _OPTIONS["egl"] ~= nil then
+		elseif _OPTIONS["with-egl"] ~= nil then
 			setup_egl()
 		end
 
@@ -201,10 +201,9 @@ project "sample"
 
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		elseif _OPTIONS["egl"] ~= nil then
+		elseif _OPTIONS["with-egl"] ~= nil then
 			setup_egl()
 		end
-
 
 	configuration{ "macosx" }
 		defines { "__MACH__", baseDefines }

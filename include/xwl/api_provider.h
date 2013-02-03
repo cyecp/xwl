@@ -15,6 +15,7 @@ typedef void *(*xwl_api_provider_create_context)( struct xwl_native_window_s * n
 typedef void (*xwl_api_provider_destroy_context)( void * context, struct xwl_native_window_s * native_window, struct xwl_window_provider_s * wapi );
 typedef void (*xwl_api_provider_activate_context)( void * context, struct xwl_native_window_s * native_window );
 typedef void (*xwl_api_provider_swap_buffers)( struct xwl_native_window_s * native_window );
+typedef void *(*xwl_api_provider_get_symbol)( const char * symbol_name );
 
 // return a valid pixel format; returns < 0 on failure
 typedef int (*xwl_api_provider_pixel_format)( unsigned int * attribs );
@@ -26,6 +27,7 @@ typedef struct xwl_api_provider_s
 	xwl_api_provider_activate_context activate_context;
 	xwl_api_provider_swap_buffers swap_buffers;
 	xwl_api_provider_pixel_format pixel_format;
+	xwl_api_provider_get_symbol get_symbol;
 } xwl_api_provider_t;
 
 // register functions for this provider

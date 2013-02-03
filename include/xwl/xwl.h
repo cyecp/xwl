@@ -216,7 +216,7 @@ typedef struct xwl_window_s
     void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
     void *xwl_rendering_context( xwl_window_t * window );
 	
-	
+	void * xwl_findsymbol( const char * symbol_name );
     
     // -- platform specifics
     typedef struct xwl_renderer_settings_s
