@@ -104,7 +104,7 @@ int main()
 //        XWL_API_MINOR_VERSION, 2,
         XWL_WINDOW_WIDTH, window_width,
         XWL_WINDOW_HEIGHT, window_height,
-		XWL_USE_FULLSCREEN, 1,
+		// XWL_USE_FULLSCREEN, 1,
         XWL_NONE,
     };
 	getString gl_getstring = 0;

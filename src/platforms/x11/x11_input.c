@@ -6,19 +6,29 @@
 // #include <X11/keysym.h>
 // #include <X11/extensions/Xrandr.h>
 
-static Display *currentDisplay = 0;
-static int currentScreen = 0;
-static XIM currentInputMethod = 0;
+// define this to use the 20 year old XIM. (works on Ubuntu 12.04 Desktop)
+#define USE_XIM 0
+
+// define this to try another method of XEvents...
+
+#if USE_XIM
+	static XIM currentInputMethod = 0;	
+#endif
+
+
 static XComposeStatus currentKeyboardStatus;
 
 xwl_native_window_t *_xwl_window_at_index( int index );
 
 void ProcessEvent( XEvent event, xwl_native_window_t * window );
 
-Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
-{
-	return event->xany.window == (Window)userdata;
-}
+
+#if USE_XIM
+	Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
+	{
+		return event->xany.window == (Window)userdata;
+	}
+#endif
 
 
 
@@ -33,18 +43,21 @@ int x11_input_startup( void )
 		return 0;
 	}
 
+#if USE_XIM
 	currentInputMethod = XOpenIM( x11_current_display(), 0, 0, 0 );
 	if ( !currentInputMethod )
 	{
 		xwl_set_error( "Unable to Open X Input Method!" );
 		return 0;
 	}
+#endif
 
 	return 1;
 }
 
 void x11_input_shutdown( void )
 {
+#if USE_XIM
 	if ( currentInputMethod )
 	{
 		XCloseIM( currentInputMethod );
@@ -52,6 +65,7 @@ void x11_input_shutdown( void )
 		currentInputMethod = 0;
 		
 	}
+#endif
 }
 
 int x11_input_dispatch_events( void )
@@ -69,6 +83,23 @@ int x11_input_dispatch_events( void )
 		return 0;
 	}
 
+	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
+	{
+		wh = _xwl_window_at_index( i );
+		while ( XPending( x11_current_display() ) )
+		{
+			XEvent  ev;
+			XNextEvent( x11_current_display(), &ev );
+
+			if ( ev.xany.window == (Window)wh->handle.handle )
+			{
+				ProcessEvent( ev, wh );	
+			}
+			
+		}
+	}
+
+#if USE_XIM
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
 //		wh = &xwl_windowHandles[i];
@@ -112,6 +143,7 @@ int x11_input_dispatch_events( void )
 			}
 		}
 	}
+#endif
 
 
 	return 0;
@@ -120,8 +152,9 @@ int x11_input_dispatch_events( void )
 
 void x11_input_post_window_creation( xwl_native_window_t * native_window )
 {
+#if USE_XIM
+
 	Window wind;
-	return;
 	if ( currentInputMethod )
 	{
 		wind = (Window)native_window->handle.handle;
@@ -137,6 +170,7 @@ void x11_input_post_window_creation( xwl_native_window_t * native_window )
 	{
 		fprintf( stderr, "currentInputMethod is INVALID\n" );
 	}
+#endif
 } // x11_input_post_window_creation
 
 
