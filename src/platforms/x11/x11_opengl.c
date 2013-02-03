@@ -19,9 +19,8 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 
 	visual = x11_fetch_visual( native_window->handle.pixel_format );
 
-
 	fprintf( stdout, "[xwl] Creating GLXContext...\n" );
-	GLXContext context = glXCreateContext( x11_current_display(), visual, 0, 1 );
+	GLXContext context = glXCreateContext( x11_current_display(), visual, (GLXContext)other_context, True /*Direct Rendering*/ );
 	if ( context )
 	{
 		if ( !glXIsDirect( x11_current_display(), context ) )
