@@ -1,53 +1,17 @@
 #include <xwl/xwl.h>
 #include <stdio.h>
+
+#include <xwl/platforms/x11/x11.h>
 // #include <X11/Xlib.h>
 // #include <X11/keysym.h>
 // #include <X11/extensions/Xrandr.h>
 //#include <X11/XKBlib.h>
 
-static Display *currentDisplay = 0;
-static int currentScreen = 0;
+
 static XIM currentInputMethod = 0;
 static XComposeStatus currentKeyboardStatus;
 
 #include <string.h>
-
-Display * x11_current_display()
-{
-	return currentDisplay;
-}
-
-int x11_current_screen()
-{
-	return currentScreen;
-}
-
-XVisualInfo * x11_fetch_visual( int pixel_format )
-{
-	// Visual Info
-	XVisualInfo * visual = 0;
-	XVisualInfo visualTemplate;
-	int visual_count;
-	visualTemplate.visualid = pixel_format;
-
-	// retrieve the visual
-	fprintf( stdout, "[xwl] Retrieving visual (%i)... \n", pixel_format );
-	visual = XGetVisualInfo( currentDisplay, VisualIDMask, &visualTemplate, &visual_count );
-	if ( !visual )
-	{
-		xwl_set_error( "Unable to find visual!" );
-		return 0;
-	}
-
-	fprintf( stdout, "[xwl] Found visual. visual_count = %i\n", visual_count );
-
-	return visual;
-} // x11_fetch_visual
-
-
-
-
-
 
 //////////////////
 
@@ -57,12 +21,12 @@ int x11_window_startup( xwl_api_provider_t * api )
 	fprintf( stdout, "x11_window_startup\n" );
 
 	//Bool detectable;
-	currentDisplay = XOpenDisplay( 0 );
+	
 
-	if ( currentDisplay )
+	if ( x11_current_display() )
 	{
-		currentScreen = DefaultScreen( currentDisplay );
-		currentInputMethod = XOpenIM( currentDisplay, 0, 0, 0 );
+		x11_set_current_screen( DefaultScreen( x11_current_display() ) );
+		currentInputMethod = XOpenIM( x11_current_display(), 0, 0, 0 );
 	}
 	else
 	{
@@ -73,7 +37,7 @@ int x11_window_startup( xwl_api_provider_t * api )
 	// disable auto-repeats
 	// "The standard behavior of the X server is to generate a KeyRelease event for every KeyPress event."
 	// 
-	//XkbSetDetectableAutorepeat( currentDisplay, True, &detectable );
+	//XkbSetDetectableAutorepeat( x11_current_display(), True, &detectable );
 
 	// install error handler
 	//XSetErrorHandler( xwl_xserver_handler );
@@ -86,9 +50,9 @@ void x11_window_shutdown()
 	if ( currentInputMethod )
 	{
 		XCloseIM( currentInputMethod );
-		XCloseDisplay( currentDisplay );
+
 		currentInputMethod = 0;
-		currentDisplay = 0;
+		x11_close_display();
 	}
 } // x11_window_shutdown
 
@@ -121,12 +85,12 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
 
 	fprintf( stdout, "[xwl] Create a color map... \n");
-	window_attribs.colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), visual->visual, AllocNone );
+	window_attribs.colormap = XCreateColormap( x11_current_display(), RootWindow(x11_current_display(), x11_current_screen()), visual->visual, AllocNone );
 
 	cwmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
 	fprintf( stdout, "[xwl] Attempting to create a window\n" );
-	native_window = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, cwmask, &window_attribs );
+	native_window = XCreateWindow( x11_current_display(), RootWindow(x11_current_display(), x11_current_screen()), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, cwmask, &window_attribs );
 	fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
 
 	// free the visual
@@ -139,19 +103,19 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 
 	//set window name
 	// XStoreName is NOT Unicode aware! So basically, don't use anything except "Host Portable Character Encoding", (essentially, ASCII), or the result will be implementation-dependent.
-	XStoreName( currentDisplay, native_window, utf8_title );
+	XStoreName( x11_current_display(), native_window, utf8_title );
 
 	// to work around XStoreName's shortcomings, we use XChangeProperty with _NEW_WM_NAME
-	XChangeProperty( currentDisplay, native_window,
-					XInternAtom(currentDisplay, "_NET_WM_NAME", False),
-					XInternAtom(currentDisplay, "UTF8_STRING", False),
+	XChangeProperty( x11_current_display(), native_window,
+					XInternAtom(x11_current_display(), "_NET_WM_NAME", False),
+					XInternAtom(x11_current_display(), "UTF8_STRING", False),
 					8, PropModeReplace, (unsigned char*)utf8_title, strlen(utf8_title) );
 
 	// send a message to the xserver to convert this window to fullscreen
 	if ( attributes[ XWL_USE_FULLSCREEN ] )
 	{
-		Atom wm_state = XInternAtom( currentDisplay, "_NET_WM_STATE", False );
-		Atom fullscreen = XInternAtom( currentDisplay, "_NET_WM_STATE_FULLSCREEN", False );
+		Atom wm_state = XInternAtom( x11_current_display(), "_NET_WM_STATE", False );
+		Atom fullscreen = XInternAtom( x11_current_display(), "_NET_WM_STATE_FULLSCREEN", False );
 
 		XEvent ev;
 		memset( &ev, 0, sizeof(XEvent) );
@@ -164,18 +128,18 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 		ev.xclient.data.l[2] = 0;
 
 		fprintf( stdout, "[xwl] converting window to fullscreen...\n" );
-		XSendEvent( currentDisplay, DefaultRootWindow(currentDisplay), False,
+		XSendEvent( x11_current_display(), DefaultRootWindow(x11_current_display()), False,
 			SubstructureRedirectMask | SubstructureNotifyMask, &ev );
 	}
 
 	// show the window
-	XMapWindow( currentDisplay, native_window );
+	XMapWindow( x11_current_display(), native_window );
 
-	XFlush( currentDisplay );
+	XFlush( x11_current_display() );
 
 	// standard init
-	//myAtomClose = XInternAtom( currentDisplay, "WM_DELETE_WINDOW", 0 );
-	//XSetWMProtocols( currentDisplay, handle, &myAtomClose, 1 );
+	//myAtomClose = XInternAtom( x11_current_display(), "WM_DELETE_WINDOW", 0 );
+	//XSetWMProtocols( x11_current_display(), handle, &myAtomClose, 1 );
 
 	handle->handle.handle = (void*)native_window;
 	//wh->handle.userdata = params->userdata;

@@ -21,6 +21,14 @@ Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
 int x11_input_startup( void )
 {
 	printf( "x11_input_startup\n" );
+
+	Display * display = x11_current_display();
+	if ( !display )
+	{
+		xwl_set_error( "Unable to open X11 Display!" );
+		return 0;
+	}
+
 	return 1;
 }
 
