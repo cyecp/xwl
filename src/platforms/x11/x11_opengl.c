@@ -1,16 +1,8 @@
 #include <xwl/xwl.h>
-
 #include <stdio.h>
-
 #include <X11/Xlib.h>
-// #include <X11/keysym.h>
-// #include <X11/extensions/Xrandr.h>
-
 #include <GL/glx.h>
-
-Display * x11_current_display();
-int x11_current_screen();
-XVisualInfo * x11_fetch_visual( int pixel_format );
+#include <xwl/platforms/x11/x11.h>
 
 void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
@@ -42,8 +34,8 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 
 void x11_opengl_destroy_context( void * context, xwl_native_window_t * native_window, struct xwl_window_provider_s * wapi )
 {
-    glXMakeCurrent( x11_current_display(), None, 0 );
-    glXDestroyContext( x11_current_display(), (GLXContext)native_window->handle.context );
+	glXMakeCurrent( x11_current_display(), None, 0 );
+	glXDestroyContext( x11_current_display(), (GLXContext)native_window->handle.context );
 } // x11_opengl_destroy_context
 
 void x11_opengl_activate_context( void * context, xwl_native_window_t * native_window )
@@ -68,20 +60,17 @@ void x11_opengl_swap_buffers( xwl_native_window_t * window )
 
 int x11_opengl_pixel_format( unsigned int * attribs )
 {
-	fprintf( stdout, "x11_opengl_pixel_format\n" );
 	int attrib[] = {GLX_RGBA, GLX_DOUBLEBUFFER, // need double buffering
 							GLX_RGBA,
-                            GLX_DEPTH_SIZE, 16,    // put in the depth size
-                                                        // that was passed to us
-                            GLX_RED_SIZE, 8,            // 8 bits pretty standard for our RGBA
-                            GLX_GREEN_SIZE, 8,
-                            GLX_BLUE_SIZE,8,
-                            GLX_ALPHA_SIZE, 8,
-                            None };
+							GLX_DEPTH_SIZE, 16,	// put in the depth size
+														// that was passed to us
+							GLX_RED_SIZE, 8,			// 8 bits pretty standard for our RGBA
+							GLX_GREEN_SIZE, 8,
+							GLX_BLUE_SIZE,8,
+							GLX_ALPHA_SIZE, 8,
+							None };
 
 	XVisualInfo * visual = glXChooseVisual( x11_current_display(), x11_current_screen(), attrib );
-
-	fprintf( stdout, "visual id: %zu\n", visual->visualid );
 
 	return visual->visualid; 
 } // x11_opengl_pixel_format

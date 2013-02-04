@@ -1,15 +1,10 @@
 #include <xwl/xwl.h>
 #include <stdio.h>
-
 #include <EGL/egl.h>
-#include <assert.h>
 
 static EGLDisplay display;
 static EGLConfig config;
 static EGLSurface surface;
-
-
-Display * x11_current_display();
 
 void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
@@ -32,11 +27,14 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 		context_attribs[ 1 ] = major_api_version;
 	}
 
-	//if ( attributes[ XWL_API ] == XWL_API_GLES2 )
-	//{
-		fprintf( stdout, "using gles2\n" );
+	if ( attributes[ XWL_API ] == XWL_API_GLES2 )
+	{
 		api_type = EGL_OPENGL_ES_API;
-	//}
+	}
+	else if ( attributes[ XWL_API ] == XWL_API_OPENGL )
+	{
+		api_type = EGL_OPENGL_API;
+	}
 
 
 	result = eglBindAPI( api_type );
@@ -76,7 +74,6 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 void egl_api_destroy_context( void * context, xwl_native_window_t * native_window, struct xwl_window_provider_s * wapi )
 {
 	EGLBoolean result;
-
 	eglMakeCurrent( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 
 	result = eglDestroySurface( display, surface );
@@ -106,7 +103,6 @@ void egl_api_activate_context( void * context, xwl_native_window_t * native_wind
 
 void egl_api_swap_buffers( xwl_native_window_t * window )
 {
-	// fprintf( stdout, "egl_api_swap_buffers\n" );
 	eglSwapBuffers( display, surface );
 } // egl_api_swap_buffers
 
@@ -131,10 +127,6 @@ int egl_api_pixel_format( unsigned int * attribs )
 		EGL_NONE
 	};
 
-	fprintf( stdout, "egl_api_pixel_format\n" );
-
-	// I've read this needs the X11 display, the raspberry pi doesn't like it, but it does work on a desktop.
-	
 	display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
 	if ( display == EGL_NO_DISPLAY )
 	{
@@ -151,7 +143,6 @@ int egl_api_pixel_format( unsigned int * attribs )
 	}
 
 	fprintf( stdout, "Initialized EGL %i.%i\n", major, minor );
-
 
 	// query configurations
 	result = eglChooseConfig( display, eglattribs, &config, 1, &num_configs );
@@ -200,7 +191,6 @@ void egl_api_register( xwl_api_provider_t * api )
 	api->destroy_context = egl_api_destroy_context;
 	api->activate_context = egl_api_activate_context;
 	api->swap_buffers = egl_api_swap_buffers;
-
 	api->pixel_format = egl_api_pixel_format;
 	api->get_symbol = egl_api_get_symbol;
-}
+} // egl_api_register

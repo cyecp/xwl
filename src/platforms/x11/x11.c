@@ -1,10 +1,6 @@
 #include <xwl/xwl.h>
 #include <xwl/platforms/x11/x11.h>
-
 #include <stdio.h>
-// #include <X11/Xlib.h>
-// #include <X11/keysym.h>
-// #include <X11/extensions/Xrandr.h>
 
 static Display * _xdisplay = 0;
 static int currentScreen = 0;

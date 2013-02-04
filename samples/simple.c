@@ -27,7 +27,7 @@ i32 my;
 
 void callback( xwl_event_t * e )
 {
-    xwlPrintf( "event: %s\n", xwl_event_to_string(e->type) );
+	xwlPrintf( "event: %s\n", xwl_event_to_string(e->type) );
 
 	if ( e->type == XWLE_GAINFOCUS )
 	{
@@ -98,15 +98,15 @@ int main()
 	int screen_width;
 	int screen_height;
 	unsigned int window_provider = XWL_WINDOW_PROVIDER_DEFAULT;
-    u32 attribs[] = {
-        XWL_API, XWL_API_OPENGL,
-//        XWL_API_MAJOR_VERSION, 3,
-//        XWL_API_MINOR_VERSION, 2,
-        XWL_WINDOW_WIDTH, window_width,
-        XWL_WINDOW_HEIGHT, window_height,
-		// XWL_USE_FULLSCREEN, 1,
-        XWL_NONE,
-    };
+	u32 attribs[] = {
+		XWL_API, XWL_API_OPENGL,
+		XWL_API_MAJOR_VERSION, 3,
+		XWL_API_MINOR_VERSION, 2,
+		XWL_WINDOW_WIDTH, window_width,
+		XWL_WINDOW_HEIGHT, window_height,
+//		XWL_USE_FULLSCREEN, 1,
+		XWL_NONE,
+	};
 	getString gl_getstring = 0;
 	clearColor gl_clearcolor = 0;
 	clear gl_clear = 0;
@@ -136,7 +136,7 @@ int main()
 //	attribs[5] = screen_height;
 	
 	
-    xwlPrintf( "-> xwl_create_window...\n" );
+	xwlPrintf( "-> xwl_create_window...\n" );
 	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 	if ( !w )
 	{

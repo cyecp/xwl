@@ -1,41 +1,23 @@
 #include <xwl/xwl.h>
-
+#include <xwl/xwl_internal.h>
 #include <xwl/platforms/x11/x11.h>
 #include <stdio.h>
-// #include <X11/Xlib.h>
-// #include <X11/keysym.h>
-// #include <X11/extensions/Xrandr.h>
 
-// define this to use the 20 year old XIM. (works on Ubuntu 12.04 Desktop)
-#define USE_XIM 0
-
-// define this to try another method of XEvents...
-
-#if USE_XIM
-	static XIM currentInputMethod = 0;	
-#endif
-
-
+static XIM currentInputMethod = 0;
 static XComposeStatus currentKeyboardStatus;
 
-xwl_native_window_t *_xwl_window_at_index( int index );
+
 
 void ProcessEvent( XEvent event, xwl_native_window_t * window );
 
-
-#if USE_XIM
-	Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
-	{
-		return event->xany.window == (Window)userdata;
-	}
-#endif
-
+Bool CheckEvent( Display *display, XEvent *event, XPointer userdata )
+{
+	return event->xany.window == (Window)userdata;
+}
 
 
 int x11_input_startup( void )
 {
-	printf( "x11_input_startup\n" );
-
 	Display * display = x11_current_display();
 	if ( !display )
 	{
@@ -43,35 +25,27 @@ int x11_input_startup( void )
 		return 0;
 	}
 
-#if USE_XIM
 	currentInputMethod = XOpenIM( x11_current_display(), 0, 0, 0 );
 	if ( !currentInputMethod )
 	{
-		xwl_set_error( "Unable to Open X Input Method!" );
+		xwl_set_error( "Unable to open X Input Method!" );
 		return 0;
 	}
-#endif
 
 	return 1;
-}
+} // x11_input_startup
 
 void x11_input_shutdown( void )
 {
-#if USE_XIM
 	if ( currentInputMethod )
 	{
 		XCloseIM( currentInputMethod );
-
 		currentInputMethod = 0;
-		
 	}
-#endif
-}
+} // x11_input_shutdown
 
 int x11_input_dispatch_events( void )
 {
-//	fprintf( stdout, "x11_input_dispatch_events\n" );
-
 	XEvent ev;
 	int i;
 	xwl_native_window_t *wh = 0;
@@ -85,24 +59,6 @@ int x11_input_dispatch_events( void )
 
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
-		wh = _xwl_window_at_index( i );
-		while ( XPending( x11_current_display() ) )
-		{
-			XEvent  ev;
-			XNextEvent( x11_current_display(), &ev );
-
-			if ( ev.xany.window == (Window)wh->handle.handle )
-			{
-				ProcessEvent( ev, wh );	
-			}
-			
-		}
-	}
-
-#if USE_XIM
-	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
-	{
-//		wh = &xwl_windowHandles[i];
 		wh = _xwl_window_at_index( i );
 		if ( wh->handle.handle != 0 )
 		{
@@ -138,13 +94,10 @@ int x11_input_dispatch_events( void )
 					}
 				}
 
-				fprintf( stderr, "Processing Event\n", i );
 				ProcessEvent( ev, wh );
 			}
 		}
 	}
-#endif
-
 
 	return 0;
 } // x11_input_dispatch_events
@@ -152,8 +105,6 @@ int x11_input_dispatch_events( void )
 
 void x11_input_post_window_creation( xwl_native_window_t * native_window )
 {
-#if USE_XIM
-
 	Window wind;
 	if ( currentInputMethod )
 	{
@@ -170,7 +121,6 @@ void x11_input_post_window_creation( xwl_native_window_t * native_window )
 	{
 		fprintf( stderr, "currentInputMethod is INVALID\n" );
 	}
-#endif
 } // x11_input_post_window_creation
 
 
@@ -180,12 +130,12 @@ void x11_input_register( xwl_input_provider_t * input )
 	input->shutdown = x11_input_shutdown;
 	input->dispatch_events = x11_input_dispatch_events;
 	input->post_window_creation = x11_input_post_window_creation;
-}
+} // x11_input_register
 
 
 
 // this code taken straight from SFML-1.6
-unsigned int X11KeyToXWL( KeySym sym )
+unsigned int x11_key_to_xwl( KeySym sym )
 {
 	// First convert to uppercase (to avoid dealing with two different keysyms for the same key)
 	KeySym Lower, Key;
@@ -302,7 +252,7 @@ unsigned int X11KeyToXWL( KeySym sym )
 	}
 	fprintf( stderr, "[xwl] Unknown Key: %u\n", (unsigned int)Key );
 	return 0;
-} // X11KeyToXWL
+} // x11_key_to_xwl
 
 void ProcessEvent( XEvent event, xwl_native_window_t * window )
 {
@@ -343,7 +293,7 @@ void ProcessEvent( XEvent event, xwl_native_window_t * window )
         case KeyPress:
             XLookupString( &event.xkey, buffer, 32, &sym, &currentKeyboardStatus );
             ev.type = XWLE_KEYPRESSED;
-            ev.key = X11KeyToXWL( sym );
+            ev.key = x11_key_to_xwl( sym );
             xwl_send_event( &ev );
 
             // generate a text event with unicode value
@@ -382,7 +332,7 @@ void ProcessEvent( XEvent event, xwl_native_window_t * window )
         case KeyRelease:
             XLookupString( &event.xkey, buffer, 32, &sym, 0 );
             ev.type = XWLE_KEYRELEASED;
-            ev.key = X11KeyToXWL( sym );
+            ev.key = x11_key_to_xwl( sym );
             xwl_send_event( &ev );
             break;
 

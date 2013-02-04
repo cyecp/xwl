@@ -1,24 +1,11 @@
 #include <xwl/xwl.h>
 #include <stdio.h>
-
 #include <xwl/platforms/x11/x11.h>
-// #include <X11/Xlib.h>
-// #include <X11/keysym.h>
-// #include <X11/extensions/Xrandr.h>
-//#include <X11/XKBlib.h>
-
 #include <string.h>
-
-//////////////////
-
 
 int x11_window_startup( xwl_api_provider_t * api )
 {
-	fprintf( stdout, "x11_window_startup\n" );
-
 	//Bool detectable;
-	
-
 	if ( x11_current_display() )
 	{
 		x11_set_current_screen( DefaultScreen( x11_current_display() ) );
@@ -44,7 +31,6 @@ void x11_window_shutdown()
 {
 	x11_close_display();
 } // x11_window_shutdown
-
 
 
 void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8_title, unsigned int * attributes, int pixel_format )
@@ -85,9 +71,6 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	// free the visual
 	fprintf( stdout, "[xwl] Freeing visual...\n" );
 	XFree( visual );
-
-
-
 
 
 	//set window name
@@ -161,7 +144,6 @@ unsigned int x11_window_get_screen_count()
 } // x11_window_get_screen_count
 
 
-
 void x11_window_register( xwl_window_provider_t * wapi )
 {
 	wapi->startup = x11_window_startup;
@@ -172,3 +154,66 @@ void x11_window_register( xwl_window_provider_t * wapi )
 	wapi->get_screen_size = x11_window_get_screen_size;
 	wapi->get_screen_count = x11_window_get_screen_count;
 } // x11_window_register
+
+
+#if 0
+
+#if LINUX && 0
+	#include <stdio.h>
+	#include <X11/Xlib.h>
+	//#include <X11/extensions/Xrandr.h>
+	#include <cstdlib>
+	#include <X11/extensions/Xinerama.h>
+
+		// If TwinView is enabled, Linux only sees 1 display and 1 screen.
+		// the resolution ends up being a combination of both screen sizes, which is not what we want.
+
+		// -lXinerama
+		// http://stackoverflow.com/questions/836086/programmatically-determining-individual-screen-widths-heights-in-linux-w-xineram
+		Display *d=XOpenDisplay(NULL);
+
+		if (d)
+		{
+			int dummy1, dummy2;
+			if (XineramaQueryExtension(d, &dummy1, &dummy2)) {
+				if (XineramaIsActive(d)) {
+					int heads=0;
+					XineramaScreenInfo *p=XineramaQueryScreens(d, &heads);
+					if (heads>0) {
+						for (int x=0; x<heads; ++x)
+						{
+							/*
+							cout << "Head " << x+1 << " of " << heads << ": " <<
+								p[x].width << "x" << p[x].height << " at " <<
+								p[x].x_org << "," << p[x].y_org << endl;	*/
+
+							// Only interested in the first display for now, we should support others.
+							mode.width = p[x].width;
+							mode.height = p[x].height;
+							fprintf( stderr, "[xwl] Width: %i, Height: %i\n", mode.width, mode.height );
+							break;
+						}
+					}
+					else
+					{
+						fprintf( stderr, "[xwl] XineramaQueryScreens says there aren't any\n" );
+					}
+
+
+					XFree(p);
+				}
+				else
+				{
+					fprintf( stderr, "[xwl] Xinerama not active\n" );
+				}
+
+			}
+			else
+			{
+				fprintf( stderr, "[xwl] No Xinerama extension\n" );
+			}
+
+			XCloseDisplay(d);
+		}
+#endif
+#endif

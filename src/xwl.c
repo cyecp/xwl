@@ -1,9 +1,7 @@
-
 #include <xwl/xwl.h>
 #include <stdio.h>
 #include <string.h> // for memset
 #include <wchar.h>
-
 #include <xlib.h>
 
 #if _WIN32
@@ -21,7 +19,6 @@ void xwl_renderer_post( xwl_renderer_settings_t * settings );
 void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
 void xwl_renderer_activate( xwl_renderer_settings_t * settings );
 
-
 static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
@@ -32,12 +29,12 @@ xlib_t api_lib;
 const char * xwl_get_error()
 {
     return xwlerror;
-}
+} // xwl_get_error
 
 void xwl_set_error( const char * error )
 {
 	xwlerror = error;
-}
+} // xwl_set_error
 
 
 xwl_native_window_t *_xwl_window_at_index( int index )
@@ -49,12 +46,6 @@ xwl_native_window_t *_xwl_window_at_index( int index )
 
 	return &xwl_windowHandles[ index ];
 } // _xwl_window_at_index
-
-#define XWL_MAX_EVENTS 256
-unsigned int event_index = 0;
-unsigned int event_read_ptr = 0;
-unsigned int last_index = 0;
-static xwl_event_t eventList[ XWL_MAX_EVENTS ];
 
 xwl_native_window_t *xwl_get_unused_window()
 {
@@ -69,7 +60,7 @@ xwl_native_window_t *xwl_get_unused_window()
 
 	// no more window handles
 	return 0;
-}
+} // xwl_get_unused_window
 
 void xwl_send_event( xwl_event_t * ev )
 {
@@ -78,25 +69,8 @@ void xwl_send_event( xwl_event_t * ev )
 	{
 		xwl_callback( ev );
 	}
-	else // otherwise, queue the event
-	{
-		last_index = event_index;
-		memcpy( &eventList[ event_index++ ], ev, sizeof(xwl_event_t) );
-		event_index = event_index % XWL_MAX_EVENTS;
-	}
 } // xwl_send_event
 
-void xwl_setup_rendering( xwl_window_t * window, unsigned int * attribs )
-{
-#if _WIN32
-
-#endif
-
-#if __APPLE__
-//	xwl_setup_osx_rendering( window, attribs );
-#endif
-}
-	
 void *xwl_rendering_context(xwl_window_t * window )
 {
 #if __APPLE__ && TARGET_OS_MAC
@@ -105,19 +79,6 @@ void *xwl_rendering_context(xwl_window_t * window )
 #else
 	return 0;
 #endif
-}
-	
-void xwl_activate( xwl_window_t * window )
-{
-	xwl_renderer_settings_t cfg;
-	
-	if ( !window )
-	{
-		return;
-	}
-	
-	cfg.window = window;
-//	xwl_renderer_activate( &cfg );
 }
 
 
@@ -274,67 +235,6 @@ const char * xwl_mouse_to_string( int mb )
 }
 
 
-#if LINUX && 0
-	#include <stdio.h>
-	#include <X11/Xlib.h>
-	//#include <X11/extensions/Xrandr.h>
-	#include <cstdlib>
-	#include <X11/extensions/Xinerama.h>
-#endif
-
-
-#if LINUX && 0
-        // If TwinView is enabled, Linux only sees 1 display and 1 screen.
-        // the resolution ends up being a combination of both screen sizes, which is not what we want.
-
-        // -lXinerama
-        // http://stackoverflow.com/questions/836086/programmatically-determining-individual-screen-widths-heights-in-linux-w-xineram
-        Display *d=XOpenDisplay(NULL);
-
-        if (d)
-        {
-            int dummy1, dummy2;
-            if (XineramaQueryExtension(d, &dummy1, &dummy2)) {
-                if (XineramaIsActive(d)) {
-                    int heads=0;
-                    XineramaScreenInfo *p=XineramaQueryScreens(d, &heads);
-                    if (heads>0) {
-                        for (int x=0; x<heads; ++x)
-                        {
-                            /*
-                            cout << "Head " << x+1 << " of " << heads << ": " <<
-                                p[x].width << "x" << p[x].height << " at " <<
-                                p[x].x_org << "," << p[x].y_org << endl;    */
-
-                            // Only interested in the first display for now, we should support others.
-                            mode.width = p[x].width;
-                            mode.height = p[x].height;
-                            fprintf( stderr, "[xwl] Width: %i, Height: %i\n", mode.width, mode.height );
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        fprintf( stderr, "[xwl] XineramaQueryScreens says there aren't any\n" );
-                    }
-
-
-                    XFree(p);
-                }
-                else
-                {
-                    fprintf( stderr, "[xwl] Xinerama not active\n" );
-                }
-
-            }
-            else
-            {
-                fprintf( stderr, "[xwl] No Xinerama extension\n" );
-            }
-
-            XCloseDisplay(d);
-        }
-#endif
 
 #if _WIN32
 static unsigned int lshift;
@@ -986,7 +886,7 @@ void * xwl_findsymbol( const char * symbol_name )
 	}
 
 	return func;
-}
+} // xwl_findsymbol
 
 void xwl_swap_buffers( xwl_window_t * window )
 {
@@ -997,7 +897,7 @@ void xwl_swap_buffers( xwl_window_t * window )
 	{
 		_api_provider.swap_buffers( wh );
 	}
-}
+} // xwl_swap_buffers
 
 void xwl_finish()
 {
@@ -1008,15 +908,12 @@ void xwl_finish()
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
 		wh = &xwl_windowHandles[i];
-//		cfg.window = &wh->handle;
-					
 		if ( wh->handle.handle != 0 )
 		{
 			xwl_swap_buffers( &wh->handle );
-//			xwl_renderer_post( &cfg );
 		}
 	}
-}
+} // xwl_finish
 
 
 void xwl_shutdown( void )
@@ -1042,7 +939,6 @@ void xwl_shutdown( void )
 	// close the library
 	xlib_close( &api_lib );
 
-
 	_window_provider.shutdown();
 	_input_provider.shutdown();
 } // xwl_shutdown
@@ -1058,6 +954,10 @@ int xwl_dispatch_events()
 	}
 
 	result = _input_provider.dispatch_events();
+
+
+
+
 #ifdef _WIN32
 	MSG msg;
 
@@ -1068,12 +968,11 @@ int xwl_dispatch_events()
 	}
 #endif
 
+
+
+
 	return result;
 }
-
-#if LINUX
-	Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs );
-#endif
 
 xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 {
@@ -1359,19 +1258,10 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 
 #endif
 
-#if __APPLE__
-//	wh = xwl_create_osx_window( params, title );
-//	cfg.window = &wh->handle;
-
-//    if ( (params->flags & XWL_OPENGL) )
-//    {
-//        xwl_renderer_startup( &cfg, attribs );
-//    }
-
-#endif
-
 	if ( !wh )
+	{
 		return 0;
+	}
 
 	return &wh->handle;
 } // xwl_create_window
@@ -1379,7 +1269,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 void xwl_set_callback( xwl_event_callback cb )
 {
 	xwl_callback = cb;
-}
+} // xwl_set_callback
 
 #ifdef __cplusplus
 }; // extern "C"

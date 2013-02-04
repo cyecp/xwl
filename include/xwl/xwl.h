@@ -210,10 +210,10 @@ typedef struct xwl_window_s
     
     xwl_native_window_t *xwl_get_unused_window( void );
     void xwl_send_event( xwl_event_t * ev );
-    void xwl_setup_rendering( xwl_window_t * window, u32 * attribs );
+    
     void xwl_finish( void );
 	void xwl_swap_buffers( xwl_window_t * window );
-    void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
+
     void *xwl_rendering_context( xwl_window_t * window );
 	
 	void * xwl_findsymbol( const char * symbol_name );
