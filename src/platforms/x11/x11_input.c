@@ -109,8 +109,6 @@ void x11_input_post_window_creation( xwl_native_window_t * native_window )
 	if ( currentInputMethod )
 	{
 		wind = (Window)native_window->handle.handle;
-
-		fprintf( stdout, "input post window creation...(%i)\n", (int)wind );
 		native_window->inputContext = XCreateIC( currentInputMethod, XNClientWindow, wind, XNFocusWindow, wind, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
 		if ( !native_window->inputContext )
 		{

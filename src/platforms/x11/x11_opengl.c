@@ -151,24 +151,25 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 	// fetch an fb config and create the modern context
 	{
 
-		GLXFBConfig * fbc = 0;
+		GLXFBConfig * framebuffer_config = 0;
 		int elements;
 
-		fbc = glXChooseFBConfig( x11_current_display(), x11_current_screen(), modern_attributes, &elements );
-		if ( !fbc )
+		framebuffer_config = glXChooseFBConfig( x11_current_display(), x11_current_screen(), modern_attributes, &elements );
+		if ( !framebuffer_config )
 		{
 			xwl_set_error( "Failed to retrieve frame buffer configuration" );
 			return 0;
 		}
 
-/*
-		visual = glXGetVisualFromFBConfig( x11_current_display(), fbc[0] );
+		/*
+		// This should be used to fetch the pixel format
+		visual = glXGetVisualFromFBConfig( x11_current_display(), framebuffer_config[0] );
 		if ( !visual )
 		{
 			xwl_set_error( "Unable to get visual from frame buffer config" );
 			return 0;
-		}
-*/
+		}		
+		*/
 
 		attrib_id = 0;
 		memset( modern_attributes, 0, sizeof(int) * 2 * XWL_ATTRIBUTE_COUNT );
@@ -187,8 +188,9 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
 			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 		}
-		context = glXCreateContextAttribsARB( x11_current_display(), *fbc, 0, 1, modern_attributes );
 
+		context = glXCreateContextAttribsARB( x11_current_display(), *framebuffer_config, 0, 1, modern_attributes );
+		XFree( framebuffer_config );
 	}
 
 #else
@@ -209,10 +211,10 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 	{
 		fprintf( stderr, "[xwl] context is NULL\n" );
 	}
-#endif
 
 	// free the visual
-	XFree( visual );
+	XFree( visual );	
+#endif
 
 	return context;
 } // x11_opengl_create_context
@@ -254,6 +256,15 @@ int x11_opengl_pixel_format( unsigned int * attribs )
 							GLX_BLUE_SIZE,8,
 							GLX_ALPHA_SIZE, 8,
 							None };
+
+	int glx_major, glx_minor;
+
+	if ( !glXQueryVersion( x11_current_display(), &glx_major, &glx_minor ) ||
+		(glx_major == 1) && (glx_minor < 3) || (glx_major < 1) )
+	{
+		xwl_set_error( "Invalid GLX version!" );
+		return 0;
+	}
 
 	XVisualInfo * visual = glXChooseVisual( x11_current_display(), x11_current_screen(), attrib );
 
