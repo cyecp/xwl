@@ -3,16 +3,200 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 #include <xwl/platforms/x11/x11.h>
+#include <string.h> // for memset
+
+// if this is set, then we'll try to setup GLFBConfig and use glXCreateContextAttribs to create the context
+// as opposed to the legacy method.
+
+#define XWL_USE_FBCONFIG 1
+
+#if XWL_USE_FBCONFIG
+	//#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
+	//#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
+	#define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
+	#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB	0x00000001
+	#define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+
+	typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)( Display *, GLXFBConfig, GLXContext, Bool, const int * );
+	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = 0;
+#endif
+
+
+#if 0
+Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs )
+{
+    XSetWindowAttributes window_attribs;
+    Window handle;
+	Colormap colormap;
+	int cwattrs;
+
+
+	fprintf( stderr, "[xwl] Okay... trying to create a window\n" );
+
+	if ( !attribs )
+	{
+		// create a simple test window used to create a GL context.
+		GLint basic_attribs[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, None };
+
+		fprintf( stderr, "[xwl] Choosing visual...\n" );
+		settings->visual = glXChooseVisual( settings->display, settings->screen, basic_attribs );
+
+		if ( !settings->visual )
+		{
+			fprintf( stderr, "[xwl] Unable to get temporary visual!\n" );
+			return 0;
+		}
+
+		fprintf( stdout, "[xwl] status is valid\n" );
+		window_attribs.event_mask = StructureNotifyMask;
+		window_attribs.colormap = XCreateColormap( settings->display, RootWindow(settings->display, settings->screen), settings->visual->visual, AllocNone);
+        handle = XCreateWindow( settings->display, RootWindow(settings->display, settings->screen), 0, 0, 100, 100, 0, settings->visual->depth, InputOutput, settings->visual->visual, CWColormap | CWEventMask, &window_attribs );
+		XMapWindow( settings->display, handle );
+
+		if ( handle )
+		{
+			glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+			fprintf( stdout, "[xwl] function is: %p\n", glXCreateContextAttribsARB );
+
+			// we have the function pointer, destroy this window.
+			XDestroyWindow( settings->display, handle );
+		}
+		else
+		{
+			fprintf( stderr, "[xwl Error creating temporary window!\n" );
+		}
+	}
+
+	return handle;
+}
+#endif
+
+
+
+
 
 void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
 	XVisualInfo * visual = 0;
-	fprintf( stdout, "[xwl] Fetching visual: %i...\n", native_window->handle.pixel_format );
+	GLXContext context = 0;
+	int modern_attributes[ 2 * XWL_ATTRIBUTE_COUNT ];
+	int attrib_id = 0;
+	memset( modern_attributes, 0, sizeof(int) * 2 * XWL_ATTRIBUTE_COUNT );
 
+
+
+#if XWL_USE_FBCONFIG
+	// check glXCreateContextAttribs, if it's not valid, we need to get a pointer to it
+
+	if ( !glXCreateContextAttribsARB )
+	{
+		// I don't think we even need a new window for this - it's working on my desktop ubuntu.
+		// Let's verify this behavior before removing this code.
+		glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+		/*
+		// we need a dummy window to get this from OpenGL... so...
+		xwl_native_window_t handle;
+		GLint basic_attribs[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, None };
+		int basic_pixel_format;
+		XVisualInfo * vi = glXChooseVisual( x11_current_display(), x11_current_screen(), basic_attribs );
+
+		if ( wapi->create_window( &handle, "dummy", basic_attribs, basic_pixel_format ) )
+		{
+			// glXGetProcAddress here?
+			wapi->destroy_window( &handle );
+		}
+		XFree( vi );
+		*/
+		if ( !glXCreateContextAttribsARB )
+		{
+			xwl_set_error( "glXCreateContextAttribsARB could not be found" );
+			return 0;
+		}
+	}
+
+	// setup attributes that will be passed to glXChooseFBConfig
+	{
+		int default_depth = attributes[ XWL_DEPTH_SIZE ];
+		int default_stencil = attributes[ XWL_STENCIL_SIZE ];
+
+		// fill in attributes for frame buffer config
+		modern_attributes[ attrib_id++ ] = GLX_DOUBLEBUFFER;
+		modern_attributes[ attrib_id++ ] = True;
+		modern_attributes[ attrib_id++ ] = GLX_X_RENDERABLE;
+		modern_attributes[ attrib_id++ ] = True;
+		modern_attributes[ attrib_id++ ] = GLX_RENDER_TYPE;
+		modern_attributes[ attrib_id++ ] = GLX_RGBA_BIT;
+		modern_attributes[ attrib_id++ ] = GLX_RED_SIZE;
+		modern_attributes[ attrib_id++ ] = 8;
+		modern_attributes[ attrib_id++ ] = GLX_GREEN_SIZE;
+		modern_attributes[ attrib_id++ ] = 8;
+		modern_attributes[ attrib_id++ ] = GLX_BLUE_SIZE;
+		modern_attributes[ attrib_id++ ] = 8;
+		modern_attributes[ attrib_id++ ] = GLX_ALPHA_SIZE;
+		modern_attributes[ attrib_id++ ] = 8;
+
+		if ( default_stencil > 0 )
+		{
+			modern_attributes[ attrib_id++ ] = GLX_STENCIL_SIZE;
+			modern_attributes[ attrib_id++ ] = default_stencil;
+		}
+
+		if ( default_depth > 0 )
+		{
+			modern_attributes[ attrib_id++ ] = GLX_DEPTH_SIZE;
+			modern_attributes[ attrib_id++ ] = default_depth;
+		}
+	}
+
+	// fetch an fb config and create the modern context
+	{
+
+		GLXFBConfig * fbc = 0;
+		int elements;
+
+		fbc = glXChooseFBConfig( x11_current_display(), x11_current_screen(), modern_attributes, &elements );
+		if ( !fbc )
+		{
+			xwl_set_error( "Failed to retrieve frame buffer configuration" );
+			return 0;
+		}
+
+/*
+		visual = glXGetVisualFromFBConfig( x11_current_display(), fbc[0] );
+		if ( !visual )
+		{
+			xwl_set_error( "Unable to get visual from frame buffer config" );
+			return 0;
+		}
+*/
+
+		attrib_id = 0;
+		memset( modern_attributes, 0, sizeof(int) * 2 * XWL_ATTRIBUTE_COUNT );
+		// fill in attributes for glXCreateContextAttrib
+		if ( attributes[ XWL_API_MAJOR_VERSION ] == 3 && attributes[ XWL_API_MINOR_VERSION ] == 2 )
+		{
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;					
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+			modern_attributes[ attrib_id++ ] = 3;
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_MINOR_VERSION_ARB;
+			modern_attributes[ attrib_id++ ] = 2;
+		}
+		else
+		{
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_PROFILE_MASK_ARB;
+			modern_attributes[ attrib_id++ ] = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+		}
+		context = glXCreateContextAttribsARB( x11_current_display(), *fbc, 0, 1, modern_attributes );
+
+	}
+
+#else
+	fprintf( stdout, "[xwl] Fetching visual: %i...\n", native_window->handle.pixel_format );
 	visual = x11_fetch_visual( native_window->handle.pixel_format );
 
 	fprintf( stdout, "[xwl] Creating GLXContext...\n" );
-	GLXContext context = glXCreateContext( x11_current_display(), visual, (GLXContext)other_context, True /*Direct Rendering*/ );
+	context = glXCreateContext( x11_current_display(), visual, (GLXContext)other_context, True /*Direct Rendering*/ );
 	if ( context )
 	{
 		if ( !glXIsDirect( x11_current_display(), context ) )
@@ -25,6 +209,7 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 	{
 		fprintf( stderr, "[xwl] context is NULL\n" );
 	}
+#endif
 
 	// free the visual
 	XFree( visual );

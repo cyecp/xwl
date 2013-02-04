@@ -19,7 +19,8 @@ typedef int (*xwl_window_provider_startup)( struct xwl_api_provider_s * api );
 // shutdown the window provider
 typedef void (*xwl_window_provider_shutdown)( void );
 
-// create a window; return the native window handle
+// create a window; return the native window handle on success
+// returns 0 on failure
 typedef void *(*xwl_window_provider_create_window)( struct xwl_native_window_s * handle, const char * utf8_title, unsigned int * attribs, int pixel_format );
 
 // destroy a window
