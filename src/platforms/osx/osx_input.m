@@ -30,9 +30,14 @@ int cocoa_input_dispatch_events( void )
 	return 0;
 } // cocoa_input_dispatch_events
 
+void cocoa_input_post_window_creation( struct xwl_native_window_s * native_window )
+{
+} // cocoa_input_post_window_creation
+
 void cocoa_input_register( xwl_input_provider_t * input )
 {
 	input->startup = cocoa_input_startup;
 	input->shutdown = cocoa_input_shutdown;
 	input->dispatch_events = cocoa_input_dispatch_events;
+	input->post_window_creation = cocoa_input_post_window_creation;
 } // cocoa_input_register

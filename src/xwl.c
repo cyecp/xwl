@@ -1,8 +1,10 @@
 #include <xwl/xwl.h>
+#include <xwl/xwl_internal.h>
 #include <stdio.h>
 #include <string.h> // for memset
 #include <wchar.h>
 #include <xlib.h>
+#include <assert.h>
 
 #if _WIN32
 
@@ -46,6 +48,47 @@ xwl_native_window_t *_xwl_window_at_index( int index )
 
 	return &xwl_windowHandles[ index ];
 } // _xwl_window_at_index
+
+
+#if _WIN32 || LINUX
+int _xwl_open_driver_library( unsigned int api_provider )
+{
+	const char * library_name = "";
+#if LINUX
+#if RASPBERRYPI
+	library_name = "libGLESv2.so";
+#else
+	library_name = "libGL.so";
+#endif
+	
+	if ( api_provider == XWL_API_PROVIDER_EGL )
+	{
+		library_name = "libGLESv2.so";
+	}
+	
+#elif _WIN32
+	library_name = "OpenGL32.dll";
+#endif
+	
+	fprintf( stdout, "Linking with library '%s'\n", library_name );
+	if ( !xlib_open( &api_lib, library_name ) )
+	{
+		return 0;
+	}
+	
+	return 1;
+}
+
+
+void _xwl_close_driver_library()
+{
+	// close the library
+	xlib_close( &api_lib );
+}
+
+#endif
+
+
 
 xwl_native_window_t *xwl_get_unused_window()
 {
@@ -579,7 +622,7 @@ xwl_window_provider_register _window_providers[] = {
 	x11_window_register, // X11
 	0, // Wayland
 #else
-	0, 0, 0
+	0, 0, 0,
 #endif
 
 #if __APPLE__
@@ -702,16 +745,19 @@ unsigned int _xwl_default_input_provider()
 
 void xwl_get_window_size( xwl_window_t * window, int * width, int * height )
 {
+	assert( _window_provider.get_window_size != 0 );
 	_window_provider.get_window_size( window, width, height );
 } // xwl_get_window_size
 
 void xwl_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
+	assert( _window_provider.get_screen_size != 0 );
 	_window_provider.get_screen_size( screen_index, width, height );
 } // xwl_get_screen_size
 
 unsigned int xwl_get_screen_count()
 {
+	assert( _window_provider.get_screen_count != 0 );
 	return _window_provider.get_screen_count();
 } // xwl_get_screen_count
 
@@ -794,8 +840,10 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		xwlerror = "No valid window provider found!";
 		return 0;
 	}
-    	
+    
+	
 	// perform startup
+	assert( _window_provider.startup != 0 );
 	result = _window_provider.startup( 0 );
 	if ( !result )
 	{
@@ -818,6 +866,7 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		return 0;
 	}
 
+	assert( _input_provider.startup != 0 );
 	result = _input_provider.startup();
 	if ( !result )
 	{
@@ -829,34 +878,12 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	}
     
 
-	// open a handle to the correct API library
-
-	const char * library_name = "";
-#if LINUX
-	#if RASPBERRYPI
-		library_name = "libGLESv2.so";
-	#else
-		library_name = "libGL.so";
-	#endif
-
-	if ( api_provider == XWL_API_PROVIDER_EGL )
-	{
-		library_name = "libGLESv2.so";
-	}
-#elif __APPLE__
-		// sure.
-#elif _WIN32
-		library_name = "OpenGL32.dll";
-#endif
-
-	fprintf( stdout, "Linking with library '%s'\n", library_name );
-	if ( !xlib_open( &api_lib, library_name ) )
+	// open a handle to the correct API library	
+	if ( !_xwl_open_driver_library( api_provider ) )
 	{
 		xwl_set_error( "Unable to link with API library" );
 		return 0;
 	}
-
-
 
 #ifdef _WIN32
 	// initialize key map
@@ -870,14 +897,21 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 
 void * xwl_findsymbol( const char * symbol_name )
 {
+	void * func = 0;
+	
 	// first try to get the symbol with the API specific implementation.
-	void * func = _api_provider.get_symbol( symbol_name );
+	assert( _api_provider.get_symbol != 0 );
+	func = _api_provider.get_symbol( symbol_name );
 
 	// if that fails, try to get it from the dynamic library
 	if ( !func )
 	{
+#if _WIN32 || LINUX
 		fprintf( stderr, "Find symbol '%s' failed with api provider. Attempting library.\n", symbol_name );
 		func = xlib_find_symbol( &api_lib, symbol_name );
+#elif __APPLE__
+		func = _xwl_apple_find_symbol( symbol_name );
+#endif
 	}
 	
 	if ( !func )
@@ -895,6 +929,7 @@ void xwl_swap_buffers( xwl_window_t * window )
 	wh = &xwl_windowHandles[ window->id ];
 	if ( wh && wh->handle.handle != 0 )
 	{
+		assert( _api_provider.swap_buffers != 0 );
 		_api_provider.swap_buffers( wh );
 	}
 } // xwl_swap_buffers
@@ -920,6 +955,9 @@ void xwl_shutdown( void )
 {
 	int i;
 	xwl_native_window_t * wh;
+	
+	assert( _api_provider.destroy_context != 0 );
+	assert( _window_provider.destroy_window != 0 );
 
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
@@ -936,10 +974,14 @@ void xwl_shutdown( void )
 	}
 
 
-	// close the library
-	xlib_close( &api_lib );
 
+	
+	_xwl_close_driver_library();
+
+	assert( _window_provider.shutdown != 0 );
 	_window_provider.shutdown();
+	
+	assert( _input_provider.shutdown != 0 );
 	_input_provider.shutdown();
 } // xwl_shutdown
 
@@ -947,16 +989,8 @@ int xwl_dispatch_events()
 {
 	int result;
 	
-	if ( !_input_provider.dispatch_events )
-	{
-		fprintf( stderr, "input provider dispatch_events is NULL\n" );
-		return 0;
-	}
-
+	assert( _input_provider.dispatch_events != 0 );
 	result = _input_provider.dispatch_events();
-
-
-
 
 #ifdef _WIN32
 	MSG msg;
@@ -967,10 +1001,6 @@ int xwl_dispatch_events()
 		DispatchMessage( &msg );
 	}
 #endif
-
-
-
-
 	return result;
 }
 
@@ -1012,7 +1042,9 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 		++attribs;
 	}
 	
+
 	// give the API first crack at creating a pixel format
+	assert( _api_provider.pixel_format != 0 );
 	int pixel_format = _api_provider.pixel_format( attributes );
 	if ( pixel_format < 0 )
 	{
@@ -1023,6 +1055,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	wh->handle.pixel_format = pixel_format;
 
 	// create the native window
+	assert( _window_provider.create_window != 0 );
 	wh->handle.handle = _window_provider.create_window( wh, title, attributes, pixel_format );
 	if ( !wh->handle.handle )
 	{
@@ -1031,9 +1064,11 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	}
 
 	// tell the input system we've created a window
+	assert( _input_provider.post_window_creation != 0 );
 	_input_provider.post_window_creation( wh );
 
 	// create a context
+	assert( _api_provider.create_context != 0 );
 	void * context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );
 	if ( !context )
 	{
@@ -1045,6 +1080,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	}
 
 	// activate the context with this window
+	assert( _api_provider.activate_context != 0 );
 	_api_provider.activate_context( context, wh );
 
 

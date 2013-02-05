@@ -81,7 +81,7 @@ void cocoa_opengl_destroy_context( void * context, xwl_native_window_t * native_
 
 void cocoa_opengl_activate_context( void * context, xwl_native_window_t * native_window )
 {
-	xwlWindow * window = (xwlWindow*)native_window->handle;
+	xwlWindow * window = (xwlWindow*)native_window->handle.handle;
 	xwlOpenGLView * view = nil;
 	NSOpenGLContext * ctx = (NSOpenGLContext*)context;
 	
@@ -118,10 +118,20 @@ void cocoa_opengl_activate_context( void * context, xwl_native_window_t * native
 
 void cocoa_opengl_swap_buffers( xwl_native_window_t * native_window )
 {
-	xwlWindow * window = (xwlWindow*)native_window->handle;	
+	xwlWindow * window = (xwlWindow*)native_window->handle.handle;
 	xwlOpenGLView * view = [window contentView];
 	[[view getContext] flushBuffer];
 } // cocoa_opengl_swap_buffers
+
+int cocoa_opengl_pixel_format( unsigned int * attribs )
+{
+	return 0;
+} // cocoa_opengl_pixel_format
+
+void * cocoa_opengl_get_symbol( const char * symbol_name )
+{
+	return 0;
+} // cocoa_opengl_get_symbol
 
 void cocoa_opengl_register( xwl_api_provider_t * api )
 {
@@ -129,4 +139,6 @@ void cocoa_opengl_register( xwl_api_provider_t * api )
 	api->destroy_context = cocoa_opengl_destroy_context;
 	api->activate_context = cocoa_opengl_activate_context;
 	api->swap_buffers = cocoa_opengl_swap_buffers;
+	api->pixel_format = cocoa_opengl_pixel_format;
+	api->get_symbol = cocoa_opengl_get_symbol;
 } // cocoa_opengl_register
