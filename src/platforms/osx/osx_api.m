@@ -5,7 +5,7 @@
 
 #import <string.h>
 
-void *cocoa_opengl_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
+void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
 	NSOpenGLPixelFormatAttribute * outattribs = 0;
 	NSOpenGLPixelFormatAttribute * attrib_pointer = 0;
@@ -70,16 +70,16 @@ void *cocoa_opengl_create_context( xwl_native_window_t * native_window, xwl_wind
 	}
 	
 	return context;
-} // cocoa_opengl_create_context
+} // cocoa_api_create_context
 
-void cocoa_opengl_destroy_context( void * context, xwl_native_window_t * native_window, xwl_window_provider_t * wapi )
+void cocoa_api_destroy_context( void * context, xwl_native_window_t * native_window, xwl_window_provider_t * wapi )
 {
 	NSLog( @"destroy opengl context" );
 	[NSOpenGLContext clearCurrentContext];
-} // cocoa_opengl_destroy_context
+} // cocoa_api_destroy_context
 
 
-void cocoa_opengl_activate_context( void * context, xwl_native_window_t * native_window )
+void cocoa_api_activate_context( void * context, xwl_native_window_t * native_window )
 {
 	xwlWindow * window = (xwlWindow*)native_window->handle.handle;
 	xwlOpenGLView * view = nil;
@@ -114,31 +114,31 @@ void cocoa_opengl_activate_context( void * context, xwl_native_window_t * native
 	[window setContentView: view];
 	[window makeFirstResponder: [window contentView]];
 	[view release];
-} // cocoa_opengl_activate_context
+} // cocoa_api_activate_context
 
-void cocoa_opengl_swap_buffers( xwl_native_window_t * native_window )
+void cocoa_api_swap_buffers( xwl_native_window_t * native_window )
 {
 	xwlWindow * window = (xwlWindow*)native_window->handle.handle;
 	xwlOpenGLView * view = [window contentView];
 	[[view getContext] flushBuffer];
-} // cocoa_opengl_swap_buffers
+} // cocoa_api_swap_buffers
 
-int cocoa_opengl_pixel_format( unsigned int * attribs )
+int cocoa_api_pixel_format( unsigned int * attribs )
 {
 	return 0;
-} // cocoa_opengl_pixel_format
+} // cocoa_api_pixel_format
 
-void * cocoa_opengl_get_symbol( const char * symbol_name )
+void * cocoa_api_get_symbol( const char * symbol_name )
 {
 	return 0;
-} // cocoa_opengl_get_symbol
+} // cocoa_api_get_symbol
 
-void cocoa_opengl_register( xwl_api_provider_t * api )
+void cocoa_api_register( xwl_api_provider_t * api )
 {
-	api->create_context = cocoa_opengl_create_context;
-	api->destroy_context = cocoa_opengl_destroy_context;
-	api->activate_context = cocoa_opengl_activate_context;
-	api->swap_buffers = cocoa_opengl_swap_buffers;
-	api->pixel_format = cocoa_opengl_pixel_format;
-	api->get_symbol = cocoa_opengl_get_symbol;
-} // cocoa_opengl_register
+	api->create_context = cocoa_api_create_context;
+	api->destroy_context = cocoa_api_destroy_context;
+	api->activate_context = cocoa_api_activate_context;
+	api->swap_buffers = cocoa_api_swap_buffers;
+	api->pixel_format = cocoa_api_pixel_format;
+	api->get_symbol = cocoa_api_get_symbol;
+} // cocoa_api_register

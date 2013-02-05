@@ -664,7 +664,7 @@ xwl_api_provider_register _api_providers[] = {
 #endif
 
 #if __APPLE__
-	cocoa_opengl_register,
+	cocoa_api_register,
 #else
 	0,
 #endif
