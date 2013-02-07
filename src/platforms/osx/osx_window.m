@@ -133,7 +133,7 @@ void cocoa_shutdown( void )
 	[pool release];
 }
 
-void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, unsigned int * attributes )
+void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, unsigned int * attributes, int pixel_format )
 {
 	xwlWindow *window;
 	NSRect frame;
