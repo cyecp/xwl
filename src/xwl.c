@@ -965,6 +965,7 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
+			fprintf( stdout, "Releasing Window handle: %i\n", i );
 			//_api_provider.destroy_context( &wh->handle );
 			_window_provider.destroy_window( &wh->handle );
 			wh->handle.handle = 0;

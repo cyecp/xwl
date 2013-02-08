@@ -1,7 +1,7 @@
 #include <xwl/xwl.h>
 #import <CoreFoundation/CoreFoundation.h>
 
-static CFBundleRef _gl_bundle = 0;
+CFBundleRef _gl_bundle = 0;
 
 int _xwl_open_driver_library( unsigned int api_provider )
 {
@@ -16,7 +16,7 @@ int _xwl_open_driver_library( unsigned int api_provider )
 
 void _xwl_close_driver_library()
 {
-	if ( _gl_bundle )
+	if ( _gl_bundle != 0 )
 	{
 		CFRelease( _gl_bundle );
 		_gl_bundle = 0;

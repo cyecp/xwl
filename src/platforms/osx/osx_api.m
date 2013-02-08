@@ -9,7 +9,6 @@ void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_
 {
 	NSOpenGLPixelFormatAttribute * outattribs = 0;
 	NSOpenGLPixelFormatAttribute * attrib_pointer = 0;
-	NSLog( @"create opengl context" );
 	NSOpenGLPixelFormat * format;
 	NSOpenGLContext * context;
 	unsigned int depth_size = 24;
@@ -74,7 +73,6 @@ void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_
 
 void cocoa_api_destroy_context( void * context, xwl_native_window_t * native_window, xwl_window_provider_t * wapi )
 {
-	NSLog( @"destroy opengl context" );
 	[NSOpenGLContext clearCurrentContext];
 } // cocoa_api_destroy_context
 
