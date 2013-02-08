@@ -120,7 +120,7 @@ void cocoa_api_swap_buffers( xwl_native_window_t * native_window )
 {
 	xwlWindow * window = (xwlWindow*)native_window->handle.handle;
 	xwlOpenGLView * view = [window contentView];
-	[[view getContext] flushBuffer];
+	[view.context flushBuffer];
 } // cocoa_api_swap_buffers
 
 int cocoa_api_pixel_format( unsigned int * attribs )

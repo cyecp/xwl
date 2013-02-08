@@ -7,7 +7,7 @@ unsigned int LocalizedKeys(unichar ch);
 
 @implementation xwlOpenGLView
 
-@synthesize context = ctx;
+@synthesize context = _context;
 
 -(id)initWithFrame:(NSRect)frameRect
 {
@@ -23,12 +23,12 @@ unsigned int LocalizedKeys(unichar ch);
 {
 	[super lockFocus];
 	
-	if ( [ctx view] != self )
+	if ( [self.context view] != self )
 	{
-		[ctx setView: self];
+		[self.context setView: self];
 	}
 	
-	[ctx makeCurrentContext];
+	[self.context makeCurrentContext];
 	
 	//NSLog( @"Lock Focus!" );
 }
@@ -41,20 +41,10 @@ unsigned int LocalizedKeys(unichar ch);
 
 -(void)dealloc
 {
-	ctx = nil;
+	self.context = nil;
 	[super dealloc];
 }
 
-
--(NSOpenGLContext*)getContext
-{
-	return ctx;
-}
-
--(void)setContext:(NSOpenGLContext*) context
-{
-	ctx = context;
-}
 
 -(BOOL) isOpaque
 {
@@ -84,7 +74,7 @@ unsigned int LocalizedKeys(unichar ch);
 	ev.window = &wnd.xwlhandle->handle;
 	
 	xwlOpenGLView * view = (xwlOpenGLView*)[wnd contentView];
-	[[view getContext] update];
+	[view.context update];
 	
 	xwl_send_event( &ev );
 }
@@ -224,9 +214,8 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 		// not escape, or any other non-text keys
 		if ( [event keyCode] != 0x35 && (code < 0xF700 || code > 0xF8FF))
 		{
-			
 			NSString * str;
-			NSText *text = [wnd fieldEditor: YES forObject: wnd];
+			NSText *text = [wnd fieldEditor:YES forObject:wnd];
 			[text interpretKeyEvents:[NSArray arrayWithObject:event]];
 			
 			str = [text string];
@@ -234,22 +223,13 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 			{
 				// send text event
 				ev.type = XWLE_TEXT;
-				ev.unicode = [str characterAtIndex: 0];
+				ev.unicode = [str characterAtIndex:0];
 				xwl_send_event( &ev );
 				
 				// we must reset this here, otherwise we don't get different character codes
-				[text setString: @""];
+				[text setString:@""];
 			}
 		}
-		else
-		{
-			//			NSLog( @"Event Keycode: %i", [event keyCode] );
-		}
-		
-	}
-	else
-	{
-		//[super keyDown: event];
 	}
 	
 	if ( ![event isARepeat] )
@@ -285,10 +265,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 		// send the KeyPressed event
 		xwl_send_event( &ev );
 	}
-	else
-	{
-		//[super keyDown: event];
-	}
+
 	
 	/*
 	 NSUInteger modifierFlags = [event modifierFlags];

@@ -4,11 +4,6 @@
 @implementation xwlWindow
 @synthesize xwlhandle;
 
--(void) dealloc
-{
-	[super dealloc];
-}
-
 /* this is required when using the styleMask: NSBorderlessWindowMask */
 /* By default NSBorderlessWindowMask windows report that they cannot become the key (target of keyboard input) */
 -(BOOL) canBecomeKeyWindow

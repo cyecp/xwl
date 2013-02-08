@@ -8,15 +8,13 @@
 @interface xwlOpenGLView : NSView
 {
 @public
-	NSOpenGLContext * ctx;
+	NSOpenGLContext * _context;
 }
 
 @property (nonatomic, retain) NSOpenGLContext * context;
 
 -(id)initWithFrame:(NSRect)frameRect;
 -(void)dealloc;
--(NSOpenGLContext*) getContext;
--(void)setContext:(NSOpenGLContext*)context;
 -(BOOL) isOpaque;
 @end
 #endif
