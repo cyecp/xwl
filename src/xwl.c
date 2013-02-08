@@ -877,13 +877,14 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		return 0;
 	}
     
-
+#if 0
 	// open a handle to the correct API library	
 	if ( !_xwl_open_driver_library( api_provider ) )
 	{
 		xwl_set_error( "Unable to link with API library" );
 		return 0;
 	}
+#endif
 
 #ifdef _WIN32
 	// initialize key map
@@ -899,6 +900,7 @@ void * xwl_findsymbol( const char * symbol_name )
 {
 	void * func = 0;
 	
+#if 0
 	// first try to get the symbol with the API specific implementation.
 	assert( _api_provider.get_symbol != 0 );
 	func = _api_provider.get_symbol( symbol_name );
@@ -918,6 +920,7 @@ void * xwl_findsymbol( const char * symbol_name )
 	{
 		fprintf( stderr, "Symbol, '%s' NOT FOUND!\n", symbol_name );
 	}
+#endif
 
 	return func;
 } // xwl_findsymbol
@@ -976,8 +979,9 @@ void xwl_shutdown( void )
 
 
 
-	
+#if 0
 	_xwl_close_driver_library();
+#endif
 
 	assert( _window_provider.shutdown != 0 );
 	_window_provider.shutdown();
