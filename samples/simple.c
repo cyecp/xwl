@@ -14,9 +14,9 @@ i32 my;
 	#include <gl/gl.h>
 	#pragma comment( lib, "opengl32.lib" )
 #elif LINUX
-	//#include <GL/gl.h>
+	#include <GL/gl.h>
 	//#include <GL/glx.h>
-	#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
+	//#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
 #elif __APPLE__
 	// for OSX 10.6
 	#include <OpenGL/OpenGL.h>
