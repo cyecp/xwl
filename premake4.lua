@@ -89,7 +89,7 @@ project "xwl"
 	objdir "obj"
 	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
 	platforms { "x32", "x64", "native" }
-	kind "StaticLib"
+	kind "SharedLib"
 	language ("C")
 	
 	files
