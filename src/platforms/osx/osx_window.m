@@ -240,8 +240,8 @@ void cocoa_get_window_render_size( xwl_window_t * window, int * width, int * hei
 
 void cocoa_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
-	NSScreen * screen = [[ NSScreen screens] objectAtIndex: screen_index];
-	NSRect frame = [screen frame];
+	NSScreen * screen = [[NSScreen screens] objectAtIndex:screen_index];
+	NSRect frame = [screen convertRectToBacking:[screen frame]];
 	*width = frame.size.width;
 	*height = frame.size.height;
 } // cocoa_get_screen_size
