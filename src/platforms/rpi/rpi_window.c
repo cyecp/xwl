@@ -96,6 +96,11 @@ void rpi_window_get_window_size( xwl_window_t * window, int * width, int * heigh
 
 } // rpi_window_get_window_size
 
+void rpi_window_get_window_render_size( xwl_window_t * window, int * width, int * height )
+{
+
+} // rpi_window_get_window_render_size
+
 void rpi_window_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 
@@ -115,6 +120,7 @@ void rpi_window_register( xwl_window_provider_t * wapi )
 	wapi->create_window = rpi_window_create_window;
 	wapi->destroy_window = rpi_window_destroy_window;
 	wapi->get_window_size = rpi_window_get_window_size;
+	wapi->get_window_render_size = rpi_window_get_window_render_size
 	wapi->get_screen_size = rpi_window_get_screen_size;
 	wapi->get_screen_count = rpi_window_get_screen_count;
 } // rpi_window_register

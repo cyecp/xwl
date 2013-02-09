@@ -8,7 +8,7 @@ static EGLSurface surface;
 
 void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
-	EGLint api_type = EGL_OPENGL_API;
+	EGLint api_type = EGL_OPENGL_ES_API;
 	EGLContext context;
 	EGLBoolean result;
 	int major_api_version = 2;
@@ -21,21 +21,20 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 	EGLint value;
 
 
+// Until EGL works with plain old OpenGL, disable this.
+#if 0
 	if ( attributes[ XWL_API_MAJOR_VERSION ] )
 	{
 		major_api_version = attributes[ XWL_API_MAJOR_VERSION ];
 		context_attribs[ 1 ] = major_api_version;
 	}
 
-	if ( attributes[ XWL_API ] == XWL_API_GLES2 )
-	{
-		api_type = EGL_OPENGL_ES_API;
-	}
-	else if ( attributes[ XWL_API ] == XWL_API_OPENGL )
+	if ( attributes[ XWL_API ] == XWL_API_OPENGL )
 	{
 		api_type = EGL_OPENGL_API;
 	}
 
+#endif
 
 	result = eglBindAPI( api_type );
 	if ( result == EGL_FALSE )

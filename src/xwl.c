@@ -795,6 +795,8 @@ int _xwl_setup_api_provider( unsigned int api_provider )
 	{
 		api_provider = _xwl_default_api_provider();
 	}
+
+	fprintf( stdout, "using api provider: %i\n", api_provider );
 	
 	xwl_api_provider_register api_register = _api_providers[ api_provider ];
 	if ( !api_register )

@@ -198,7 +198,11 @@ project "sample"
 			"X11",
 			"GL"
 		}
-
+		linkoptions
+		{
+			"-Wl,-rpath,."
+		}
+		
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
 		elseif _OPTIONS["with-egl"] ~= nil then

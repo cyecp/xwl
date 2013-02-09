@@ -133,6 +133,11 @@ void x11_window_get_window_size( xwl_window_t * window, int * width, int * heigh
 
 } // x11_window_get_window_size
 
+void x11_window_get_window_render_size( xwl_window_t * window, int * width, int * height )
+{
+
+} // x11_window_get_window_render_size
+
 void x11_window_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 
@@ -151,6 +156,7 @@ void x11_window_register( xwl_window_provider_t * wapi )
 	wapi->create_window = x11_window_create_window;
 	wapi->destroy_window = x11_window_destroy_window;
 	wapi->get_window_size = x11_window_get_window_size;
+	wapi->get_window_render_size = x11_window_get_window_render_size;
 	wapi->get_screen_size = x11_window_get_screen_size;
 	wapi->get_screen_count = x11_window_get_screen_count;
 } // x11_window_register
