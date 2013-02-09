@@ -230,6 +230,14 @@ void cocoa_get_window_size( xwl_window_t * window, int * width, int * height )
 	*height = frame.size.height;
 } // cocoa_get_window_size
 
+void cocoa_get_window_render_size( xwl_window_t * window, int * width, int * height )
+{
+	xwlWindow * xwlwindow = (xwlWindow*)window->handle;
+	NSRect render_frame = [[xwlwindow contentView] convertRectToBacking:[[xwlwindow contentView] bounds]];
+	*width = render_frame.size.width;
+	*height = render_frame.size.height;
+} // cocoa_get_window_render_size
+
 void cocoa_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 	NSScreen * screen = [[ NSScreen screens] objectAtIndex: screen_index];
@@ -252,6 +260,7 @@ void cocoa_register( xwl_window_provider_t * wapi )
 	wapi->destroy_window = cocoa_destroy_window;
 	
 	wapi->get_window_size = cocoa_get_window_size;
+	wapi->get_window_render_size = cocoa_get_window_render_size;
 	wapi->get_screen_size = cocoa_get_screen_size;
 	wapi->get_screen_count = cocoa_get_screen_count;
 } // cocoa_register

@@ -150,7 +150,8 @@ int main()
 	xwl_get_window_size( w, &window_width, &window_height );
 	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", window_width, window_height );
 	
-
+	xwl_get_window_render_size( w, &window_width, &window_height );
+	xwlPrintf( "-> Window backing dimensions: %i x %i\n", window_width, window_height );
 	
 	// set event callback
 	xwl_set_callback( callback );
@@ -166,8 +167,8 @@ int main()
 
 	gl_clearcolor = xwl_findsymbol( "glClearColor" );
 	gl_clear = xwl_findsymbol( "glClear" );
-
-	while( running )
+	
+	while( running && gl_clear )
 	{
 		xwl_dispatch_events();
 

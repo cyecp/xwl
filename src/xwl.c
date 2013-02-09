@@ -749,6 +749,12 @@ void xwl_get_window_size( xwl_window_t * window, int * width, int * height )
 	_window_provider.get_window_size( window, width, height );
 } // xwl_get_window_size
 
+void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height )
+{
+	assert( _window_provider.get_window_render_size != 0 );
+	_window_provider.get_window_render_size( window, width, height );
+} // xwl_get_window_render_size
+
 void xwl_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 	assert( _window_provider.get_screen_size != 0 );

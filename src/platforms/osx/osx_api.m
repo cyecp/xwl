@@ -96,12 +96,15 @@ void cocoa_api_activate_context( void * context, xwl_native_window_t * native_wi
 	// create the custom view
 	view = [[xwlOpenGLView alloc] initWithFrame: [[window contentView] frame] ];
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	
+		
 	// set the context of that view
 	[view setContext: ctx];
 	
 	// context is now 'current', so glGetString calls succeed.
 	[ctx makeCurrentContext];
+	
+	// make sure we use the highest resolution possible on "Retina" screens.
+	[view setWantsBestResolutionOpenGLSurface:YES];
 	
 	// make sure it sends the windowResized event
 	[[NSNotificationCenter defaultCenter] addObserver: view

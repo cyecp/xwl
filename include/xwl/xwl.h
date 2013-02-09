@@ -196,6 +196,7 @@ typedef struct xwl_window_s
 //	void * xwl_get_native_window( xwl_window_t * window );
 //	void * xwl_get_api_context( xwl_window_t * window );
 	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
+	void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height );
 	void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
 	unsigned int xwl_get_screen_count();
     

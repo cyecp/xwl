@@ -49,6 +49,7 @@ typedef struct xwl_window_provider_s
 	xwl_window_provider_destroy_window destroy_window;
 	
 	xwl_window_provider_get_window_size get_window_size;
+	xwl_window_provider_get_window_size get_window_render_size;
 	xwl_window_provider_get_screen_size get_screen_size;
 	xwl_window_provider_get_screen_count get_screen_count;
 } xwl_window_provider_t;
