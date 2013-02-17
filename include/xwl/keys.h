@@ -126,7 +126,8 @@ enum
 
 	XWLKM_ALT = 1,
 	XWLKM_SHIFT = 2,
-	XWLKM_CONTROL = 4
+	XWLKM_CONTROL = 4,
+	XWLKM_SYSTEM = 8,
 };
 
 // event constants

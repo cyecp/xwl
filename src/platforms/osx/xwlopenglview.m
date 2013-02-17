@@ -198,6 +198,49 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	//NSLog( @"scrollWheel %g %g %g", [theEvent deltaX], [theEvent deltaY], [theEvent deltaZ] );
 }
 
+-(void) setKeymods:(xwl_event_t*) ev fromModifierFlags:(NSUInteger) modifierFlags
+{
+	if ( modifierFlags & NSAlternateKeyMask )
+	{
+		ev->keymods |= XWLKM_ALT;
+		NSLog( @"alt" );
+	}
+	else
+	{
+		ev->keymods &= ~XWLKM_ALT;
+	}
+	
+	if ( modifierFlags & NSControlKeyMask)
+	{
+		ev->keymods |= XWLKM_CONTROL;
+		NSLog( @"control" );
+	}
+	else
+	{
+		ev->keymods &= ~XWLKM_CONTROL;
+	}
+	
+	if ( modifierFlags & NSShiftKeyMask )
+	{
+		ev->keymods |= XWLKM_SHIFT;
+		NSLog( @"shift" );
+	}
+	else
+	{
+		ev->keymods &= ~XWLKM_SHIFT;
+	}
+	
+	if ( modifierFlags & NSCommandKeyMask )
+	{
+		ev->keymods |= XWLKM_SYSTEM;
+		NSLog( @"system" );
+	}
+	else
+	{
+		ev->keymods &= ~XWLKM_SYSTEM;
+	}
+}
+
 -(void) keyDown:(NSEvent *) event
 {
 	xwl_event_t ev = {0};
@@ -261,24 +304,14 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 			NSLog( @"Unknown key code: %i", [event keyCode] );
 		}
 		
+		// setup modifier flags
+		[self setKeymods:&ev fromModifierFlags:[event modifierFlags]];
+		
 		ev.type = XWLE_KEYPRESSED;
 		// send the KeyPressed event
 		xwl_send_event( &ev );
 	}
 
-	
-	/*
-	 NSUInteger modifierFlags = [event modifierFlags];
-	 if ( modifierFlags & NSAlternateKeyMask )
-	 NSLog( @"alt" );
-	 if ( modifierFlags & NSControlKeyMask)
-	 NSLog( @"control" );
-	 if ( modifierFlags & NSShiftKeyMask )
-	 NSLog( @"shift" );
-	 if ( modifierFlags & NSCommandKeyMask )
-	 NSLog( @"system" );
-	 */
-	
 	//NSLog( @"xwlOpenGLView keyDown" );
 	//[super keyDown: event];
 }
@@ -330,18 +363,25 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 
 -(void)flagsChanged:(NSEvent *)event
 {
-	// TODO: generate key events for these
-	//	NSUInteger modifierFlags = [event modifierFlags];
-	//	if ( modifierFlags & NSAlternateKeyMask )
-	//		NSLog( @"alt" );
-	//	if ( modifierFlags & NSControlKeyMask)
-	//		NSLog( @"control" );
-	//	if ( modifierFlags & NSShiftKeyMask )
-	//		NSLog( @"shift" );
-	//	if ( modifierFlags & NSCommandKeyMask )
-	//		NSLog( @"system" );
+/*
+	xwl_event_t ev;
+	ev.type = XWLE_KEYPRESSED;
+	[self setKeymods:&ev fromModifierFlags:[event modifierFlags]];
+	*/
+/*
+//	 TODO: generate key events for these
+		NSUInteger modifierFlags = [event modifierFlags];
+		if ( modifierFlags & NSAlternateKeyMask )
+			NSLog( @"alt" );
+		if ( modifierFlags & NSControlKeyMask)
+			NSLog( @"control" );
+		if ( modifierFlags & NSShiftKeyMask )
+			NSLog( @"shift" );
+		if ( modifierFlags & NSCommandKeyMask )
+			NSLog( @"system" );
 	
-	//NSLog( @"Flags Changed!" );
+	NSLog( @"Flags Changed!" );
+	*/
 }
 
 -(void)mouseEntered:(NSEvent *)theEvent

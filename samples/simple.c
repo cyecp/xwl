@@ -173,8 +173,8 @@ int main()
 		xwl_dispatch_events();
 
 		// show a purple screen to indicate success
-		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
-		gl_clear( GL_COLOR_BUFFER_BIT );
+//		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
+//		gl_clear( GL_COLOR_BUFFER_BIT );
 
 // legacy opengl api
 #if 0
