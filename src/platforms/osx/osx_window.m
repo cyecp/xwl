@@ -99,20 +99,21 @@ int cocoa_startup( xwl_api_provider_t * api )
 	
 	
 	application = [NSApplication sharedApplication];
-	/*
-	 float scaleFactor = 0;
-	 NSWindow * window = [application mainWindow];
-	 NSScreen * screen = [window screen];
-	 if ( [screen respondsToSelector:@selector(backingScaleFactor)] )
-	 {
-	 scaleFactor = [screen backingScaleFactor];
-	 }
-	 
-	 if ( scaleFactor < 1 )
-	 scaleFactor = 1;
-	 
-	 NSLog( @"backingScaleFactor for main screen is %g\n", scaleFactor );
-	 */
+
+	float scaleFactor = 1;
+	NSWindow * window = [application mainWindow];
+	NSScreen * screen = [window screen];
+	if ( [screen respondsToSelector:@selector(backingScaleFactor)] )
+	{
+		scaleFactor = [screen backingScaleFactor];
+	}
+	else
+	{
+		NSLog( @"Detected older version (pre 10.7) of Mac OS X." );
+	}
+	
+	NSLog( @"backingScaleFactor for main screen is %g\n", scaleFactor );
+
 	
 	// set application handler here
 	[application setDelegate: appDelegate];
