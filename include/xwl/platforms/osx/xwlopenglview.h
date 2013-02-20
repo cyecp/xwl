@@ -9,6 +9,7 @@
 {
 @public
 	NSOpenGLContext * _context;
+//	CVDisplayLinkRef display_link;
 }
 
 @property (nonatomic, retain) NSOpenGLContext * context;

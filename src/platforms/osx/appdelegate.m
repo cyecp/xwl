@@ -26,6 +26,11 @@
 	//NSLog( @"Window Did Deminiaturize!" );
 }
 
+-(void)windowWillClose:(NSNotification *)notification
+{
+	NSLog( @"windowWillClose" );
+}
+
 
 -(BOOL) windowShouldClose:(id)windowIn
 {

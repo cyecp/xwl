@@ -6,133 +6,17 @@ NSApplication * application = 0;
 NSAutoreleasePool *pool = 0;
 xwlDelegate * appDelegate = 0;
 
-void populateApplicationMenu( NSMenu * aMenu, NSString * applicationName )
-{
-	NSMenuItem * menuItem;
-	
-	menuItem = [aMenu addItemWithTitle:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"About", nil), applicationName]
-								action:@selector(orderFrontStandardAboutPanel:)
-						 keyEquivalent:@""];
-	[menuItem setTarget:NSApp];
-	
-	[aMenu addItem:[NSMenuItem separatorItem]];
-	
-	menuItem = [aMenu addItemWithTitle:NSLocalizedString(@"Preferences...", nil)
-								action:NULL
-						 keyEquivalent:@","];
-	
-	[aMenu addItem:[NSMenuItem separatorItem]];
-	
-	menuItem = [aMenu addItemWithTitle:NSLocalizedString(@"Services", nil)
-								action:NULL
-						 keyEquivalent:@""];
-	NSMenu * servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
-	[aMenu setSubmenu:servicesMenu forItem:menuItem];
-	[NSApp setServicesMenu:servicesMenu];
-	
-	[aMenu addItem:[NSMenuItem separatorItem]];
-	
-	menuItem = [aMenu addItemWithTitle:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Hide", nil), applicationName]
-								action:@selector(hide:)
-						 keyEquivalent:@"h"];
-	[menuItem setTarget:NSApp];
-	
-	menuItem = [aMenu addItemWithTitle:NSLocalizedString(@"Hide Others", nil)
-								action:@selector(hideOtherApplications:)
-						 keyEquivalent:@"h"];
-	[menuItem setKeyEquivalentModifierMask:NSCommandKeyMask | NSAlternateKeyMask];
-	[menuItem setTarget:NSApp];
-	
-	menuItem = [aMenu addItemWithTitle:NSLocalizedString(@"Show All", nil)
-								action:@selector(unhideAllApplications:)
-						 keyEquivalent:@""];
-	[menuItem setTarget:NSApp];
-	
-	[aMenu addItem:[NSMenuItem separatorItem]];
-	
-	menuItem = [aMenu addItemWithTitle:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Quit", nil), applicationName]
-								action:@selector(terminate:) keyEquivalent:@"q"];
-	[menuItem setTarget:NSApp];
-}
-
-void attachMenu( const char * title )
-{
-	//NSLog( @"Application will finish launching?" );
-	
-	NSMenu * mainMenu = [[NSMenu alloc] initWithTitle: NSLocalizedString(@"MainMenu",nil)];
-	NSMenuItem * menuItem;
-	NSMenu * submenu;
-	
-	menuItem = [mainMenu addItemWithTitle: NSLocalizedString(@"Apple", nil) action: nil keyEquivalent:@""];
-	submenu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Apple",nil)];
-	[NSApp performSelector:@selector(setAppleMenu:) withObject: submenu];
-	// populate application menu
-	
-	NSString * applicationName = [[[NSString alloc] autorelease] initWithCString: title encoding:NSUTF8StringEncoding];
-	populateApplicationMenu( submenu, applicationName );
-	[applicationName release];
-	[mainMenu setSubmenu: submenu forItem: menuItem];
-	
-	[NSApp setMainMenu: mainMenu];
-	//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:@"/Developer/About Xcode Tools.pdf"]];
-}
-
 int cocoa_startup( xwl_api_provider_t * api )
 {
-	pool = [[NSAutoreleasePool alloc] init];
-	appDelegate = [[[xwlDelegate alloc] init] autorelease];
-	
-	// straight from SFML-2.0
-	ProcessSerialNumber psn;
-	// Set the process as a normal application so it can get focus.
-	
-	if (!GetCurrentProcess(&psn)) {
-		TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-		SetFrontProcess(&psn);
-	}
-	
-	// Tell the application to stop bouncing in the Dock.
-	//[[NSApplication sharedApplication] finishLaunching];
-	// NOTE : This last call won't harm anything even if SFML window was
-	// created with an external handle.
-	// NOTE2: Removing this call in OSX 10.7 fixes "_createMenuRef called with existing principal MenuRef" Unhandled exception.
-	
-	
-	application = [NSApplication sharedApplication];
-
-	float scaleFactor = 1;
-	NSWindow * window = [application mainWindow];
-	NSScreen * screen = [window screen];
-	if ( [screen respondsToSelector:@selector(backingScaleFactor)] )
-	{
-		scaleFactor = [screen backingScaleFactor];
-	}
-	else
-	{
-		NSLog( @"Detected older version (pre 10.7) of Mac OS X." );
-	}
-	
-	NSLog( @"backingScaleFactor for main screen is %g\n", scaleFactor );
-
-	
-	// set application handler here
-	[application setDelegate: appDelegate];
-	
-	//[NSApp activateIgnoringOtherApps:YES];
-	
-	// setup the app menu
-	[application finishLaunching];
-	
+	pool = [[NSAutoreleasePool alloc] init];	
 	return 1;
 } // cocoa_startup
 
 
 void cocoa_shutdown( void )
 {
-	[application setDelegate: nil ];
-	
 	[pool release];
-}
+} // cocoa_shutdown
 
 void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, unsigned int * attributes, int pixel_format )
 {
@@ -172,9 +56,6 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 		windowMask &= ~NSResizableWindowMask;
 	}
 	
-	// setup a basic menu
-	attachMenu( utf8_title );
-	
 	frame = NSMakeRect( window_x, window_y, window_width, window_height );
 	
 	// get this screen's dimensions
@@ -188,6 +69,7 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 		return 0;
 	}
 
+	NSLog( @"created window on thread: %@", [NSThread currentThread]);
 	
 	// uncomment the next line to see a red color when the window is initially created
 	//[handle setBackgroundColor: [NSColor redColor]];
@@ -215,7 +97,7 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 	
 	// keep track of the internal handle	
 	window.xwlhandle = wh;
-	
+	[window retain];
 	return window;
 } // cocoa_create_window
 

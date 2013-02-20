@@ -3,7 +3,7 @@
 #import <xwl/platforms/osx/xwlopenglview.h>
 #import <xwl/platforms/osx/xwlwindow.h>
 
-#import <string.h>
+#import <CoreVideo/CoreVideo.h>
 
 void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
@@ -50,6 +50,7 @@ void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_
 
 	// create an opengl pixel format
 	format = [[NSOpenGLPixelFormat alloc] initWithAttributes: attrib_pointer];
+//	global_format = format;
 	free( attrib_pointer );
 	
 	if ( format == nil )
@@ -76,6 +77,14 @@ void cocoa_api_destroy_context( void * context, xwl_native_window_t * native_win
 	[NSOpenGLContext clearCurrentContext];
 } // cocoa_api_destroy_context
 
+#if 0
+CVReturn display_link_callback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext)
+{
+
+	NSLog( @"display_link_callback thread: %@", [NSThread currentThread] );
+	return 0;
+}
+#endif
 
 void cocoa_api_activate_context( void * context, xwl_native_window_t * native_window )
 {
@@ -110,6 +119,21 @@ void cocoa_api_activate_context( void * context, xwl_native_window_t * native_wi
 	[[NSNotificationCenter defaultCenter] addObserver: view
 											 selector:@selector(windowResized:) name:NSWindowDidResizeNotification
 											   object: window];
+	
+	
+	int swap_interval = 1;
+	[ctx setValues:&swap_interval forParameter:NSOpenGLCPSwapInterval];
+	
+//	CVDisplayLinkCreateWithActiveCGDisplays( &view->display_link );
+	
+//	CVDisplayLinkSetOutputCallback( view->display_link, &display_link_callback, view );
+	
+
+//	CGLContextObj cglContext = [ctx CGLContextObj];
+//	CGLPixelFormatObj cglPixelFormat = [global_format CGLPixelFormatObj];
+//	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext( view->display_link, cglContext, cglPixelFormat );
+	
+//	CVDisplayLinkStart( view->display_link );
 	
 	// make the view this window's first responder and add it as the content view
 	[window setContentView: view];

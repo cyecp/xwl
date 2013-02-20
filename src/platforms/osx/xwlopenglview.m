@@ -394,4 +394,9 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	//NSLog( @"mouseExited" );
 }
 
+-(void)viewDidChangeBackingProperties
+{
+	NSLog(@"viewDidChangeBackingProperties");
+}
+
 @end
