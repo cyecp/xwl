@@ -130,12 +130,22 @@ void x11_window_destroy_window( xwl_window_t * window )
 
 void x11_window_get_window_size( xwl_window_t * window, int * width, int * height )
 {
+	Window native_window = (Window)window->handle;
+	XWindowAttributes attributes;
+	XGetWindowAttributes( x11_current_display(), native_window, &attributes );
+
+	*width = attributes.width;
+	*height = attributes.height;
 
 } // x11_window_get_window_size
 
 void x11_window_get_window_render_size( xwl_window_t * window, int * width, int * height )
 {
+	// according to the man page for XGetWindowAttributes and XGetGeometry
+	// I could use XGetGeometry to retrieve the drawable dimensions for the window.
 
+	// At the moment, I believe the correct values to return here the actual window dimensions so I will just call that.
+	x11_window_get_window_size( window, width, height );
 } // x11_window_get_window_render_size
 
 void x11_window_get_screen_size( unsigned int screen_index, int * width, int * height )
