@@ -1,31 +1,32 @@
 #pragma once
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
-
-// platform includes
+    
+	
+// define RASPBERRYPI 1 to enable the Raspberry Pi.
+	
+    // platform includes
 #if LINUX
-	#include <X11/Xlib.h>
-	#include <X11/keysym.h>
-	#include <X11/extensions/Xrandr.h>
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+#include <X11/extensions/Xrandr.h>
 #elif _WIN32
-	#ifndef _WIN32_WINNT
-	#define _WIN32_WINNT 0x0501
+#   ifndef _WIN32_WINNT
+    #define _WIN32_WINNT 0x0501
 #endif
-
+    
 #include <windows.h>
 #ifndef MAPVK_VK_TO_VSC
-	#define MAPVK_VK_TO_VSC 0
+    #define MAPVK_VK_TO_VSC 0
 #endif
-
+    
 #elif __APPLE__
-	#include <TargetConditionals.h>
+    #include <TargetConditionals.h>
 #endif
 
-#define XWL_MAX_TOUCHES 5
-#define XWL_MAX_WINDOW_ATTRIBS 10
-
+    
 #ifndef Z_TYPES
 	typedef signed char i8;
 	typedef unsigned char u8;
@@ -34,346 +35,207 @@
 	typedef short i16;
 	typedef int i32;
 #endif
-
+    
 #define XWL_DEBUG 1
 #if XWL_DEBUG
-	#define xwlPrintf printf
+    #define xwlPrintf printf
 #else
-	#define xwlPrintf //
+    #define xwlPrintf //
 #endif
+    
+#define XWL_MAX_WINDOW_HANDLES 4
+#define XWL_NOTSET 0xFFFFFFF0
 
-
-
-// keys
 enum
 {
-	XWLK_INVALID,
-	XWLK_A,
-	XWLK_B,
-	XWLK_C,
-	XWLK_D,
-	XWLK_E,
-	XWLK_F,
-	XWLK_G,
-	XWLK_H,
-	XWLK_I,
-	XWLK_J,
-	XWLK_K,
-	XWLK_L,
-	XWLK_M,
-	XWLK_N,
-	XWLK_O,
-	XWLK_P,
-	XWLK_Q,
-	XWLK_R,
-	XWLK_S,
-	XWLK_T,
-	XWLK_U,
-	XWLK_V,
-	XWLK_W,
-	XWLK_Y,
-	XWLK_X,
-	XWLK_Z,
-	XWLK_LSYSTEM,
-	XWLK_RSYSTEM,
-	XWLK_MENU,
-	XWLK_SEMICOLON,
-	XWLK_SLASH,
-	XWLK_BACKSLASH,
-	XWLK_EQUALS,
-	XWLK_MINUS,
-	XWLK_LBRACKET,
-	XWLK_RBRACKET,
-	XWLK_COMMA,
-	XWLK_PERIOD,
-	XWLK_QUOTE,
-	XWLK_TILDE,
-	XWLK_ESCAPE,
-	XWLK_SPACE,
-	XWLK_RETURN,
-	XWLK_BACKSPACE,
-	XWLK_TAB,
-	XWLK_PAGEUP,
-	XWLK_PAGEDN,
-	XWLK_END,
-	XWLK_HOME,
-	XWLK_INSERT,
-	XWLK_DELETE,
-	XWLK_ADD,
-	XWLK_SUBTRACT,
-	XWLK_MULTIPLY,
-	XWLK_DIVIDE,
-	XWLK_PAUSE,
-	XWLK_F1,
-	XWLK_F2,
-	XWLK_F3,
-	XWLK_F4,
-	XWLK_F5,
-	XWLK_F6,
-	XWLK_F7,
-	XWLK_F8,
-	XWLK_F9,
-	XWLK_F10,
-	XWLK_F11,
-	XWLK_F12,
-	XWLK_F13,
-	XWLK_F14,
-	XWLK_F15,
-	XWLK_LEFT,
-	XWLK_RIGHT,
-	XWLK_UP,
-	XWLK_DOWN,
-	XWLK_NUMPAD0,
-	XWLK_NUMPAD1,
-	XWLK_NUMPAD2,
-	XWLK_NUMPAD3,
-	XWLK_NUMPAD4,
-	XWLK_NUMPAD5,
-	XWLK_NUMPAD6,
-	XWLK_NUMPAD7,
-	XWLK_NUMPAD8,
-	XWLK_NUMPAD9,
-	XWLK_0,
-	XWLK_1,
-	XWLK_2,
-	XWLK_3,
-	XWLK_4,
-	XWLK_5,
-	XWLK_6,
-	XWLK_7,
-	XWLK_8,
-	XWLK_9,
-	XWLK_LSHIFT,
-	XWLK_RSHIFT,
-	XWLK_LCONTROL,
-	XWLK_RCONTROL,
-	XWLK_LALT,
-	XWLK_RALT,
-	XWLK_NUMLOCK,
-	XWLK_CAPSLOCK,
+	XWL_NONE,
+	
+	// enum attributes
+	XWL_API,
+	XWL_API_PROVIDER,
+	XWL_WINDOW_PROVIDER,
+	
+	// integer attributes
+	XWL_API_MAJOR_VERSION,
+	XWL_API_MINOR_VERSION,
+    XWL_API_SAMPLES,
+    XWL_API_SAMPLEBUFFERS,
 
-	XWLMB_LEFT,
-	XWLMB_RIGHT,
-	XWLMB_MIDDLE,
-	XWLMB_MOUSE4,
-	XWLMB_MOUSE5,
-	XWLMB_MOUSE6,
-	XWLMB_MOUSE7
-};
-
-// key mods
-enum
-{
-	XWLKM_INVALID,
-
-	XWLKM_ALT = 1,
-	XWLKM_SHIFT = 2,
-	XWLKM_CONTROL = 4
-};
-
-// window creation constants
-enum
-{
-	XWLW_INVALID,
-	XWLW_FULLSCREEN,
-};
-
-// event constants
-enum
-{
-	XWLE_INVALID,
-	XWLE_MOUSEMOVE,
-	XWLE_MOUSEBUTTON_PRESSED,
-	XWLE_MOUSEBUTTON_RELEASED,
-	XWLE_MOUSEWHEEL,
-	XWLE_KEYPRESSED,
-	XWLE_KEYRELEASED,
-	XWLE_JOYSTICK_MOVE,
-	XWLE_JOYSTICKBUTTON_PRESSED,
-	XWLE_JOYSTICKBUTTON_RELEASED,
-	XWLE_SIZE,
-	XWLE_CLOSED,
-	XWLE_LOSTFOCUS,
-	XWLE_GAINFOCUS,
-	XWLE_TEXT,
-	XWLE_TOUCHES_BEGAN,
-	XWLE_TOUCHES_MOVED,
-	XWLE_TOUCHES_END
-};
-
-// flags
-enum
-{
-	XWL_WINDOWED,
-	XWL_FULLSCREEN = 1, // start window full screen
-	XWL_NORESIZE = 2, // disable window resizing,
-	XWL_OPENGL = 4, // setup opengl rendering
+	XWL_DEPTH_SIZE,
+	XWL_COLOR_SIZE,
+	XWL_ALPHA_SIZE,
+	XWL_STENCIL_SIZE,
+	XWL_WINDOW_WIDTH,
+	XWL_WINDOW_HEIGHT,
+	XWL_WINDOW_X,
+	XWL_WINDOW_Y,
 	
 #if _WIN32
 	XWL_WIN32_ICON = 8,
 	XWL_WIN32_ICONSM = 16,
 #endif
-};
-
-// OpenGL Attributes
-enum
-{
-	XWL_GL_NOATTRIB = 1,
-	XWL_GL_PROFILE, // ignored on Mac OSX < 10.7
-	XWL_GL_DEPTHSIZE,
-};
-
-enum
-{
-	XWL_GLPROFILE_LEGACY = 1,
-	XWL_GLPROFILE_CORE3_2
-};
-
-typedef struct xwl_displaymode_s
-{
-	u32 width;
-	u32 height;
-} xwl_displaymode_t;
-
-struct xwl_event_s;	
-typedef void (*xwl_event_callback)( struct xwl_event_s * );
 	
+	// boolean attributes
+	XWL_USE_FULLSCREEN,
+	XWL_DISABLE_RESIZE,
+	
+	XWL_ATTRIBUTE_COUNT
+};
+
+enum
+{
+	XWL_API_INVALID,
+	XWL_API_OPENGL,
+	XWL_API_GLES2,
+	XWL_API_GLES3
+};
+
+#include "keys.h"
+
 typedef struct xwl_window_s
 {
-	void * handle;
-	void * userdata;
-	xwl_event_callback event_callback;
-	
-#if _WIN32
-	HDC dc;
-#endif
-
-#if LINUX
-	void * context;
-#endif
-
-#if __APPLE__
-	void * view;
-#endif
+    void * handle;
+    void * context;
+    int pixel_format;
+    unsigned int id;
 } xwl_window_t;
+
+    
+#include <xwl/window_provider.h>
+#include <xwl/api_provider.h>
+#include <xwl/input_provider.h>
 	
-typedef struct xwl_windowparams_s
-{
-	u32 width;
-	u32 height;
-	u32 flags;
-	u32 x;
-	u32 y;
-	void * userdata;
-	char * title;
 	
+	
+    struct xwl_event_s;
+    typedef void (*xwl_event_callback)( struct xwl_event_s * );
+	
+#if 0
+    typedef struct xwl_window_s
+    {
+        void * handle;
+        void * userdata;
+        xwl_event_callback event_callback;
+        
 #if _WIN32
-	HICON hIcon;
-	HICON hIconSm;
-#endif	
-} xwl_windowparams_t;
-	
-typedef struct
-{
-	float x;
-	float y;
-	
-} xwl_touch_t;
-
-typedef struct xwl_event_s
-{
-	// target window
-	xwl_window_t *target;
-
-	// key
-	i32 key;
-	i32 unicode;
-
-	// size dimension
-	i32 width;
-	i32 height;
-
-	// mouse pos
-	i32 mx;
-	i32 my;
-
-	// joystick
-	i16 joyid;
-	i16 joyaxis;
-	i16 joybutton;
-	float joypos;
-
-	// event types
-	u16 type;
-
-	// -1 is towards the user
-	// 1 is away from the user
-	i16 wheelDelta;
-	i16 button;
-	i16 keymods;
-
-	xwl_touch_t touches[ XWL_MAX_TOUCHES ];
-	struct xwl_window_s * window;
-} xwl_event_t;
-
-	
-// returns 0 on failure
-// returns 1 on success
-i32 xwl_startup( void );
-
-// shutdown system
-void xwl_shutdown( void );
-
-// returns 0 if no events are queued
-// returns 1 if an event is removed from the queue
-i32 xwl_pollevent( xwl_event_t *event );
-
-// returns 0 on failure
-// title is a UTF-8 encoded string
-xwl_window_t *xwl_create_window( xwl_windowparams_t *params, const char * title, u32 * attribs );
-
-// set the event callback
-void xwl_set_callback( xwl_event_callback cb );
-
-const char * xwl_key_to_string( i32 key );
-const char * xwl_event_to_string( i32 event_type );
-const char * xwl_mouse_to_string( i32 mouse );
-
-const char * xwl_get_error( void );
-
-typedef struct xwl_window_handle_s
-{
-    xwl_window_t handle;
-
-#ifdef LINUX
-    XIC inputContext;
-    Atom atomClose;
-    XEvent lastKeyRelease;
+        HDC dc;
 #endif
-
-} xwl_window_handle_t;
-
-xwl_window_handle_t *xwl_get_unused_window( void );
-void xwl_send_event( xwl_event_t * ev );
-void xwl_setup_rendering( xwl_window_t * window, u32 * attribs );
-void xwl_finish( void );
-void xwl_activate( xwl_window_t * window ); // activate this window's rendering context
-void *xwl_rendering_context( xwl_window_t * window );
-
-// -- platform specifics
-typedef struct xwl_renderer_settings_s
-{
-    xwl_window_t * window;
-
+        
 #if LINUX
-	XVisualInfo * visual;
-	Display * display;
-	i32 screen;
+        void * context;
 #endif
+        
+#if __APPLE__
+        void * view;
+#endif
+    } xwl_window_t;
+#endif
+	
 
-} xwl_renderer_settings_t;
+    typedef struct xwl_event_s
+    {
+        // target window
+        xwl_window_t *target;
+        
+        // key
+        i32 key;
+        i32 unicode;
+        
+        // size dimension
+        i32 width;
+        i32 height;
+        
+        // mouse pos
+        i32 mx;
+        i32 my;
+        
+        // joystick
+        i16 joyid;
+        i16 joyaxis;
+        i16 joybutton;
+        float joypos;
+        
+        // event types
+        u16 type;
+        
+        // -1 is towards the user
+        // 1 is away from the user
+        i16 wheelDelta;
+        i16 button;
+        i16 keymods;
 
+        struct xwl_window_s * window;
+    } xwl_event_t;
+    
+	
+    // returns 0 on failure
+    // returns 1 on success
+    i32 xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider );
+    
+    // shutdown system
+    void xwl_shutdown( void );
+    
+    // returns 0 if no events are queued
+	// returns > 0 if one or more events were dispatched
+    int xwl_dispatch_events();
+    
+    // returns 0 on failure
+    // title is a UTF-8 encoded string
+    xwl_window_t *xwl_create_window( const char * utf8_title, u32 * attribs );
+    
+    // set the event callback
+    void xwl_set_callback( xwl_event_callback cb );
+    
+    const char * xwl_key_to_string( i32 key );
+    const char * xwl_event_to_string( i32 event_type );
+    const char * xwl_mouse_to_string( i32 mouse );
+    
+    const char * xwl_get_error( void );
+	void xwl_set_error( const char * error );
+	
+//	void * xwl_get_native_window( xwl_window_t * window );
+//	void * xwl_get_api_context( xwl_window_t * window );
+	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
+	void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height );
+	void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
+	unsigned int xwl_get_screen_count();
+    
+    typedef struct xwl_native_window_s
+    {
+        xwl_window_t handle;
+        
+#ifdef LINUX
+        XIC inputContext;
+        Atom atomClose;
+        XEvent lastKeyRelease;
+#endif
+        
+    } xwl_native_window_t;
+    
+    xwl_native_window_t *xwl_get_unused_window( void );
+    void xwl_send_event( xwl_event_t * ev );
+    
+    void xwl_finish( void );
+	void xwl_swap_buffers( xwl_window_t * window );
 
+    void *xwl_rendering_context( xwl_window_t * window );
+	
+	void * xwl_findsymbol( const char * symbol_name );
+    
+    // -- platform specifics
+    typedef struct xwl_renderer_settings_s
+    {
+        xwl_window_t * window;
+        
+#if LINUX
+        XVisualInfo * visual;
+        Display * display;
+        i32 screen;
+#endif
+        
+    } xwl_renderer_settings_t;
+    
+    
 #ifdef __cplusplus
 }; // extern "C"
 #endif

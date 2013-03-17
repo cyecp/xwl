@@ -1,3 +1,6 @@
+February 1, 2013 - Version 1.0 officially tagged.
+	- Work begins on xwl2 with the intent of being more maintainable and add modularity to split input and window creation details.
+
 August 2, 2011 - Alpha 1.0
 	- initial "usable" release
 	- a basic usage sample is included

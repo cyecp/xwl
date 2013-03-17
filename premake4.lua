@@ -1,3 +1,76 @@
+newoption {
+	trigger = "rpi",
+	value = nil,
+	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1,-DEGL=1, plus platform files."
+}
+
+newoption {
+	trigger = "with-egl",
+	value = nil,
+	description = "Enable EGL support, adds -DEGL=1, plus platform files."
+}
+
+if _OPTIONS["rpi"] then
+	print( "Compiling for the RaspberryPi..." )
+end
+
+if _OPTIONS["with-egl"] then
+	print( "Compiling with EGL..." )
+end
+
+function setup_raspberry_pi()
+	defines
+	{
+		"RASPBERRYPI=1",
+		"EGL=1",
+	}
+
+	files
+	{
+		"src/platforms/egl/**.c",
+		"include/platforms/egl/**.h",
+		"src/platforms/rpi/**.c",
+		"include/platforms/rpi/**.h",
+	}
+
+	libdirs
+	{
+		"/opt/vc/lib"
+	}
+
+	includedirs
+	{
+		"/opt/vc/include",
+		"includes/platforms/rpi/",
+		"includes/platforms/egl/"
+	}
+
+	links
+	{
+		"EGL",
+		"GLESv2"
+	}
+end
+
+function setup_egl()
+	defines
+	{
+		"EGL=1"
+	}
+
+	files
+	{
+		"src/platforms/egl/**.c",
+		"include/platforms/egl/**.h"
+	}
+
+	links
+	{
+		"EGL"
+	}
+end
+
+
 solution "xwl"
 configurations { "debug", "release" }
 
@@ -16,16 +89,17 @@ project "xwl"
 	objdir "obj"
 	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
 	platforms { "x32", "x64", "native" }
-	kind "StaticLib"
+	kind "SharedLib"
 	language ("C")
 	
 	files
 	{
-		"src/**.c",	
-		"src/**.h"
+		"src/*.c",	
+		"src/**.h",
+		"include/**.h"
 	}
 
-	excludes { "samples/**.c" }
+	excludes { "samples/**.c", "src/ogl.c" }
 	
 	includedirs 
 	{ 
@@ -40,6 +114,17 @@ project "xwl"
 			"X11",
 			"GL"
 		}
+		files
+		{
+			"src/platforms/x11/**.c",
+			"include/platforms/x11/**.h"
+		}
+
+		if _OPTIONS["rpi"] ~= nil then
+			setup_raspberry_pi()
+		elseif _OPTIONS["with-egl"] ~= nil then
+			setup_egl()
+		end
 
 	configuration{ "macosx" }
 		files
@@ -113,6 +198,17 @@ project "sample"
 			"X11",
 			"GL"
 		}
+		linkoptions
+		{
+			"-Wl,-rpath,."
+		}
+		
+		if _OPTIONS["rpi"] ~= nil then
+			setup_raspberry_pi()
+		elseif _OPTIONS["with-egl"] ~= nil then
+			setup_egl()
+		end
+
 	configuration{ "macosx" }
 		defines { "__MACH__", baseDefines }
 		linkoptions

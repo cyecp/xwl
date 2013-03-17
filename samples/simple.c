@@ -6,28 +6,28 @@ int running = 1;
 
 i32 mx;
 i32 my;
-xwl_windowparams_t p;
+
 
 // temporary OpenGL tests
 #if _WIN32
-#include <windows.h>
-#include <gl/gl.h>
-#pragma comment( lib, "opengl32.lib" )
+	#include <windows.h>
+	#include <gl/gl.h>
+	#pragma comment( lib, "opengl32.lib" )
 #elif LINUX
-#include <GL/gl.h>
-#include <GL/glx.h>
+	#include <GL/gl.h>
+	//#include <GL/glx.h>
+	//#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
 #elif __APPLE__
-// for OSX 10.6
-#include <OpenGL/OpenGL.h>
-// for OSX 10.7+
-#include <OpenGL/gl.h>
+	// for OSX 10.6
+	#include <OpenGL/OpenGL.h>
+	// for OSX 10.7+
+	#include <OpenGL/gl.h>
 #endif
 
 
 void callback( xwl_event_t * e )
 {
-
-    xwlPrintf( "event: %s\n", xwl_event_to_string(e->type) );
+	xwlPrintf( "event: %s\n", xwl_event_to_string(e->type) );
 
 	if ( e->type == XWLE_GAINFOCUS )
 	{
@@ -59,10 +59,10 @@ void callback( xwl_event_t * e )
 	}
 	else if ( e->type == XWLE_SIZE )
 	{
-		p.width = e->width;
-		p.height = e->height;
-		xwlPrintf( "\t-> width: %i\n", p.width );
-		xwlPrintf( "\t-> height: %i\n", p.height );
+//		p.width = e->width;
+//		p.height = e->height;
+		xwlPrintf( "\t-> width: %i\n", e->width );
+		xwlPrintf( "\t-> height: %i\n", e->height );
 	}
 	else if ( e->type == XWLE_CLOSED )
 	{
@@ -77,63 +77,114 @@ void callback( xwl_event_t * e )
 
 
 	if ( e->type == XWLE_KEYRELEASED && e->key == XWLK_ESCAPE )
+	{
 		running = 0;
+	}
 }
+
+typedef unsigned int GLbitfield;
+
+typedef const GLubyte * (*getString)( GLenum );
+typedef void (*clearColor)( GLfloat, GLfloat, GLfloat, GLfloat );
+typedef void (*clear)( GLbitfield mask );
 
 int main()
 {
 	xwl_window_t *w = 0;
-	xwl_event_t event;
-	u32 attribs[] = { XWL_GL_PROFILE, XWL_GLPROFILE_LEGACY, 0 }; // or 
-    p.flags = XWL_OPENGL;
+	int window_width = 800;
+	int window_height = 600;
+	unsigned int screen_count = 0;
+	unsigned int i;
+	int screen_width;
+	int screen_height;
+	unsigned int window_provider = XWL_WINDOW_PROVIDER_DEFAULT;
+	u32 attribs[] = {
+		XWL_API, XWL_API_OPENGL,
+		XWL_API_MAJOR_VERSION, 3,
+		XWL_API_MINOR_VERSION, 2,
+		XWL_WINDOW_WIDTH, window_width,
+		XWL_WINDOW_HEIGHT, window_height,
+		XWL_DEPTH_SIZE, 24,
+		XWL_STENCIL_SIZE, 8,
+		// XWL_USE_FULLSCREEN, 1,
+		XWL_NONE,
+	};
+	getString gl_getstring = 0;
+	clearColor gl_clearcolor = 0;
+	clear gl_clear = 0;
+	
+	#if RASPBERRYPI
+		window_provider = XWL_WINDOW_PROVIDER_RASPBERRYPI;
+	#endif
 
-#if 0
-	p.width = 1920;
-	p.height = 1080;
-	p.flags |= XWL_FULLSCREEN;
-#else
-	p.width = 800;
-	p.height = 600;
-	p.flags |= XWL_WINDOWED;
-#endif
+	if ( !xwl_startup( window_provider, XWL_API_PROVIDER_DEFAULT, XWL_INPUT_PROVIDER_DEFAULT ) )
+	{
+		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );
+		return -1;
+	}
+	
+	screen_count = xwl_get_screen_count();
+	xwlPrintf( "-> Total Screens: %i\n", screen_count );
+	
+	for( i = 0; i < screen_count; ++i )
+	{
 
-	xwl_startup();
-
-    xwlPrintf( "-> xwl_create_window...\n" );
-	w = xwl_create_window( &p, "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
-
+		xwl_get_screen_size( i, &screen_width, &screen_height );
+		
+		xwlPrintf( "-> screen %i, size: %i x %i\n", i, screen_width, screen_height );
+	}
+	
+//	attribs[3] = screen_width;
+//	attribs[5] = screen_height;
+	
+	
+	xwlPrintf( "-> xwl_create_window...\n" );
+	w = xwl_create_window( "Window Title Here \xc3\xb1 | \xe2\x82\xa1", attribs );
 	if ( !w )
 	{
 		xwlPrintf( "ERROR: Unable to create window! [%s]\n", xwl_get_error() );
 		return -1;
 	}
-	xwlPrintf( "-> Window created OK! (handle: %x)\n", (u32)w->handle );
-	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", p.width, p.height );
-
+	xwlPrintf( "-> Window created OK! (handle: %p)\n", w->handle );
+	
+	xwl_get_window_size( w, &window_width, &window_height );
+	xwlPrintf( "-> Actual Window dimensions: %i x %i\n", window_width, window_height );
+	
+	xwl_get_window_render_size( w, &window_width, &window_height );
+	xwlPrintf( "-> Window backing dimensions: %i x %i\n", window_width, window_height );
+	
 	// set event callback
 	xwl_set_callback( callback );
 
-#if 1
-	xwlPrintf( "-> GL_VENDOR: %s\n", glGetString( GL_VENDOR ) );
-	xwlPrintf( "-> GL_RENDERER: %s\n", glGetString( GL_RENDERER ) );
-	xwlPrintf( "-> GL_VERSION: %s\n", glGetString( GL_VERSION ) );
-#endif
-
-
-	memset( &event, 0, sizeof(xwl_event_t) );
-	while( running )
+	
+	gl_getstring = xwl_findsymbol( "glGetString" );
+	if ( gl_getstring )
 	{
-		xwl_pollevent( &event );
-		//callback( &event );
+		xwlPrintf( "-> GL_VENDOR: %s\n", gl_getstring( GL_VENDOR ) );
+		xwlPrintf( "-> GL_RENDERER: %s\n", gl_getstring( GL_RENDERER ) );
+		xwlPrintf( "-> GL_VERSION: %s\n", gl_getstring( GL_VERSION ) );
+	}
 
-		glClearColor(0.25, 0.25, 0.25, 1.0);
+	gl_clearcolor = xwl_findsymbol( "glClearColor" );
+	gl_clear = xwl_findsymbol( "glClear" );
+	
+	while( running && gl_clear )
+	{
+		xwl_dispatch_events();
+
+		// show a purple screen to indicate success
+//		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
+//		gl_clear( GL_COLOR_BUFFER_BIT );
+
+// legacy opengl api
+#if 0
 		glClear( GL_COLOR_BUFFER_BIT );
-		glViewport( 0, 0, p.width, p.height );
+		glViewport( 0, 0, window_width, window_height );
 
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
 
-		glOrtho( 0, p.width, p.height, 0, -.01f, 256.0f );
+		glOrtho( 0, window_width, window_height, 0, -.01f, 256.0f );
 
 		glMatrixMode( GL_MODELVIEW );
 		glLoadIdentity();
@@ -145,8 +196,9 @@ int main()
 		glBegin( GL_POINTS );
 			glVertex3i( mx, my, 0 );
 		glEnd();
+#endif
 
-		xwl_finish();
+		xwl_swap_buffers( w );
 	}
 
 	xwl_shutdown();
