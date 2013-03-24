@@ -45,6 +45,16 @@ function setup_raspberry_pi()
 		"includes/platforms/egl/"
 	}
 
+	buildoptions
+	{
+		"-Wall"
+	}
+
+	flags
+	{
+		"ExtraWarnings",
+	}
+
 	links
 	{
 		"EGL",
