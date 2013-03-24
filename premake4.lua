@@ -5,7 +5,7 @@ newoption {
 }
 
 newoption {
-	trigger = "with-egl",
+	trigger = "with_egl",
 	value = nil,
 	description = "Enable EGL support, adds -DEGL=1, plus platform files."
 }
@@ -14,7 +14,7 @@ if _OPTIONS["rpi"] then
 	print( "Compiling for the RaspberryPi..." )
 end
 
-if _OPTIONS["with-egl"] then
+if _OPTIONS["with_egl"] then
 	print( "Compiling with EGL..." )
 end
 
@@ -122,7 +122,7 @@ project "xwl"
 
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		elseif _OPTIONS["with-egl"] ~= nil then
+		elseif _OPTIONS["with_egl"] ~= nil then
 			setup_egl()
 		end
 
@@ -205,7 +205,7 @@ project "sample"
 		
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		elseif _OPTIONS["with-egl"] ~= nil then
+		elseif _OPTIONS["with_egl"] ~= nil then
 			setup_egl()
 		end
 
