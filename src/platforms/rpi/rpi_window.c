@@ -1,6 +1,7 @@
 #include <xwl/xwl.h>
 #include <string.h>
 #include <stdio.h>
+#include <xwl/platforms/rpi/rpi.h>
 
 #include <EGL/egl.h>
 
@@ -120,7 +121,7 @@ void rpi_window_register( xwl_window_provider_t * wapi )
 	wapi->create_window = rpi_window_create_window;
 	wapi->destroy_window = rpi_window_destroy_window;
 	wapi->get_window_size = rpi_window_get_window_size;
-	wapi->get_window_render_size = rpi_window_get_window_render_size
+	wapi->get_window_render_size = rpi_window_get_window_render_size;
 	wapi->get_screen_size = rpi_window_get_screen_size;
 	wapi->get_screen_count = rpi_window_get_screen_count;
 } // rpi_window_register
