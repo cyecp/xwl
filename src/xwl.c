@@ -25,8 +25,8 @@ static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
 const char * xwlerror;
-
 xlib_t api_lib;
+int _use_findsymbol = 0;
 
 const char * xwl_get_error()
 {
@@ -699,16 +699,18 @@ xwl_input_provider_register _input_providers[] = {
 #endif
 };
 
+#define USE_PROVIDER( name ) fprintf( stdout, "use provider: '%s'\n", #name ); return name
+
 unsigned int _xwl_default_window_provider()
 {
 #if __APPLE__
-	return XWL_WINDOW_PROVIDER_COCOA;
+	USE_PROVIDER( XWL_WINDOW_PROVIDER_COCOA );
 #elif RASPBERRYPI
-	return XWL_WINDOW_PROVIDER_RASPBERRYPI;
+	USE_PROVIDER( XWL_WINDOW_PROVIDER_RASPBERRYPI );
 #elif LINUX
-	return XWL_WINDOW_PROVIDER_X11;
+	USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
 #elif WIN32
-	return XWL_WINDOW_PROVIDER_WIN32;
+	USE_PROVIDER( XWL_WINDOW_PROVIDER_WIN32 );
 #endif
 
 	return 0;
@@ -717,13 +719,13 @@ unsigned int _xwl_default_window_provider()
 unsigned int _xwl_default_api_provider()
 {
 #if __APPLE__
-	return XWL_API_PROVIDER_COCOA;
+	USE_PROVIDER( XWL_API_PROVIDER_COCOA );
 #elif RASPBERRYPI
-	return XWL_API_PROVIDER_EGL;
+	USE_PROVIDER( XWL_API_PROVIDER_EGL );
 #elif LINUX
-	return XWL_API_PROVIDER_X11;
+	USE_PROVIDER( XWL_API_PROVIDER_X11 );
 #elif WIN32
-	return XWL_API_PROVIDER_WIN32;
+	USE_PROVIDER( XWL_API_PROVIDER_WIN32 );
 #endif
 	
 	return 0;
@@ -733,11 +735,11 @@ unsigned int _xwl_default_api_provider()
 unsigned int _xwl_default_input_provider()
 {
 #if __APPLE__
-	return XWL_INPUT_PROVIDER_COCOA;
+	USE_PROVIDER( XWL_INPUT_PROVIDER_COCOA );
 #elif LINUX || RASPBERRYPI
-	return XWL_INPUT_PROVIDER_X11;
+	USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
 #elif WIN32
-	return XWL_INPUT_PROVIDER_WIN32;
+	USE_PROVIDER( XWL_INPUT_PROVIDER_WIN32 );
 #endif
 	
 	return 0;
@@ -801,7 +803,7 @@ int _xwl_setup_api_provider( unsigned int api_provider )
 	{
 		return 0;
 	}
-	
+
 	api_register( &_api_provider );
 	
 	return 1;
@@ -883,14 +885,14 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 		return 0;
 	}
     
-#if 0
+
 	// open a handle to the correct API library	
-	if ( !_xwl_open_driver_library( api_provider ) )
+	if ( _use_findsymbol && !_xwl_open_driver_library( api_provider ) )
 	{
 		xwl_set_error( "Unable to link with API library" );
 		return 0;
 	}
-#endif
+
 
 #ifdef _WIN32
 	// initialize key map
@@ -900,33 +902,37 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	return result;
 } // xwl_startup
 
-	
+void xwl_use_findsymbol( void )
+{
+	_use_findsymbol = 1;
+}
 
 void * xwl_findsymbol( const char * symbol_name )
 {
 	void * func = 0;
 	
-#if 0
-	// first try to get the symbol with the API specific implementation.
-	assert( _api_provider.get_symbol != 0 );
-	func = _api_provider.get_symbol( symbol_name );
+	if ( _use_findsymbol )
+	{
+		// first try to get the symbol with the API specific implementation.
+		assert( _api_provider.get_symbol != 0 );
+		func = _api_provider.get_symbol( symbol_name );
 
-	// if that fails, try to get it from the dynamic library
-	if ( !func )
-	{
-#if _WIN32 || LINUX
-		fprintf( stderr, "Find symbol '%s' failed with api provider. Attempting library.\n", symbol_name );
-		func = xlib_find_symbol( &api_lib, symbol_name );
-#elif __APPLE__
-		func = _xwl_apple_find_symbol( symbol_name );
-#endif
+		// if that fails, try to get it from the dynamic library
+		if ( !func )
+		{
+	#if _WIN32 || LINUX
+			fprintf( stderr, "Find symbol '%s' failed with api provider. Attempting library.\n", symbol_name );
+			func = xlib_find_symbol( &api_lib, symbol_name );
+	#elif __APPLE__
+			func = _xwl_apple_find_symbol( symbol_name );
+	#endif
+		}
+		
+		if ( !func )
+		{
+			fprintf( stderr, "Symbol, '%s' NOT FOUND!\n", symbol_name );
+		}
 	}
-	
-	if ( !func )
-	{
-		fprintf( stderr, "Symbol, '%s' NOT FOUND!\n", symbol_name );
-	}
-#endif
 
 	return func;
 } // xwl_findsymbol
@@ -985,9 +991,10 @@ void xwl_shutdown( void )
 
 
 
-#if 0
-	_xwl_close_driver_library();
-#endif
+	if ( _use_findsymbol )
+	{
+		_xwl_close_driver_library();
+	}
 
 	assert( _window_provider.shutdown != 0 );
 	_window_provider.shutdown();

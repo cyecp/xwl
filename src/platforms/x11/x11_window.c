@@ -16,6 +16,7 @@ int x11_window_startup( xwl_api_provider_t * api )
 		return 0;
 	}
 
+	_Xdebug = 1;
 	// disable auto-repeats
 	// "The standard behavior of the X server is to generate a KeyRelease event for every KeyPress event."
 	// 
@@ -65,6 +66,14 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	cwmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
 	fprintf( stdout, "[xwl] Attempting to create a window\n" );
+	fprintf( stdout, "root: %p\n", RootWindow(x11_current_display(), x11_current_screen()) );
+	fprintf( stdout, "display: %p\n", x11_current_display() );
+	fprintf( stdout, "screen: %i\n", x11_current_screen() );
+	fprintf( stdout, "window_width: %i\n", window_width );
+	fprintf( stdout, "window_height: %i\n", window_height );
+	fprintf( stdout, "visual->visual: %p\n", visual->visual );
+	fprintf( stdout, "visual->depth: %i\n", visual->depth );
+	fprintf( stdout, "cwmask: %i\n", cwmask );
 	native_window = XCreateWindow( x11_current_display(), RootWindow(x11_current_display(), x11_current_screen()), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, cwmask, &window_attribs );
 	fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
 

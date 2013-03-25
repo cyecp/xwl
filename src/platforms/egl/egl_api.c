@@ -6,6 +6,17 @@ static EGLDisplay display;
 static EGLConfig config;
 static EGLSurface surface;
 
+EGLint egl_check_error()
+{
+	EGLint error = eglGetError();
+	if ( error != EGL_SUCCESS )
+	{
+		fprintf( stdout, "eglGetError returned %i\n", error );
+	}
+
+	return error;
+}
+
 void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_provider_t * wapi, unsigned int * attributes, void * other_context )
 {
 	EGLint api_type = EGL_OPENGL_ES_API;
@@ -35,6 +46,8 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 	}
 
 #endif
+
+	egl_check_error();
 
 	result = eglBindAPI( api_type );
 	if ( result == EGL_FALSE )
@@ -66,7 +79,7 @@ void *egl_api_create_context( xwl_native_window_t * native_window, xwl_window_pr
 		return 0;
 	}
 
-	fprintf( stdout, "egl_api_create_context\n" );
+	fprintf( stdout, "egl_api_create_context: %p\n", context );
 	return context;
 } // egl_api_create_context
 
@@ -119,12 +132,14 @@ int egl_api_pixel_format( unsigned int * attribs )
 	EGLint eglattribs[] = {
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		//EGL_CONFIG_CAVEAT, EGL_NONE,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_DEPTH_SIZE, 1,
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_DEPTH_SIZE, 16,
 		EGL_NONE
 	};
+
+	egl_check_error();
 
 	display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
 	if ( display == EGL_NO_DISPLAY )

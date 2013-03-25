@@ -117,7 +117,8 @@ int main()
 		window_provider = XWL_WINDOW_PROVIDER_RASPBERRYPI;
 	#endif
 
-	if ( !xwl_startup( window_provider, XWL_API_PROVIDER_DEFAULT, XWL_INPUT_PROVIDER_DEFAULT ) )
+	xwl_use_findsymbol();
+	if ( !xwl_startup( XWL_WINDOW_PROVIDER_DEFAULT, XWL_API_PROVIDER_EGL, XWL_INPUT_PROVIDER_DEFAULT ) )
 	{
 		xwlPrintf( "xwl_startup failed: '%s'\n", xwl_get_error() );
 		return -1;
@@ -168,13 +169,13 @@ int main()
 	gl_clearcolor = xwl_findsymbol( "glClearColor" );
 	gl_clear = xwl_findsymbol( "glClear" );
 	
-	while( running && gl_clear )
+	while( running && gl_clearcolor && gl_clear )
 	{
 		xwl_dispatch_events();
 
 		// show a purple screen to indicate success
-//		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
-//		gl_clear( GL_COLOR_BUFFER_BIT );
+		gl_clearcolor(0.75, 0.0, 0.75, 1.0);
+		gl_clear( GL_COLOR_BUFFER_BIT );
 
 // legacy opengl api
 #if 0

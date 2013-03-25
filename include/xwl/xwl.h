@@ -219,8 +219,13 @@ typedef struct xwl_window_s
 	void xwl_swap_buffers( xwl_window_t * window );
 
     void *xwl_rendering_context( xwl_window_t * window );
-	
+    
+    // must call this before xwl_startup otherwise findsymbol will return 0 for all symbols.
+    void xwl_use_findsymbol( void );
+
 	void * xwl_findsymbol( const char * symbol_name );
+
+
     
     // -- platform specifics
     typedef struct xwl_renderer_settings_s
