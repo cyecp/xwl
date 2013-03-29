@@ -94,22 +94,25 @@ void rpi_window_destroy_window( xwl_window_t * window )
 
 void rpi_window_get_window_size( xwl_window_t * window, int * width, int * height )
 {
-
+	*width = window_width;
+	*height = window_height;
 } // rpi_window_get_window_size
 
 void rpi_window_get_window_render_size( xwl_window_t * window, int * width, int * height )
 {
-
+	*width = window_width;
+	*height = window_height;
 } // rpi_window_get_window_render_size
 
 void rpi_window_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
-
+	*width = window_width;
+	*height = window_height;
 } // rpi_window_get_screen_size
 
 unsigned int rpi_window_get_screen_count()
 {
-	return 0;
+	return 1;
 } // rpi_window_get_screen_count
 
 

@@ -53,7 +53,7 @@ int x11_input_dispatch_events( void )
 
 	if ( !x11_current_display() )
 	{
-		fprintf( stderr, "x11 display is INVALID\n" );
+		//fprintf( stderr, "x11 display is INVALID\n" );
 		return 0;
 	}
 
