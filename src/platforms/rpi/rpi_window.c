@@ -58,6 +58,7 @@ void * rpi_window_create_window( xwl_native_window_t * handle, const char * utf8
 	DISPMANX_UPDATE_HANDLE_T dispman_update;
 	VC_RECT_T dst_rect;
 	VC_RECT_T src_rect;
+	VC_DISPMANX_ALPHA_T alpha_params;
 
 	dst_rect.x = 0;
 	dst_rect.y = 0;
@@ -70,12 +71,16 @@ void * rpi_window_create_window( xwl_native_window_t * handle, const char * utf8
 	src_rect.width = window_width << 16;
 	src_rect.height = window_height << 16;
 
+	alpha_params.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS;
+	alpha_params.opacity = 255;
+	alpha_params.mask = 0;
+
 	dispman_display = vc_dispmanx_display_open( 0 /* LCD */ );
 	dispman_update = vc_dispmanx_update_start( 0 );
 
 	dispman_element = vc_dispmanx_element_add( dispman_update, dispman_display,
 		0 /* layer */, &dst_rect, 0 /* src */,
-		&src_rect, DISPMANX_PROTECTION_NONE, 0 /* alpha */,
+		&src_rect, DISPMANX_PROTECTION_NONE, &alpha_params /* alpha */,
 		0 /* clamp */, 0 /* transform */ );
 
 	native_window.element = dispman_element;
