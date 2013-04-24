@@ -399,4 +399,19 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	NSLog(@"viewDidChangeBackingProperties");
 }
 
+-(void)update
+{
+	int new_viertual_screen;
+
+	// handle GPU switches
+	[super update];
+
+	new_viertual_screen = [[self openGLContext] currentVirtualScreen];
+	if ( current_virtual_screen != new_viertual_screen )
+	{
+		// a switch has occurred - requery GPU for capabilities
+		current_virtual_screen = new_viertual_screen;
+	}
+}
+
 @end

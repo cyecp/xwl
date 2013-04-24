@@ -10,6 +10,7 @@
 @public
 	NSOpenGLContext * _context;
 //	CVDisplayLinkRef display_link;
+	int current_virtual_screen;
 }
 
 @property (nonatomic, retain) NSOpenGLContext * context;
