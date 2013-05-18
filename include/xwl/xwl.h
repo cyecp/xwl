@@ -7,33 +7,30 @@ extern "C" {
 	
 // define RASPBERRYPI 1 to enable the Raspberry Pi.
 	
-    // platform includes
+// platform includes
 #if LINUX
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
-#include <X11/extensions/Xrandr.h>
+	#include <X11/Xlib.h>
+	#include <X11/keysym.h>
+	#include <X11/extensions/Xrandr.h>
+	#define XWL_EXPORT
 #elif _WIN32
-#   ifndef _WIN32_WINNT
-    #define _WIN32_WINNT 0x0501
-#endif
+	#ifdef XWL_DLL
+		#define XWL_EXPORT __declspec(dllexport)
+	#else
+		#define XWL_EXPORT __declspec(dllimport)
+	#endif
+
+	#ifndef _WIN32_WINNT
+		#define _WIN32_WINNT 0x0501
+	#endif
     
-#include <windows.h>
-#ifndef MAPVK_VK_TO_VSC
-    #define MAPVK_VK_TO_VSC 0
-#endif
+	#include <windows.h>
+	#ifndef MAPVK_VK_TO_VSC
+		#define MAPVK_VK_TO_VSC 0
+	#endif
     
 #elif __APPLE__
     #include <TargetConditionals.h>
-#endif
-
-    
-#ifndef Z_TYPES
-	typedef signed char i8;
-	typedef unsigned char u8;
-	typedef unsigned int u32;
-	typedef unsigned short u16;
-	typedef short i16;
-	typedef int i32;
 #endif
     
 #define XWL_DEBUG 1
@@ -105,10 +102,8 @@ typedef struct xwl_window_s
 #include <xwl/api_provider.h>
 #include <xwl/input_provider.h>
 	
-	
-	
-    struct xwl_event_s;
-    typedef void (*xwl_event_callback)( struct xwl_event_s * );
+struct xwl_event_s;
+typedef void (*xwl_event_callback)( struct xwl_event_s * );
 	
 #if 0
     typedef struct xwl_window_s
@@ -132,73 +127,73 @@ typedef struct xwl_window_s
 #endif
 	
 
-    typedef struct xwl_event_s
-    {
-        // target window
-        xwl_window_t *target;
+typedef struct xwl_event_s
+{
+    // target window
+    xwl_window_t *target;
         
-        // key
-        i32 key;
-        i32 unicode;
+    // key
+    int key;
+    int unicode;
         
-        // size dimension
-        i32 width;
-        i32 height;
+    // size dimension
+    int width;
+    int height;
         
-        // mouse pos
-        i32 mx;
-        i32 my;
+    // mouse pos
+    int mx;
+    int my;
         
-        // joystick
-        i16 joyid;
-        i16 joyaxis;
-        i16 joybutton;
-        float joypos;
+    // joystick
+    short joyid;
+    short joyaxis;
+    short joybutton;
+    float joypos;
         
-        // event types
-        u16 type;
+    // event types
+    unsigned short type;
         
-        // -1 is towards the user
-        // 1 is away from the user
-        i16 wheelDelta;
-        i16 button;
-        i16 keymods;
+    // -1 is towards the user
+    // 1 is away from the user
+    short wheelDelta;
+    short button;
+    short keymods;
 
-        struct xwl_window_s * window;
-    } xwl_event_t;
+    struct xwl_window_s * window;
+} xwl_event_t;
     
 	
-    // returns 0 on failure
-    // returns 1 on success
-    i32 xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider );
+// returns 0 on failure
+// returns 1 on success
+XWL_EXPORT int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider );
     
-    // shutdown system
-    void xwl_shutdown( void );
+// shutdown system
+XWL_EXPORT void xwl_shutdown( void );
     
-    // returns 0 if no events are queued
-	// returns > 0 if one or more events were dispatched
-    int xwl_dispatch_events();
+// returns 0 if no events are queued
+// returns > 0 if one or more events were dispatched
+XWL_EXPORT int xwl_dispatch_events();
     
-    // returns 0 on failure
-    // title is a UTF-8 encoded string
-    xwl_window_t *xwl_create_window( const char * utf8_title, u32 * attribs );
+// returns 0 on failure
+// title is a UTF-8 encoded string
+XWL_EXPORT xwl_window_t *xwl_create_window( const char * utf8_title, unsigned int * attribs );
     
-    // set the event callback
-    void xwl_set_callback( xwl_event_callback cb );
+// set the event callback
+XWL_EXPORT void xwl_set_callback( xwl_event_callback cb );
     
-    const char * xwl_key_to_string( i32 key );
-    const char * xwl_event_to_string( i32 event_type );
-    const char * xwl_mouse_to_string( i32 mouse );
+XWL_EXPORT const char * xwl_key_to_string( int key );
+XWL_EXPORT const char * xwl_event_to_string( int event_type );
+XWL_EXPORT const char * xwl_mouse_to_string( int mouse );
     
-    const char * xwl_get_error( void );
-	void xwl_set_error( const char * error );
+XWL_EXPORT const char * xwl_get_error( void );
+XWL_EXPORT void xwl_set_error( const char * error );
 	
 //	void * xwl_get_native_window( xwl_window_t * window );
 //	void * xwl_get_api_context( xwl_window_t * window );
-	void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
-	void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height );
-	void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
-	unsigned int xwl_get_screen_count();
+XWL_EXPORT void xwl_get_window_size( xwl_window_t * window, int * width, int * height );
+XWL_EXPORT void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height );
+XWL_EXPORT void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
+XWL_EXPORT unsigned int xwl_get_screen_count();
     
     typedef struct xwl_native_window_s
     {
@@ -216,14 +211,14 @@ typedef struct xwl_window_s
     void xwl_send_event( xwl_event_t * ev );
     
     void xwl_finish( void );
-	void xwl_swap_buffers( xwl_window_t * window );
+	XWL_EXPORT void xwl_swap_buffers( xwl_window_t * window );
 
     void *xwl_rendering_context( xwl_window_t * window );
     
     // must call this before xwl_startup otherwise findsymbol will return 0 for all symbols.
-    void xwl_use_findsymbol( void );
+    XWL_EXPORT void xwl_use_findsymbol( void );
 
-	void * xwl_findsymbol( const char * symbol_name );
+	XWL_EXPORT void * xwl_findsymbol( const char * symbol_name );
 
 
     
@@ -235,7 +230,7 @@ typedef struct xwl_window_s
 #if LINUX
         XVisualInfo * visual;
         Display * display;
-        i32 screen;
+        int screen;
 #endif
         
     } xwl_renderer_settings_t;

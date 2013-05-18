@@ -149,7 +149,7 @@ project "xwl"
 		}
 
 	configuration{ "windows" }
-		defines { "WIN32", "UNICODE", baseDefines }
+		defines { "XWL_DLL=1", "UNICODE", baseDefines }
 		links
 		{
 			"opengl32"

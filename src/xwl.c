@@ -422,7 +422,7 @@ int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 	// Utility Windows Message callback function
 	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	{
-		i16 temp = 0;
+		short temp = 0;
 		xwl_event_t ev = {0};
 		xwl_window_t * wnd;
 		wnd = (xwl_window_t*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
@@ -497,7 +497,7 @@ int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
 			// 1 is away from the user
 			case WM_MOUSEWHEEL:
 				ev.type = XWLE_MOUSEWHEEL;
-				ev.wheelDelta = ((i16)HIWORD(wp) > 0) ? 1 : -1;
+				ev.wheelDelta = ((short)HIWORD(wp) > 0) ? 1 : -1;
 				xwl_send_event( &ev );
 				return 0;
 
@@ -631,7 +631,7 @@ xwl_window_provider_register _window_providers[] = {
 	0,
 #endif
 
-#if WIN32
+#if _WIN32
 	0, // Win32
 #else
 	0,
@@ -669,7 +669,7 @@ xwl_api_provider_register _api_providers[] = {
 	0,
 #endif
 
-#if WIN32
+#if _WIN32
 	0, // Win32
 #else
 	0,
@@ -692,7 +692,7 @@ xwl_input_provider_register _input_providers[] = {
 	0,
 #endif
 
-#if WIN32
+#if _WIN32
 	0, // Win32
 #else
 	0,
@@ -709,7 +709,7 @@ unsigned int _xwl_default_window_provider()
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_RASPBERRYPI );
 #elif LINUX
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
-#elif WIN32
+#elif _WIN32
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_WIN32 );
 #endif
 
@@ -724,7 +724,7 @@ unsigned int _xwl_default_api_provider()
 	USE_PROVIDER( XWL_API_PROVIDER_EGL );
 #elif LINUX
 	USE_PROVIDER( XWL_API_PROVIDER_X11 );
-#elif WIN32
+#elif _WIN32
 	USE_PROVIDER( XWL_API_PROVIDER_WIN32 );
 #endif
 	
@@ -738,7 +738,7 @@ unsigned int _xwl_default_input_provider()
 	USE_PROVIDER( XWL_INPUT_PROVIDER_COCOA );
 #elif LINUX || RASPBERRYPI
 	USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
-#elif WIN32
+#elif _WIN32
 	USE_PROVIDER( XWL_INPUT_PROVIDER_WIN32 );
 #endif
 	
@@ -772,13 +772,15 @@ unsigned int xwl_get_screen_count()
 
 int _xwl_setup_window_provider( unsigned int window_provider )
 {
+	xwl_window_provider_register wp_register;
+
 	// choose default window provider for this platform: note this is not guaranteed to work!
     if ( window_provider == XWL_WINDOW_PROVIDER_DEFAULT )
 	{
 		window_provider = _xwl_default_window_provider();
 	}
     
-    xwl_window_provider_register wp_register = _window_providers[ window_provider ];
+	wp_register = _window_providers[ window_provider ];
 	if ( !wp_register )
 	{
 		return 0;
@@ -792,13 +794,15 @@ int _xwl_setup_window_provider( unsigned int window_provider )
 
 int _xwl_setup_api_provider( unsigned int api_provider )
 {
+	xwl_api_provider_register api_register;
+
 	// choose default api provider
 	if ( api_provider == XWL_API_PROVIDER_DEFAULT )
 	{
 		api_provider = _xwl_default_api_provider();
 	}
 	
-	xwl_api_provider_register api_register = _api_providers[ api_provider ];
+	api_register = _api_providers[ api_provider ];
 	if ( !api_register )
 	{
 		return 0;
@@ -811,13 +815,15 @@ int _xwl_setup_api_provider( unsigned int api_provider )
 
 int _xwl_setup_input_provider( unsigned int input_provider )
 {
+	xwl_input_provider_register input_register;
+
 	// choose default api provider
 	if ( input_provider == XWL_INPUT_PROVIDER_DEFAULT )
 	{
 		input_provider = _xwl_default_input_provider();
 	}
 	
-	xwl_input_provider_register input_register = _input_providers[ input_provider ];
+	input_register = _input_providers[ input_provider ];
 	if ( !input_register )
 	{	
 		return 0;
@@ -1010,7 +1016,7 @@ int xwl_dispatch_events()
 	assert( _input_provider.dispatch_events != 0 );
 	result = _input_provider.dispatch_events();
 
-#ifdef _WIN32
+#if 0 //_WIN32
 	MSG msg;
 
 	while ( PeekMessage( &msg, 0, 0, 0, PM_REMOVE ) )
@@ -1026,9 +1032,11 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 {
 	xwl_native_window_t * wh = 0;
 	unsigned int i;
-//    xwl_renderer_settings_t cfg;
 	unsigned int attributes[ XWL_ATTRIBUTE_COUNT * 2 ] = {0};
 	int current_attrib = -1;
+	int pixel_format;
+	void * context;
+
 	if ( title == 0 )
 	{
 		title = "xwl window";
@@ -1063,7 +1071,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 
 	// give the API first crack at creating a pixel format
 	assert( _api_provider.pixel_format != 0 );
-	int pixel_format = _api_provider.pixel_format( attributes );
+	pixel_format = _api_provider.pixel_format( attributes );
 	if ( pixel_format < 0 )
 	{
 		return 0;
@@ -1087,7 +1095,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 
 	// create a context
 	assert( _api_provider.create_context != 0 );
-	void * context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );
+	context = _api_provider.create_context( wh, &_window_provider, attributes, 0 );
 	if ( !context )
 	{
 		if ( !xwl_get_error() )
@@ -1102,7 +1110,7 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	_api_provider.activate_context( context, wh );
 
 
-#ifdef _WIN32
+#if 0 //_WIN32
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	RECT clientrect;
 	wchar_t windowName[ 128 ];

@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <xwl/xwl.h>
 #include <string.h>
+#include <xwl/xwl.h>
 
 int running = 1;
 
-i32 mx;
-i32 my;
+int mx;
+int my;
 
 
 // temporary OpenGL tests
@@ -98,7 +98,7 @@ int main()
 	int screen_width;
 	int screen_height;
 	unsigned int window_provider = XWL_WINDOW_PROVIDER_DEFAULT;
-	u32 attribs[] = {
+	unsigned int attribs[] = {
 		XWL_API, XWL_API_OPENGL,
 		XWL_API_MAJOR_VERSION, 3,
 		XWL_API_MINOR_VERSION, 2,
@@ -158,7 +158,7 @@ int main()
 	xwl_set_callback( callback );
 
 	
-	gl_getstring = xwl_findsymbol( "glGetString" );
+	gl_getstring = (getString)xwl_findsymbol( "glGetString" );
 	if ( gl_getstring )
 	{
 		xwlPrintf( "-> GL_VENDOR: %s\n", gl_getstring( GL_VENDOR ) );
@@ -166,8 +166,8 @@ int main()
 		xwlPrintf( "-> GL_VERSION: %s\n", gl_getstring( GL_VERSION ) );
 	}
 
-	gl_clearcolor = xwl_findsymbol( "glClearColor" );
-	gl_clear = xwl_findsymbol( "glClear" );
+	gl_clearcolor = (clearColor)xwl_findsymbol( "glClearColor" );
+	gl_clear = (clear)xwl_findsymbol( "glClear" );
 	
 	while( running && gl_clearcolor && gl_clear )
 	{
