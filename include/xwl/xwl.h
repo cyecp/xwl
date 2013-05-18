@@ -68,8 +68,8 @@ enum
 	XWL_WINDOW_Y,
 	
 #if _WIN32
-	XWL_WIN32_ICON = 8,
-	XWL_WIN32_ICONSM = 16,
+	XWL_WIN32_ICON,
+	XWL_WIN32_ICONSM,
 #endif
 	
 	// boolean attributes

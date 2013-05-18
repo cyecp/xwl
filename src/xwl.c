@@ -6,12 +6,6 @@
 #include <xlib.h>
 #include <assert.h>
 
-#if _WIN32
-
-static wchar_t xwl_windowClassName[] = L"xwl_window";
-
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -279,306 +273,6 @@ const char * xwl_mouse_to_string( int mb )
 
 
 
-#if _WIN32
-static unsigned int lshift;
-
-int VirtualKeyCodeToXWL( WPARAM wp, LPARAM lp )
-{
-	switch( wp )
-	{
-		case VK_LWIN :       return XWLK_LSYSTEM;
-        case VK_RWIN :       return XWLK_RSYSTEM;
-        case VK_APPS :       return XWLK_MENU;
-        case VK_OEM_1 :      return XWLK_SEMICOLON;
-        case VK_OEM_2 :      return XWLK_SLASH;
-        case VK_OEM_PLUS :   return XWLK_EQUALS;
-        case VK_OEM_MINUS :  return XWLK_MINUS;
-        case VK_OEM_4 :      return XWLK_LBRACKET;
-        case VK_OEM_6 :      return XWLK_RBRACKET;
-        case VK_OEM_COMMA :  return XWLK_COMMA;
-        case VK_OEM_PERIOD : return XWLK_PERIOD;
-        case VK_OEM_7 :      return XWLK_QUOTE;
-        case VK_OEM_5 :      return XWLK_BACKSLASH;
-        case VK_OEM_3 :      return XWLK_TILDE;
-        case VK_ESCAPE :     return XWLK_ESCAPE;
-        case VK_SPACE :      return XWLK_SPACE;
-        case VK_RETURN :     return XWLK_RETURN;
-        case VK_BACK :       return XWLK_BACKSPACE;
-        case VK_TAB :        return XWLK_TAB;
-        case VK_PRIOR :      return XWLK_PAGEUP;
-        case VK_NEXT :       return XWLK_PAGEDN;
-        case VK_END :        return XWLK_END;
-        case VK_HOME :       return XWLK_HOME;
-        case VK_INSERT :     return XWLK_INSERT;
-        case VK_DELETE :     return XWLK_DELETE;
-        case VK_ADD :        return XWLK_ADD;
-        case VK_SUBTRACT :   return XWLK_SUBTRACT;
-        case VK_MULTIPLY :   return XWLK_MULTIPLY;
-        case VK_DIVIDE :     return XWLK_DIVIDE;
-        case VK_PAUSE :      return XWLK_PAUSE;
-		case VK_F1 :         return XWLK_F1;
-        case VK_F2 :         return XWLK_F2;
-        case VK_F3 :         return XWLK_F3;
-        case VK_F4 :         return XWLK_F4;
-        case VK_F5 :         return XWLK_F5;
-        case VK_F6 :         return XWLK_F6;
-        case VK_F7 :         return XWLK_F7;
-        case VK_F8 :         return XWLK_F8;
-        case VK_F9 :         return XWLK_F9;
-        case VK_F10 :        return XWLK_F10;
-        case VK_F11 :        return XWLK_F11;
-        case VK_F12 :        return XWLK_F12;
-        case VK_F13 :        return XWLK_F13;
-        case VK_F14 :        return XWLK_F14;
-        case VK_F15 :        return XWLK_F15;
-        case VK_LEFT :       return XWLK_LEFT;
-        case VK_RIGHT :      return XWLK_RIGHT;
-        case VK_UP :         return XWLK_UP;
-        case VK_DOWN :       return XWLK_DOWN;
-        case VK_NUMPAD0 :    return XWLK_NUMPAD0;
-        case VK_NUMPAD1 :    return XWLK_NUMPAD1;
-        case VK_NUMPAD2 :    return XWLK_NUMPAD2;
-        case VK_NUMPAD3 :    return XWLK_NUMPAD3;
-        case VK_NUMPAD4 :    return XWLK_NUMPAD4;
-        case VK_NUMPAD5 :    return XWLK_NUMPAD5;
-        case VK_NUMPAD6 :    return XWLK_NUMPAD6;
-        case VK_NUMPAD7 :    return XWLK_NUMPAD7;
-        case VK_NUMPAD8 :    return XWLK_NUMPAD8;
-        case VK_NUMPAD9 :    return XWLK_NUMPAD9;
-        case 'A' :           return XWLK_A;
-        case 'Z' :           return XWLK_Z;
-        case 'E' :           return XWLK_E;
-        case 'R' :           return XWLK_R;
-        case 'T' :           return XWLK_T;
-        case 'Y' :           return XWLK_Y;
-        case 'U' :           return XWLK_U;
-        case 'I' :           return XWLK_I;
-        case 'O' :           return XWLK_O;
-        case 'P' :           return XWLK_P;
-        case 'Q' :           return XWLK_Q;
-        case 'S' :           return XWLK_S;
-        case 'D' :           return XWLK_D;
-        case 'F' :           return XWLK_F;
-        case 'G' :           return XWLK_G;
-        case 'H' :           return XWLK_H;
-        case 'J' :           return XWLK_J;
-        case 'K' :           return XWLK_K;
-        case 'L' :           return XWLK_L;
-        case 'M' :           return XWLK_M;
-        case 'W' :           return XWLK_W;
-        case 'X' :           return XWLK_X;
-        case 'C' :           return XWLK_C;
-        case 'V' :           return XWLK_V;
-        case 'B' :           return XWLK_B;
-        case 'N' :           return XWLK_N;
-        case '0' :           return XWLK_0;
-        case '1' :           return XWLK_1;
-        case '2' :           return XWLK_2;
-        case '3' :           return XWLK_3;
-        case '4' :           return XWLK_4;
-        case '5' :           return XWLK_5;
-        case '6' :           return XWLK_6;
-        case '7' :           return XWLK_7;
-        case '8' :           return XWLK_8;
-        case '9' :           return XWLK_9;
-	}
-
-
-	return 0;
-	/*
-
-	// this code is straight from SFML
-    switch (VirtualKey)
-    {
-        // Check the scancode to distinguish between left and right shift
-        case VK_SHIFT :
-        {
-
-            UINT scancode = (Flags & (0xFF << 16)) >> 16;
-            return scancode == LShift ? Key::LShift : Key::RShift;
-        }
-
-        // Check the "extended" flag to distinguish between left and right alt
-        case VK_MENU : return (HIWORD(Flags) & KF_EXTENDED) ? Key::RAlt : Key::LAlt;
-
-        // Check the "extended" flag to distinguish between left and right control
-        case VK_CONTROL : return (HIWORD(Flags) & KF_EXTENDED) ? Key::RControl : Key::LControl;
-		*/
-}
-
-
-
-
-#endif
-
-
-
-#ifdef _WIN32
-#define SEND_MOUSE_EVENT( t, b ) \
-	ev.type = t;\
-	ev.button = b;\
-	xwl_send_event( &ev );
-
-	// Utility Windows Message callback function
-	LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
-	{
-		short temp = 0;
-		xwl_event_t ev = {0};
-		xwl_window_t * wnd;
-		wnd = (xwl_window_t*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
-
-		if ( wnd )
-		{
-			ev.target = wnd;
-			ev.mx = LOWORD(lp);
-			ev.my = HIWORD(lp);
-
-			// handle window messages
-			switch( msg )
-			{
-			case WM_CHAR:
-				// skip repeated messages
-				if ( (lp & (1<<30)) == 0 )
-				{
-					ev.type = XWLE_TEXT;
-					ev.unicode = (unsigned int)wp;
-					xwl_send_event( &ev );
-				}
-				return 0;
-
-			case WM_KEYDOWN:
-			case WM_SYSKEYDOWN:
-				// skip repeated messages
-				if ( (HIWORD(lp) & KF_REPEAT) == 0 )
-				{
-					ev.type = XWLE_KEYPRESSED;
-					ev.key = VirtualKeyCodeToXWL( wp, lp );
-					ev.keymods = 0;
-					if ( HIWORD(GetAsyncKeyState(VK_MENU)) != 0 )
-						ev.keymods |= XWLKM_ALT;
-					if ( HIWORD(GetAsyncKeyState(VK_CONTROL)) != 0 )
-						ev.keymods |= XWLKM_CONTROL;
-					if ( HIWORD(GetAsyncKeyState(VK_SHIFT)) != 0 )
-						ev.keymods |= XWLKM_SHIFT;
-					xwl_send_event( &ev );
-
-				}
-				return 0;
-
-
-			case WM_KEYUP:
-			case WM_SYSKEYUP:
-				ev.type = XWLE_KEYRELEASED;
-				ev.key = VirtualKeyCodeToXWL( wp, lp );
-				ev.keymods = 0;
-				if ( HIWORD(GetAsyncKeyState(VK_MENU)) != 0 )
-					ev.keymods |= XWLKM_ALT;
-				if ( HIWORD(GetAsyncKeyState(VK_CONTROL)) != 0 )
-					ev.keymods |= XWLKM_CONTROL;
-				if ( HIWORD(GetAsyncKeyState(VK_SHIFT)) != 0 )
-					ev.keymods |= XWLKM_SHIFT;
-				xwl_send_event( &ev );
-
-				return 0;
-
-			case WM_MOUSEMOVE:
-				ev.type = XWLE_MOUSEMOVE;
-				{
-					POINT pt = { ev.mx, ev.my };
-
-					//ClientToScreen( hwnd, &pt );
-					ev.mx = pt.x;
-					ev.my = pt.y;
-				}
-				xwl_send_event( &ev );
-				return 0;
-
-			// -1 is towards the user
-			// 1 is away from the user
-			case WM_MOUSEWHEEL:
-				ev.type = XWLE_MOUSEWHEEL;
-				ev.wheelDelta = ((short)HIWORD(wp) > 0) ? 1 : -1;
-				xwl_send_event( &ev );
-				return 0;
-
-			case WM_LBUTTONDOWN:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_LEFT );
-				return 0;
-			case WM_LBUTTONDBLCLK:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_LEFT );
-				return 0;
-			case WM_LBUTTONUP:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_RELEASED, XWLMB_LEFT );
-				return 0;
-			case WM_RBUTTONDOWN:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_RIGHT );
-				return 0;
-			case WM_RBUTTONDBLCLK:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_RIGHT );
-				return 0;
-			case WM_RBUTTONUP:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_RELEASED, XWLMB_RIGHT );
-				return 0;
-			case WM_MBUTTONDOWN:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_MIDDLE );
-				return 0;
-			case WM_MBUTTONDBLCLK:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, XWLMB_MIDDLE );
-				return 0;
-			case WM_MBUTTONUP:
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_RELEASED, XWLMB_MIDDLE );
-				return 0;
-			case WM_XBUTTONDOWN:
-				if ( HIWORD(wp) == 1 )
-					temp = XWLMB_MOUSE4;
-				else
-					temp = XWLMB_MOUSE5;
-
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, temp );
-				return 0;
-			case WM_XBUTTONDBLCLK:
-				if ( HIWORD(wp) == 1 )
-					temp = XWLMB_MOUSE4;
-				else
-					temp = XWLMB_MOUSE5;
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_PRESSED, temp );
-				return 0;
-			case WM_XBUTTONUP:
-				if ( HIWORD(wp) == 1 )
-					temp = XWLMB_MOUSE4;
-				else
-					temp = XWLMB_MOUSE5;
-
-				SEND_MOUSE_EVENT( XWLE_MOUSEBUTTON_RELEASED, temp );
-				return 0;
-
-			case WM_SETFOCUS:
-				ev.type = XWLE_GAINFOCUS;
-				xwl_send_event( &ev );
-				return 0;
-
-			case WM_KILLFOCUS:
-				ev.type = XWLE_LOSTFOCUS;
-				xwl_send_event( &ev );
-				return 0;
-
-			case WM_DESTROY:
-			case WM_CLOSE:
-				ev.type = XWLE_CLOSED;
-				xwl_send_event( &ev );
-				return 0;
-			case WM_SIZE:
-				ev.type = XWLE_SIZE;
-				ev.width = LOWORD(lp);
-				ev.height = HIWORD(lp);
-				xwl_send_event( &ev );
-				return 0;
-			}
-		}
-
-		return DefWindowProc( hwnd, msg, wp, lp );
-	}
-#endif
 
 #if LINUX
 /*
@@ -607,6 +301,8 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 	#endif
 
 	#include <xwl/platforms/x11/x11.h>
+#elif _WIN32
+	#include <xwl/platforms/win32/win32.h>
 #endif
 
 xwl_window_provider_t _window_provider;
@@ -632,7 +328,7 @@ xwl_window_provider_register _window_providers[] = {
 #endif
 
 #if _WIN32
-	0, // Win32
+	win32_window_register, // Win32
 #else
 	0,
 #endif
@@ -670,7 +366,7 @@ xwl_api_provider_register _api_providers[] = {
 #endif
 
 #if _WIN32
-	0, // Win32
+	win32_opengl_register, // Win32
 #else
 	0,
 #endif
@@ -693,7 +389,7 @@ xwl_input_provider_register _input_providers[] = {
 #endif
 
 #if _WIN32
-	0, // Win32
+	win32_input_register, // Win32
 #else
 	0,
 #endif
@@ -900,11 +596,6 @@ int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsign
 	}
 
 
-#ifdef _WIN32
-	// initialize key map
-	lshift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
-#endif
-
 	return result;
 } // xwl_startup
 
@@ -1016,15 +707,6 @@ int xwl_dispatch_events()
 	assert( _input_provider.dispatch_events != 0 );
 	result = _input_provider.dispatch_events();
 
-#if 0 //_WIN32
-	MSG msg;
-
-	while ( PeekMessage( &msg, 0, 0, 0, PM_REMOVE ) )
-	{
-		TranslateMessage( &msg );
-		DispatchMessage( &msg );
-	}
-#endif
 	return result;
 }
 
@@ -1108,217 +790,6 @@ xwl_window_t *xwl_create_window( const char * title, unsigned int * attribs )
 	// activate the context with this window
 	assert( _api_provider.activate_context != 0 );
 	_api_provider.activate_context( context, wh );
-
-
-#if 0 //_WIN32
-	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-	RECT clientrect;
-	wchar_t windowName[ 128 ];
-	//memset( windowName, 0, 128 );
-	HWND handle;
-	WNDCLASSEX wcx_info;
-	WNDCLASSEX wcx;
-
-	// see if the window class already exists...
-	if ( GetClassInfoEx( 0, xwl_windowClassName, &wcx_info ) == 0 )
-	{
-		// class does not exist; create it 
-		wcx.cbSize = sizeof( WNDCLASSEX );
-		wcx.cbClsExtra = 0;
-		wcx.cbWndExtra = 0;
-		wcx.hbrBackground = 0;
-		wcx.hCursor = LoadCursor( 0, IDC_ARROW );
-		if ( params->flags & XWL_WIN32_ICON )
-		{
-			wcx.hIcon = params->hIcon;
-		}
-		else
-		{
-			wcx.hIcon = 0;
-		}
-
-		if ( params->flags & XWL_WIN32_ICONSM )
-		{
-			wcx.hIconSm = params->hIconSm;
-		}
-		else
-		{
-			wcx.hIconSm = 0;
-		}
-
-		wcx.hInstance = (HINSTANCE)GetModuleHandle(0);
-		wcx.lpfnWndProc = WndProc; // long pointer-to-function WindowProc
-		wcx.lpszClassName = xwl_windowClassName;
-		wcx.lpszMenuName = 0;
-		wcx.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC | CS_DBLCLKS;
-
-		RegisterClassEx( &wcx );
-	}
-
-
-	if ( title == 0 )
-	{
-		title = "Untitled Window";
-	}
-
-	if ( !(params->flags & XWL_FULLSCREEN) )
-	{
-		RECT r = { 0, 0, params->width, params->height };
-		style |= WS_MINIMIZEBOX | WS_CAPTION | WS_BORDER | WS_SYSMENU;
-		if ( !(params->flags & XWL_NORESIZE) )
-		{
-			style |= WS_OVERLAPPEDWINDOW;
-		}
-		
-		AdjustWindowRect( &r, style, 0 );
-		params->width = (r.right - r.left);
-		params->height = (r.bottom - r.top);
-
-	}
-	else
-	{
-		style |= WS_POPUP;
-	}
-
-
-	MultiByteToWideChar( CP_UTF8, 0, title, -1, windowName, 128 );
-
-	handle = CreateWindowW( xwl_windowClassName, windowName, style, params->x, params->y, params->width, params->height, 0, 0, GetModuleHandle(0), 0 );
-
-	if ( !handle )
-	{
-		return 0;
-	}
-
-	clientrect.left = 0;
-	clientrect.right = params->width;
-	clientrect.top = 0;
-	clientrect.bottom = params->height;
-	// ATI driver bug? from irrlicht
-	MoveWindow( handle, clientrect.left, clientrect.top, clientrect.right, clientrect.bottom, 1 );
-
-	// if visible
-	ShowWindow( handle, SW_SHOW );
-	SetForegroundWindow( handle );
-	UpdateWindow( handle );
-
-
-	wh = xwl_get_unused_window();
-
-	if ( !wh )
-	{
-		// no more window handles
-		return 0;
-	}
-
-	wh->handle.dc = 0;
-	wh->handle.handle = handle;
-	wh->handle.userdata = params->userdata;
-	SetWindowLongPtrA( handle, GWLP_USERDATA, (LONG)wh);
-
-
-	//GetWindowRect( handle, &clientrect );
-	//printf( "WindowRect: %i %i %i %i\n", clientrect.left, clientrect.top, clientrect.bottom, clientrect.right );
-	GetClientRect( handle, &clientrect );
-	//printf( "ClientRect: %i %i %i %i\n", clientrect.left, clientrect.top, clientrect.bottom, clientrect.right );
-	params->width = clientrect.right;
-	params->height = clientrect.bottom;
-
-	if ( (params->flags & XWL_OPENGL) )
-	{
-	    cfg.window = &wh->handle;
-		xwl_renderer_startup( &cfg, attribs );
-	}
-#endif
-
-#if LINUX && 0
-    XSetWindowAttributes window_attribs;
-    XVisualInfo * info;
-    Window handle;
-	Colormap colormap;
-	int cwattrs;
-
-	if ( title == 0 )
-		title = "Untitled Window";
-
-    wh = xwl_get_unused_window();
-
-    if ( !wh )
-    {
-        xwlPrintf( "[xwl] Could not find unused window\n" );
-        return 0;
-    }
-
-    if ( !(params->flags & XWL_OPENGL) )
-    {
-        xwlPrintf( "[xwl::X11] Must create an OpenGL window on Linux!\n" );
-        return 0;
-    }
-
-
-
-    window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
-    cfg.display = currentDisplay;
-    cfg.screen = currentScreen;
-    cfg.window = &wh->handle;
-
-    cwattrs = CWEventMask;
-
-
-    // to start, we need to create a temporary window to get a context and then link glXCreateContextAttribsARB.
-    xwl_linux_create_window( &cfg, 0 );
-
-    fprintf( stdout, "[xwl] renderer_startup...\n" );
-    xwl_renderer_startup( &cfg, attribs );
-
-    fprintf( stdout, "[xwl] Create a color map... \n");
-    window_attribs.colormap = XCreateColormap( currentDisplay, RootWindow(currentDisplay, currentScreen), cfg.visual->visual, AllocNone );
-
-    fprintf( stdout, "[xwl] Attempting to create a window" );
-    handle = XCreateWindow( currentDisplay, RootWindow(currentDisplay, currentScreen), 0, 0, params->width, params->height, 0, cfg.visual->depth, InputOutput, cfg.visual->visual, CWColormap | CWEventMask, &window_attribs );
-    if ( handle == 0 )
-    {
-        xwlPrintf( "[xwl::X11] XCreateWindow failed\n" );
-        return 0;
-    }
-
-    glXMakeCurrent( currentDisplay, handle, cfg.window->context );
-
-    //set window name
-    // XStoreName is NOT Unicode aware! So basically, don't use anything except "Host Portable Character Encoding", (essentially, ASCII), or the result will be implementation-dependent.
-    XStoreName( currentDisplay, handle, title );
-
-    // to work around XStoreName's shortcomings, we use XChangeProperty with _NEW_WM_NAME
-    XChangeProperty( currentDisplay, handle,
-                    XInternAtom(currentDisplay, "_NET_WM_NAME", False),
-                    XInternAtom(currentDisplay, "UTF8_STRING", False),
-                    8, PropModeReplace, (unsigned char*)title, strlen(title) );
-
-    // show the window
-    XMapWindow( currentDisplay, handle );
-
-    XFlush( currentDisplay );
-
-
-    // standard init
-    //myAtomClose = XInternAtom( currentDisplay, "WM_DELETE_WINDOW", 0 );
-    //XSetWMProtocols( currentDisplay, handle, &myAtomClose, 1 );
-
-
-
-    wh->handle.handle = (void*)handle;
-    wh->handle.userdata = params->userdata;
-
-    if ( currentInputMethod )
-    {
-        wh->inputContext = XCreateIC( currentInputMethod, XNClientWindow, handle, XNFocusWindow, handle, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
-        if ( !wh->inputContext )
-        {
-            xwlPrintf( "[xwl::X11] Failed to create input context!\n" );
-        }
-    }
-
-#endif
 
 	if ( !wh )
 	{

@@ -129,9 +129,7 @@ int main()
 	
 	for( i = 0; i < screen_count; ++i )
 	{
-
 		xwl_get_screen_size( i, &screen_width, &screen_height );
-		
 		xwlPrintf( "-> screen %i, size: %i x %i\n", i, screen_width, screen_height );
 	}
 	
