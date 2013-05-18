@@ -31,6 +31,7 @@ extern "C" {
     
 #elif __APPLE__
     #include <TargetConditionals.h>
+	#define XWL_EXPORT
 #endif
     
 #define XWL_DEBUG 1

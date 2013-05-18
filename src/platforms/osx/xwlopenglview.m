@@ -82,7 +82,7 @@ unsigned int LocalizedKeys(unichar ch);
 void dispatchMouseMoveEvent(NSEvent * theEvent)
 {
 	xwl_event_t ev = {0};
-	u16 titleBarHeight;
+	unsigned short titleBarHeight;
 	unsigned int fixedHeight;
 	xwlWindow * wnd = (xwlWindow*)[theEvent window];
 	NSPoint pt = [[theEvent window] mouseLocationOutsideOfEventStream];
