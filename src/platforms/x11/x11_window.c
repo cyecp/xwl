@@ -66,7 +66,7 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	cwmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
 	fprintf( stdout, "[xwl] Attempting to create a window\n" );
-	fprintf( stdout, "root: %p\n", RootWindow(x11_current_display(), x11_current_screen()) );
+	fprintf( stdout, "root: %p\n", (void*)RootWindow(x11_current_display(), x11_current_screen()) );
 	fprintf( stdout, "display: %p\n", x11_current_display() );
 	fprintf( stdout, "screen: %i\n", x11_current_screen() );
 	fprintf( stdout, "window_width: %i\n", window_width );
