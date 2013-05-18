@@ -410,6 +410,7 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)wh);
 #endif
 
+	SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)&handle->handle);
 
 	//GetWindowRect( handle, &clientrect );
 	//printf( "WindowRect: %i %i %i %i\n", clientrect.left, clientrect.top, clientrect.bottom, clientrect.right );
@@ -418,15 +419,10 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	//params->width = clientrect.right;
 	//params->height = clientrect.bottom;
 
-#if 0 // OLD XWL
-	if ( (params->flags & XWL_OPENGL) )
-	{
-	    cfg.window = &wh->handle;
-		xwl_renderer_startup( &cfg, attribs );
-	}
-#endif
-
-	handle->handle.pixel_format = win32_opengl_setup_pixelformat( native_handle );
+	// TODO: This is a hack because Windows requires the pixel format to come after window creation
+	// and the current order of processes in xwl has pixel format being queried before.
+	// Perhaps a solution is to offer both a pre- and post- window callback.
+	handle->handle.pixel_format = win32_opengl_setup_pixelformat( handle, native_handle );
 
 	handle->handle.handle = (void*)native_handle;
 

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <xwl/platforms/win32/win32.h>
 
-int win32_opengl_setup_pixelformat( HWND window )
+int win32_opengl_setup_pixelformat( xwl_native_window_t * native_window, HWND window )
 {
 #if 0
 	HGLRC glrc;
@@ -46,7 +46,6 @@ int win32_opengl_setup_pixelformat( HWND window )
 
 	PIXELFORMATDESCRIPTOR pfd = {0};
 	int pixelFormat = -1;
-	HDC hdc;
 
 	if ( !window )
 	{
@@ -64,10 +63,10 @@ int win32_opengl_setup_pixelformat( HWND window )
 	pfd.iPixelType = PFD_TYPE_RGBA;
 
 	// get a DC to our window
-	hdc = GetDC( window );
+	native_window->dc = GetDC( window );
 
 	// choose the pixel format
-	pixelFormat = ChoosePixelFormat( hdc, &pfd );
+	pixelFormat = ChoosePixelFormat( native_window->dc, &pfd );
 	if ( pixelFormat == 0 )
 	{
 		xwl_set_error( "[win32] Unable to choose a valid pixel format" );
@@ -75,7 +74,9 @@ int win32_opengl_setup_pixelformat( HWND window )
 	}
 
 	// set the pixel format
-	SetPixelFormat( hdc, pixelFormat, &pfd );
+	SetPixelFormat( native_window->dc, pixelFormat, &pfd );
+
+	//ReleaseDC( window, hdc );
 
 	return pixelFormat;
 }
@@ -92,30 +93,43 @@ void *win32_opengl_create_context( xwl_native_window_t * native_window, xwl_wind
 	HWND hwnd;
 
 	hwnd = (HWND)native_window->handle.handle;
-	hdc = GetDC( hwnd );
+	hdc = native_window->dc; //GetDC( hwnd );
 
 	// create a rendering context from it
 	glrc = wglCreateContext( hdc );
 
-	// make that context current
-	wglMakeCurrent( hdc, glrc );
-
+	//ReleaseDC( hwnd, hdc );
 
 	return glrc;
 } // win32_opengl_create_context
 
 void win32_opengl_destroy_context( void * context, xwl_native_window_t * native_window, struct xwl_window_provider_s * wapi )
 {
+	HGLRC glrc = (HGLRC)context;
+	HWND hwnd = (HWND)native_window->handle.handle;
+	
+	wglMakeCurrent( NULL, NULL );
+
+	ReleaseDC( hwnd, native_window->dc );
+	native_window->dc = 0;
+
+	wglDeleteContext( glrc );
 } // win32_opengl_destroy_context
 
 void win32_opengl_activate_context( void * context, xwl_native_window_t * native_window )
 {
-	
+	HGLRC glrc = (HGLRC)context;
+	HWND hwnd = (HWND)native_window->handle.handle;
+
+	// make that context current
+	wglMakeCurrent( native_window->dc, glrc );
 } // win32_opengl_activate_context
 
-void win32_opengl_swap_buffers( xwl_native_window_t * window )
+void win32_opengl_swap_buffers( xwl_native_window_t * native_window )
 {
+	HWND hwnd = (HWND)native_window->handle.handle;
 
+	SwapBuffers( native_window->dc );
 } // win32_opengl_swap_buffers
 
 int win32_opengl_pixel_format( unsigned int * attribs )

@@ -13,15 +13,18 @@ int my;
 	#include <windows.h>
 	#include <gl/gl.h>
 	#pragma comment( lib, "opengl32.lib" )
+	#define XWLGL_API __stdcall
 #elif LINUX
 	#include <GL/gl.h>
 	//#include <GL/glx.h>
 	//#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
+	#define XWLGL_API
 #elif __APPLE__
 	// for OSX 10.6
 	#include <OpenGL/OpenGL.h>
 	// for OSX 10.7+
 	#include <OpenGL/gl.h>
+	#define XWLGL_API
 #endif
 
 
@@ -84,9 +87,9 @@ void callback( xwl_event_t * e )
 
 typedef unsigned int GLbitfield;
 
-typedef const GLubyte * (*getString)( GLenum );
-typedef void (*clearColor)( GLfloat, GLfloat, GLfloat, GLfloat );
-typedef void (*clear)( GLbitfield mask );
+typedef const GLubyte * (XWLGL_API *getString)( GLenum );
+typedef void (XWLGL_API *clearColor)( GLfloat, GLfloat, GLfloat, GLfloat );
+typedef void (XWLGL_API *clear)( GLbitfield mask );
 
 int main()
 {

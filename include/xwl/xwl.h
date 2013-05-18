@@ -105,27 +105,6 @@ typedef struct xwl_window_s
 struct xwl_event_s;
 typedef void (*xwl_event_callback)( struct xwl_event_s * );
 	
-#if 0
-    typedef struct xwl_window_s
-    {
-        void * handle;
-        void * userdata;
-        xwl_event_callback event_callback;
-        
-#if _WIN32
-        HDC dc;
-#endif
-        
-#if LINUX
-        void * context;
-#endif
-        
-#if __APPLE__
-        void * view;
-#endif
-    } xwl_window_t;
-#endif
-	
 
 typedef struct xwl_event_s
 {
@@ -195,45 +174,48 @@ XWL_EXPORT void xwl_get_window_render_size( xwl_window_t * window, int * width, 
 XWL_EXPORT void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
 XWL_EXPORT unsigned int xwl_get_screen_count();
     
-    typedef struct xwl_native_window_s
-    {
-        xwl_window_t handle;
+typedef struct xwl_native_window_s
+{
+    xwl_window_t handle;
         
 #ifdef LINUX
-        XIC inputContext;
-        Atom atomClose;
-        XEvent lastKeyRelease;
+    XIC inputContext;
+    Atom atomClose;
+    XEvent lastKeyRelease;
 #endif
-        
-    } xwl_native_window_t;
-    
-    xwl_native_window_t *xwl_get_unused_window( void );
-    void xwl_send_event( xwl_event_t * ev );
-    
-    void xwl_finish( void );
-	XWL_EXPORT void xwl_swap_buffers( xwl_window_t * window );
 
-    void *xwl_rendering_context( xwl_window_t * window );
+#if _WIN32
+    HDC dc;
+#endif
+} xwl_native_window_t;
     
-    // must call this before xwl_startup otherwise findsymbol will return 0 for all symbols.
-    XWL_EXPORT void xwl_use_findsymbol( void );
+xwl_native_window_t *xwl_get_unused_window( void );
+void xwl_send_event( xwl_event_t * ev );
+    
+void xwl_finish( void );
+XWL_EXPORT void xwl_swap_buffers( xwl_window_t * window );
 
-	XWL_EXPORT void * xwl_findsymbol( const char * symbol_name );
+void *xwl_rendering_context( xwl_window_t * window );
+    
+// must call this before xwl_startup otherwise findsymbol will return 0 for all symbols.
+XWL_EXPORT void xwl_use_findsymbol( void );
+
+XWL_EXPORT void * xwl_findsymbol( const char * symbol_name );
 
 
     
-    // -- platform specifics
-    typedef struct xwl_renderer_settings_s
-    {
-        xwl_window_t * window;
+// -- platform specifics
+typedef struct xwl_renderer_settings_s
+{
+    xwl_window_t * window;
         
 #if LINUX
-        XVisualInfo * visual;
-        Display * display;
-        int screen;
+    XVisualInfo * visual;
+    Display * display;
+    int screen;
 #endif
         
-    } xwl_renderer_settings_t;
+} xwl_renderer_settings_t;
     
     
 #ifdef __cplusplus

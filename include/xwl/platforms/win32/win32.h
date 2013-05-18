@@ -7,4 +7,4 @@ void win32_opengl_register( xwl_api_provider_t * api );
 void win32_input_register( xwl_input_provider_t * iapi );
 
 
-int win32_opengl_setup_pixelformat( HWND window );
+int win32_opengl_setup_pixelformat( xwl_native_window_t * native_window, HWND window );
