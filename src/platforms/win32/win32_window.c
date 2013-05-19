@@ -394,38 +394,16 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	SetForegroundWindow( native_handle );
 	UpdateWindow( native_handle );
 
-#if 0
-	wh = xwl_get_unused_window();
-	if ( !wh )
-	{
-		// no more window handles
-		return 0;
-	}
-
-	wh->handle.dc = 0;
-	wh->handle.handle = handle;
-	wh->handle.userdata = params->userdata;
-
-
-	SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)wh);
-#endif
-
+	// store native window handle data
 	SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)&handle->handle);
 
-	//GetWindowRect( handle, &clientrect );
-	//printf( "WindowRect: %i %i %i %i\n", clientrect.left, clientrect.top, clientrect.bottom, clientrect.right );
-	GetClientRect( native_handle, &clientrect );
-	//printf( "ClientRect: %i %i %i %i\n", clientrect.left, clientrect.top, clientrect.bottom, clientrect.right );
-	//params->width = clientrect.right;
-	//params->height = clientrect.bottom;
+	//
+	//GetClientRect( native_handle, &clientrect );
 
 	// TODO: This is a hack because Windows requires the pixel format to come after window creation
 	// and the current order of processes in xwl has pixel format being queried before.
 	// Perhaps a solution is to offer both a pre- and post- window callback.
 	handle->handle.pixel_format = win32_opengl_setup_pixelformat( handle, native_handle );
-
-	handle->handle.handle = (void*)native_handle;
-
 
 	return (void*)native_handle;
 } // win32_window_create_window
@@ -437,17 +415,68 @@ void win32_window_destroy_window( xwl_window_t * window )
 
 void win32_window_get_window_size( xwl_window_t * window, int * width, int * height )
 {
-	// http://stackoverflow.com/questions/4631292/how-detect-current-screen-resolution
+	HWND native_window = (HWND)window->handle;
+	RECT rect;
+
+	if ( native_window )
+	{
+		GetClientRect( native_window, &rect );
+		*width = (rect.right - rect.left);
+		*height = (rect.bottom - rect.top);
+	}
 } // win32_window_get_window_size
 
 void win32_window_get_window_render_size( xwl_window_t * window, int * width, int * height )
 {
 	// http://stackoverflow.com/questions/4631292/how-detect-current-screen-resolution
+
+	win32_window_get_window_size( window, width, height );
 } // win32_window_get_window_render_size
+
+
+
+struct monitor_size_s
+{
+	unsigned short num_monitors_iterated;
+	unsigned short target_monitor_id;
+	int * width;
+	int * height;
+};
+
+BOOL CALLBACK monitor_screen_size(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	MONITORINFO monitorinfo;
+	struct monitor_size_s * monitorsize = (struct monitor_size_s*)dwData;
+
+	// found the monitor requested, no longer need to continue
+	if (monitorsize->target_monitor_id == monitorsize->num_monitors_iterated)
+	{
+		// if the name of the monitor is ever required; use MONITORINFOEX to retrieve it
+		monitorinfo.cbSize = sizeof(MONITORINFO);
+		GetMonitorInfo( hMonitor, &monitorinfo );
+		*monitorsize->width = (monitorinfo.rcMonitor.right - monitorinfo.rcMonitor.left);
+		*monitorsize->height = (monitorinfo.rcMonitor.bottom - monitorinfo.rcMonitor.top);
+
+		return FALSE;
+	}
+	
+	monitorsize->num_monitors_iterated++;
+
+    return TRUE;
+} // monitor_enum_proc
+
 
 void win32_window_get_screen_size( unsigned int screen_index, int * width, int * height )
 {
 	// http://stackoverflow.com/questions/4631292/how-detect-current-screen-resolution
+
+	struct monitor_size_s monitorsize;
+	monitorsize.width = width;
+	monitorsize.height = height;
+	monitorsize.target_monitor_id = screen_index;
+	monitorsize.num_monitors_iterated = 0;
+
+	EnumDisplayMonitors(0, 0, monitor_screen_size, (LPARAM)&monitorsize);
 } // win32_window_get_screen_size
 
 BOOL CALLBACK monitor_enum_proc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
