@@ -141,8 +141,24 @@ typedef struct xwl_event_s
 
     struct xwl_window_s * window;
 } xwl_event_t;
-    
-	
+
+
+typedef struct xwl_native_window_s
+{
+    xwl_window_t handle;
+        
+#ifdef LINUX
+    XIC inputContext;
+    Atom atomClose;
+    XEvent lastKeyRelease;
+#endif
+
+#if _WIN32
+    HDC dc;
+#endif
+} xwl_native_window_t;
+
+
 // returns 0 on failure
 // returns 1 on success
 XWL_EXPORT int xwl_startup( unsigned int window_provider, unsigned int api_provider, unsigned int input_provider );
@@ -174,49 +190,14 @@ XWL_EXPORT void xwl_get_window_size( xwl_window_t * window, int * width, int * h
 XWL_EXPORT void xwl_get_window_render_size( xwl_window_t * window, int * width, int * height );
 XWL_EXPORT void xwl_get_screen_size( unsigned int screen_index, int * width, int * height );
 XWL_EXPORT unsigned int xwl_get_screen_count();
-    
-typedef struct xwl_native_window_s
-{
-    xwl_window_t handle;
-        
-#ifdef LINUX
-    XIC inputContext;
-    Atom atomClose;
-    XEvent lastKeyRelease;
-#endif
-
-#if _WIN32
-    HDC dc;
-#endif
-} xwl_native_window_t;
-    
-xwl_native_window_t *xwl_get_unused_window( void );
-void xwl_send_event( xwl_event_t * ev );
-    
-void xwl_finish( void );
+            
+XWL_EXPORT void xwl_finish( void );
 XWL_EXPORT void xwl_swap_buffers( xwl_window_t * window );
-
-void *xwl_rendering_context( xwl_window_t * window );
-    
+   
 // must call this before xwl_startup otherwise findsymbol will return 0 for all symbols.
 XWL_EXPORT void xwl_use_findsymbol( void );
 
 XWL_EXPORT void * xwl_findsymbol( const char * symbol_name );
-
-
-    
-// -- platform specifics
-typedef struct xwl_renderer_settings_s
-{
-    xwl_window_t * window;
-        
-#if LINUX
-    XVisualInfo * visual;
-    Display * display;
-    int screen;
-#endif
-        
-} xwl_renderer_settings_t;
     
     
 #ifdef __cplusplus

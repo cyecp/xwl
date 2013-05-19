@@ -1,8 +1,7 @@
 #include <xwl/xwl.h>
+#include <xwl/xwl_internal.h>
 #include <stdio.h>
 #include <xwl/platforms/win32/win32.h>
-//#include <string.h>
-
 
 static wchar_t xwl_windowClassName[] = L"xwl_window";
 

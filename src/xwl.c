@@ -10,11 +10,6 @@
 extern "C" {
 #endif
 
-int xwl_renderer_startup( xwl_renderer_settings_t * settings, unsigned int * attribs );
-void xwl_renderer_post( xwl_renderer_settings_t * settings );
-void xwl_renderer_shutdown( xwl_renderer_settings_t * settings );
-void xwl_renderer_activate( xwl_renderer_settings_t * settings );
-
 static struct xwl_native_window_s xwl_windowHandles[ XWL_MAX_WINDOW_HANDLES ];
 
 static xwl_event_callback xwl_callback;
@@ -22,7 +17,7 @@ const char * xwlerror;
 xlib_t api_lib;
 int _use_findsymbol = 0;
 
-const char * xwl_get_error()
+const char * xwl_get_error( void )
 {
     return xwlerror;
 } // xwl_get_error
@@ -107,16 +102,6 @@ void xwl_send_event( xwl_event_t * ev )
 		xwl_callback( ev );
 	}
 } // xwl_send_event
-
-void *xwl_rendering_context(xwl_window_t * window )
-{
-#if __APPLE__ && TARGET_OS_MAC
-//	return xwl_osx_rendering_context( window );
-    return 0;
-#else
-	return 0;
-#endif
-}
 
 
 const char * xwl_key_to_string( int key )
@@ -226,8 +211,6 @@ const char * xwl_key_to_string( int key )
 		case XWLK_LALT: return "XWLK_LALT";
 		case XWLK_RALT: return "XWLK_RALT";
 		case XWLK_NUMLOCK: return "XWLK_NUMLOCK";
-
-
 	}
 
 	return "XWLK_INVALID";
