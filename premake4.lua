@@ -95,10 +95,19 @@ function translate_platform( platform )
 	return platform
 end
 
+
+local platform_list = {}
+if os.is("windows") then
+	platform_list = {"x32", "x64"}
+else
+	platform_list = {"x32", "x64", "native"}
+end
+
+
 project "xwl"
 	objdir "obj"
 	uuid( "71CAA3FB-9077-7F4F-A0F5-54FD79A6A0F6" )
-	platforms { "x32", "x64", "native" }
+	platforms { platform_list }
 	kind "SharedLib"
 	language ("C")
 	
@@ -150,6 +159,11 @@ project "xwl"
 
 	configuration{ "windows" }
 		defines { "XWL_DLL=1", "UNICODE", baseDefines }
+		files
+		{
+			"src/platforms/win32/**.c",
+			"include/platforms/win32/**.h"
+		}
 		links
 		{
 			"opengl32"

@@ -12,13 +12,16 @@ class xwlBuilder(Builder):
 		project = kwargs.get( "project", None )
 		params = kwargs.get( "args", None )
 
-		libdir = "lib/%s/%s" % (params['architecture'], params['configuration'])
-
 		if target_platform is LINUX:
 			items = ['lib']
 			items.append( params['build_architecture'] )
 			items.append( params['configuration'] )
 			libdir = '/'.join( items )
+		elif target_platform is WINDOWS:
+			libdir = "lib/%s/%s" % (params['build_architecture'], params['configuration'])
+			#builder.setOutput( path=libdir, name=project.name, type=Builder.StaticLibrary )
+		else:
+			libdir = "lib/%s/%s" % (params['architecture'], params['configuration'])
 
 		builder.includes = ['include']
 		builder.libs = [ project.name ]
