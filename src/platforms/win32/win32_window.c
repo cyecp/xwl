@@ -306,26 +306,15 @@ void win32_window_shutdown( void )
 } // win32_window_shutdown
 
 
-void * win32_window_create_window( xwl_native_window_t * handle, const char * utf8_title, unsigned int * attributes, int pixel_format )
+
+HWND win32_create_window( const char * utf8_title, HICON hIcon, HICON hIconSm, int window_x, int window_y, int window_width, int window_height, int use_fullscreen, int disable_resize )
 {
 	int style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	RECT clientrect;
-	wchar_t windowName[ 128 ];
-	//memset( windowName, 0, 128 );
-	HWND native_handle;
+	wchar_t window_name[ 128 ];
 	WNDCLASSEX wcx_info;
 	WNDCLASSEX wcx;
-
-	int window_width;
-	int window_height;
-	int use_fullscreen;
-	int window_x, window_y;
-
-	window_width = attributes[ XWL_WINDOW_WIDTH ];
-	window_height = attributes[ XWL_WINDOW_HEIGHT ];
-	use_fullscreen = attributes[ XWL_USE_FULLSCREEN ];
-	window_x = attributes[ XWL_WINDOW_X ];
-	window_y = attributes[ XWL_WINDOW_Y ];
+	HWND native_handle;
 
 	// see if the window class already exists...
 	if ( GetClassInfoEx( 0, xwl_windowClassName, &wcx_info ) == 0 )
@@ -336,8 +325,8 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 		wcx.cbWndExtra = 0;
 		wcx.hbrBackground = 0;
 		wcx.hCursor = LoadCursor( 0, IDC_ARROW );
-		wcx.hIcon = (HICON)attributes[ XWL_WIN32_ICON ];
-		wcx.hIconSm = (HICON)attributes[ XWL_WIN32_ICONSM ];
+		wcx.hIcon = hIcon;
+		wcx.hIconSm = hIconSm;
 		wcx.hInstance = (HINSTANCE)GetModuleHandle(0);
 		wcx.lpfnWndProc = WndProc; // long pointer-to-function WindowProc
 		wcx.lpszClassName = xwl_windowClassName;
@@ -356,7 +345,7 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	{
 		RECT r = { 0, 0, window_width, window_height };
 		style |= WS_MINIMIZEBOX | WS_CAPTION | WS_BORDER | WS_SYSMENU;
-		if ( !(attributes[XWL_DISABLE_RESIZE]) )
+		if ( !disable_resize )
 		{
 			style |= WS_OVERLAPPEDWINDOW;
 		}
@@ -372,9 +361,9 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	}
 
 
-	MultiByteToWideChar( CP_UTF8, 0, utf8_title, -1, windowName, 128 );
+	MultiByteToWideChar( CP_UTF8, 0, utf8_title, -1, window_name, 128 );
 
-	native_handle = CreateWindowW( xwl_windowClassName, windowName, style, window_x, window_y, window_width, window_height, 0, 0, GetModuleHandle(0), 0 );
+	native_handle = CreateWindowW( xwl_windowClassName, window_name, style, window_x, window_y, window_width, window_height, 0, 0, GetModuleHandle(0), 0 );
 	if ( !native_handle )
 	{
 		return 0;
@@ -388,21 +377,71 @@ void * win32_window_create_window( xwl_native_window_t * handle, const char * ut
 	// ATI driver bug? from irrlicht
 	MoveWindow( native_handle, clientrect.left, clientrect.top, clientrect.right, clientrect.bottom, 1 );
 
-	// if visible
-	ShowWindow( native_handle, SW_SHOW );
-	SetForegroundWindow( native_handle );
-	UpdateWindow( native_handle );
+	return native_handle;
+} // win32_create_window
 
-	// store native window handle data
-	SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)&handle->handle);
 
-	//
-	//GetClientRect( native_handle, &clientrect );
 
-	// TODO: This is a hack because Windows requires the pixel format to come after window creation
-	// and the current order of processes in xwl has pixel format being queried before.
-	// Perhaps a solution is to offer both a pre- and post- window callback.
-	handle->handle.pixel_format = win32_opengl_setup_pixelformat( handle, native_handle );
+
+
+
+HWND win32_create_dummy_window()
+{
+	return win32_create_window( "dummy_window", 0, 0, 0, 0, 100, 100, 0, 0 );
+} // win32_create_dummy_window
+
+
+
+
+
+void * win32_window_create_window( xwl_native_window_t * handle, const char * utf8_title, unsigned int * attributes, int pixel_format )
+{
+	HWND native_handle;
+	int window_width;
+	int window_height;
+	int use_fullscreen;
+	int window_x, window_y;
+
+	window_width = attributes[ XWL_WINDOW_WIDTH ];
+	window_height = attributes[ XWL_WINDOW_HEIGHT ];
+	use_fullscreen = attributes[ XWL_USE_FULLSCREEN ];
+	window_x = attributes[ XWL_WINDOW_X ];
+	window_y = attributes[ XWL_WINDOW_Y ];
+
+	if ( !_win32ChoosePixelFormatARB && !_win32CreateContextAttribsARB )
+	{
+		HWND dummy_window = win32_create_dummy_window();
+		if ( dummy_window )
+		{
+			win32_load_symbols( dummy_window );
+			DestroyWindow( dummy_window );
+		}
+	}
+
+	native_handle = win32_create_window( utf8_title, 
+		(HICON)attributes[ XWL_WIN32_ICON ], 
+		(HICON)attributes[ XWL_WIN32_ICONSM ], 
+		window_x, window_y, window_width, window_height, 
+		use_fullscreen, attributes[XWL_DISABLE_RESIZE] );
+
+	if ( native_handle )
+	{
+		// store native window handle data
+		SetWindowLongPtrA( native_handle, GWLP_USERDATA, (LONG)&handle->handle);
+
+		// if visible
+		ShowWindow( native_handle, SW_SHOW );
+		SetForegroundWindow( native_handle );
+		UpdateWindow( native_handle );
+
+		//
+		//GetClientRect( native_handle, &clientrect );
+
+		// TODO: This is a hack because Windows requires the pixel format to come after window creation
+		// and the current order of processes in xwl has pixel format being queried before.
+		// Perhaps a solution is to offer both a pre- and post- window callback.
+		handle->handle.pixel_format = win32_opengl_setup_pixelformat( handle, native_handle, attributes );
+	}
 
 	return (void*)native_handle;
 } // win32_window_create_window

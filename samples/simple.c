@@ -109,7 +109,7 @@ int main()
 		XWL_WINDOW_HEIGHT, window_height,
 		XWL_DEPTH_SIZE, 24,
 		XWL_STENCIL_SIZE, 8,
-		// XWL_USE_FULLSCREEN, 1,
+		//XWL_USE_FULLSCREEN, 1,
 		XWL_NONE,
 	};
 	getString gl_getstring = 0;
