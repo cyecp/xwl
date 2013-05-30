@@ -17,15 +17,19 @@ typedef void (*xwl_input_provider_shutdown)( void );
 // returns > 0 if one or more events were processed
 typedef int (*xwl_input_provider_dispatch_events)( void );
 
-// this is called after successful window creation
-typedef void (*xwl_input_provider_post_window_creation)( struct xwl_native_window_s * native_window );
+typedef void (*xwl_input_provider_window_callback)( struct xwl_native_window_s * native_window );
 	
 typedef struct xwl_input_provider_s
 {
 	xwl_input_provider_startup startup;
 	xwl_input_provider_shutdown shutdown;
 	xwl_input_provider_dispatch_events dispatch_events;
-	xwl_input_provider_post_window_creation post_window_creation;
+
+	// this is called after the window has been created
+	xwl_input_provider_window_callback post_window_creation;
+
+	// this is called just before the window is destroyed
+	xwl_input_provider_window_callback pre_window_destroy;
 } xwl_input_provider_t;
 
 // register functions for this provider

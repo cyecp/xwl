@@ -59,7 +59,6 @@ int _xwl_open_driver_library( unsigned int api_provider )
 	library_name = "OpenGL32.dll";
 #endif
 	
-	fprintf( stdout, "Linking with library '%s'\n", library_name );
 	if ( !xlib_open( &api_lib, library_name ) )
 	{
 		return 0;
@@ -601,16 +600,10 @@ void * xwl_findsymbol( const char * symbol_name )
 		if ( !func )
 		{
 	#if _WIN32 || LINUX
-			fprintf( stderr, "Find symbol '%s' failed with api provider. Attempting library.\n", symbol_name );
 			func = xlib_find_symbol( &api_lib, symbol_name );
 	#elif __APPLE__
 			func = _xwl_apple_find_symbol( symbol_name );
 	#endif
-		}
-		
-		if ( !func )
-		{
-			fprintf( stderr, "Symbol, '%s' NOT FOUND!\n", symbol_name );
 		}
 	}
 
@@ -651,6 +644,7 @@ void xwl_shutdown( void )
 	int i;
 	xwl_native_window_t * wh;
 	
+	assert( _input_provider.pre_window_destroy != 0 );
 	assert( _api_provider.destroy_context != 0 );
 	assert( _window_provider.destroy_window != 0 );
 
@@ -660,7 +654,7 @@ void xwl_shutdown( void )
 
 		if ( wh->handle.handle )
 		{
-			fprintf( stdout, "[xwl] releasing window handle: %i\n", i );
+			_input_provider.pre_window_destroy( wh );
 			//_api_provider.destroy_context( &wh->handle );
 			_window_provider.destroy_window( &wh->handle );
 			wh->handle.handle = 0;

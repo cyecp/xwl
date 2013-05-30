@@ -121,6 +121,14 @@ void x11_input_post_window_creation( xwl_native_window_t * native_window )
 	}
 } // x11_input_post_window_creation
 
+void x11_input_pre_window_destroy( xwl_native_window_t * native_window )
+{
+	if ( native_window->inputContext )
+	{
+		XDestroyIC( native_window->inputContext );
+		native_window->inputContext = 0;
+	}
+} // x11_input_pre_destroy_window
 
 void x11_input_register( xwl_input_provider_t * input )
 {
@@ -128,8 +136,8 @@ void x11_input_register( xwl_input_provider_t * input )
 	input->shutdown = x11_input_shutdown;
 	input->dispatch_events = x11_input_dispatch_events;
 	input->post_window_creation = x11_input_post_window_creation;
+	input->pre_window_destroy = x11_input_pre_window_destroy;
 } // x11_input_register
-
 
 
 // this code taken straight from SFML-1.6
