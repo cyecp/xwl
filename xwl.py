@@ -19,13 +19,14 @@ class xwlBuilder(Builder):
 			libdir = '/'.join( items )
 		elif target_platform is WINDOWS:
 			libdir = "lib/%s/%s" % (params['build_architecture'], params['configuration'])
-			#builder.setOutput( path=libdir, name=project.name, type=Builder.StaticLibrary )
+			logging.info( "libdir=%s" % libdir )
+			builder.addOutput( path=libdir, name=project.name, type=Builder.StaticLibrary )
 		else:
 			libdir = "lib/%s/%s" % (params['architecture'], params['configuration'])
 
 		builder.includes = ['include']
 		builder.libs = [ project.name ]
-		builder.setOutput( path=libdir, name=project.name, type=Builder.DynamicLibrary )
+		builder.addOutput( path=libdir, name=project.name, type=Builder.DynamicLibrary )
 
 		driver.config = (params['configuration'].lower() + Premake4.archmap[ params['platform'] ][ params['build_architecture'] ])
 
