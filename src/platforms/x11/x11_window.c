@@ -60,25 +60,25 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 	// we now have the visual; move on to creating the window now...
 	window_attribs.event_mask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | EnterWindowMask | LeaveWindowMask;
 
-	fprintf( stdout, "[xwl] Create a color map... \n");
+	// fprintf( stdout, "[xwl] Create a color map... \n");
 	window_attribs.colormap = XCreateColormap( x11_current_display(), RootWindow(x11_current_display(), x11_current_screen()), visual->visual, AllocNone );
 
 	cwmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-	fprintf( stdout, "[xwl] Attempting to create a window\n" );
-	fprintf( stdout, "root: %p\n", (void*)RootWindow(x11_current_display(), x11_current_screen()) );
-	fprintf( stdout, "display: %p\n", x11_current_display() );
-	fprintf( stdout, "screen: %i\n", x11_current_screen() );
-	fprintf( stdout, "window_width: %i\n", window_width );
-	fprintf( stdout, "window_height: %i\n", window_height );
-	fprintf( stdout, "visual->visual: %p\n", visual->visual );
-	fprintf( stdout, "visual->depth: %i\n", visual->depth );
-	fprintf( stdout, "cwmask: %i\n", cwmask );
+	// fprintf( stdout, "[xwl] Attempting to create a window\n" );
+	// fprintf( stdout, "root: %p\n", (void*)RootWindow(x11_current_display(), x11_current_screen()) );
+	// fprintf( stdout, "display: %p\n", x11_current_display() );
+	// fprintf( stdout, "screen: %i\n", x11_current_screen() );
+	// fprintf( stdout, "window_width: %i\n", window_width );
+	// fprintf( stdout, "window_height: %i\n", window_height );
+	// fprintf( stdout, "visual->visual: %p\n", visual->visual );
+	// fprintf( stdout, "visual->depth: %i\n", visual->depth );
+	// fprintf( stdout, "cwmask: %i\n", cwmask );
 	native_window = XCreateWindow( x11_current_display(), RootWindow(x11_current_display(), x11_current_screen()), 0, 0, window_width, window_height, 0, visual->depth, InputOutput, visual->visual, cwmask, &window_attribs );
-	fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
+	// fprintf( stdout, "[xwl] native_window = %i\n", (int)native_window );
 
 	// free the visual
-	fprintf( stdout, "[xwl] Freeing visual...\n" );
+	// fprintf( stdout, "[xwl] Freeing visual...\n" );
 	XFree( visual );
 
 
@@ -108,7 +108,7 @@ void * x11_window_create_window( xwl_native_window_t * handle, const char * utf8
 		ev.xclient.data.l[1] = fullscreen;
 		ev.xclient.data.l[2] = 0;
 
-		fprintf( stdout, "[xwl] converting window to fullscreen...\n" );
+		// fprintf( stdout, "[xwl] converting window to fullscreen...\n" );
 		XSendEvent( x11_current_display(), DefaultRootWindow(x11_current_display()), False,
 			SubstructureRedirectMask | SubstructureNotifyMask, &ev );
 	}

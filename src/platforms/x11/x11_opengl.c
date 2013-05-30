@@ -204,6 +204,7 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 		if ( !glXIsDirect( x11_current_display(), context ) )
 		{
 			fprintf( stderr, "[xwl] Direct rendering is NOT enabled!\n" );
+			XFree( visual );
 			return 0;
 		}
 	}

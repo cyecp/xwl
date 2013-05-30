@@ -57,6 +57,11 @@ int x11_input_dispatch_events( void )
 		return 0;
 	}
 
+	ev.type = 0;
+	lastKeyReleaseEvent.type = 0;
+	lastKeyReleaseEvent.xkey.keycode = 0;
+	lastKeyReleaseEvent.xkey.time = 0;
+
 	for( i = 0; i < XWL_MAX_WINDOW_HANDLES; ++i )
 	{
 		wh = _xwl_window_at_index( i );
@@ -73,6 +78,7 @@ int x11_input_dispatch_events( void )
 						// - KeyPress events are a little bit harder to handle: they depend on the EnableKeyRepeat state,
 						//   and we need to properly forward the first one.
 						char keys[32];
+						memset(keys, 0, 32);
 						XQueryKeymap(x11_current_display(), keys);
 						if (keys[ev.xkey.keycode >> 3] & (1 << (ev.xkey.keycode % 8)))
 						{
@@ -112,12 +118,12 @@ void x11_input_post_window_creation( xwl_native_window_t * native_window )
 		native_window->inputContext = XCreateIC( currentInputMethod, XNClientWindow, wind, XNFocusWindow, wind, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL );
 		if ( !native_window->inputContext )
 		{
-			fprintf( stderr, "[xwl] Failed to create input context!\n" );
+			xwl_set_error( "[xwl] Failed to create input context!" );
 		}
 	}
 	else
 	{
-		fprintf( stderr, "currentInputMethod is INVALID\n" );
+		xwl_set_error( "[xwl] currentInputMethod is INVALID" );
 	}
 } // x11_input_post_window_creation
 

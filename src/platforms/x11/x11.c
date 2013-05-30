@@ -43,15 +43,12 @@ XVisualInfo * x11_fetch_visual( int pixel_format )
 	visualTemplate.visualid = pixel_format;
 
 	// retrieve the visual
-	fprintf( stdout, "[xwl] Retrieving visual (%i)... \n", pixel_format );
 	visual = XGetVisualInfo( x11_current_display(), VisualIDMask, &visualTemplate, &visual_count );
 	if ( !visual )
 	{
 		xwl_set_error( "Unable to find visual!" );
 		return 0;
 	}
-
-	fprintf( stdout, "[xwl] Found visual. visual_count = %i\n", visual_count );
 
 	return visual;
 } // x11_fetch_visual
