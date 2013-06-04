@@ -22,7 +22,7 @@ class xwlRasberryPiBuilder(Builder):
 
 		builder.includes = ['include']
 		builder.libs = [ project.name ]
-		builder.setOutput( path=libdir, name=project.name, type=Builder.DynamicLibrary )
+		builder.addOutput( path=libdir, name=project.name, type=Builder.DynamicLibrary )
 
 		driver.config = (params['configuration'].lower() + Premake4.archmap[ params['platform'] ][ params['build_architecture'] ])
 
