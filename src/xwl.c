@@ -706,7 +706,7 @@ void xwl_shutdown( void )
 
 int xwl_dispatch_events()
 {
-	int result;
+	int result = 0;
 	
 	assert( _input_provider.dispatch_events != 0 );
 	result = _input_provider.dispatch_events();
