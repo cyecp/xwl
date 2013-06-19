@@ -278,11 +278,14 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 		#include <xwl/platforms/rpi/rpi.h>
 	#endif
 
-	#if EGL
+	#if XWL_WITH_EGL
 		#include <xwl/platforms/egl/egl.h>
 	#endif
 
-	#include <xwl/platforms/x11/x11.h>
+	#if XWL_WITH_X11
+		#include <xwl/platforms/x11/x11.h>
+	#endif
+
 #elif _WIN32
 	#include <xwl/platforms/win32/win32.h>
 #endif
@@ -297,7 +300,13 @@ xwl_window_provider_register _window_providers[] = {
 	0, // default
 #if LINUX
 	0, // EGL
-	x11_window_register, // X11
+
+	#if XWL_WITH_X11
+		x11_window_register, // X11
+	#else
+		0, // X11
+	#endif
+
 	0, // Wayland
 #else
 	0, 0, 0,
@@ -326,13 +335,13 @@ xwl_api_provider_register _api_providers[] = {
 	0, // default
 #if LINUX
 
-	#if EGL
+	#if XWL_WITH_EGL
 		egl_api_register,
 	#else
 		0, // EGL
 	#endif
 
-	#if 1
+	#if XWL_WITH_X11
 		x11_opengl_register, // X11,
 	#else
 		0,
@@ -359,7 +368,13 @@ xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
 #if LINUX
-	x11_input_register, // X11
+
+	#if XWL_WITH_X11
+		x11_input_register, // X11
+	#else
+		0, // X11
+	#endif
+
 #else
 	0,
 #endif
@@ -386,7 +401,11 @@ unsigned int _xwl_default_window_provider()
 #elif RASPBERRYPI
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_RASPBERRYPI );
 #elif LINUX
-	USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
+
+	#if XWL_WITH_X11
+		USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
+	#endif
+		
 #elif _WIN32
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_WIN32 );
 #endif
@@ -401,7 +420,11 @@ unsigned int _xwl_default_api_provider()
 #elif RASPBERRYPI
 	USE_PROVIDER( XWL_API_PROVIDER_EGL );
 #elif LINUX
-	USE_PROVIDER( XWL_API_PROVIDER_X11 );
+
+	#if XWL_WITH_X11
+		USE_PROVIDER( XWL_API_PROVIDER_X11 );
+	#endif
+
 #elif _WIN32
 	USE_PROVIDER( XWL_API_PROVIDER_WIN32 );
 #endif
@@ -414,8 +437,12 @@ unsigned int _xwl_default_input_provider()
 {
 #if __APPLE__
 	USE_PROVIDER( XWL_INPUT_PROVIDER_COCOA );
-#elif LINUX || RASPBERRYPI
-	USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
+#elif LINUX
+
+	#if XWL_WITH_X11
+		USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
+	#endif
+
 #elif _WIN32
 	USE_PROVIDER( XWL_INPUT_PROVIDER_WIN32 );
 #endif

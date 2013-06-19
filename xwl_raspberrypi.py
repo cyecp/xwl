@@ -32,6 +32,7 @@ class xwlRasberryPiBuilder(Builder):
 		premake = Premake4( action=builder.premake_action )
 		premake.with_egl = True
 		premake.rpi = True
+		#premake.with_x11 = True
 		premake.run()
 
 	def postclean(*args, **kwargs):

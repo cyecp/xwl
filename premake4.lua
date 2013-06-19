@@ -1,13 +1,19 @@
 newoption {
 	trigger = "rpi",
 	value = nil,
-	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1,-DEGL=1, plus platform files."
+	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1,-DXWL_WITH_EGL=1, plus platform files."
 }
 
 newoption {
 	trigger = "with_egl",
 	value = nil,
 	description = "Enable EGL support, adds -DEGL=1, plus platform files."
+}
+
+newoption {
+	trigger = "with_x11",
+	value = nil,
+	description = "Enable X11 support, adds -XWL_WITH_X11=1, links with -lXinerama, -lX11"
 }
 
 if _OPTIONS["rpi"] then
@@ -18,11 +24,15 @@ if _OPTIONS["with_egl"] then
 	print( "Compiling with EGL..." )
 end
 
+if _OPTIONS["with_x11"] then
+	print( "Compiling with X11..." )
+end
+
 function setup_raspberry_pi()
 	defines
 	{
 		"RASPBERRYPI=1",
-		"EGL=1",
+		"XWL_WITH_EGL=1",
 	}
 
 	files
@@ -65,7 +75,7 @@ end
 function setup_egl()
 	defines
 	{
-		"EGL=1"
+		"XWL_WITH_EGL=1"
 	}
 
 	files
@@ -127,17 +137,24 @@ project "xwl"
 	
 	configuration{ "linux" }
 		defines { "LINUX=1", baseDefines }
-		links
-		{
-			"Xinerama",
-			"X11",
-			"GL"
-		}
-		files
-		{
-			"src/platforms/x11/**.c",
-			"include/platforms/x11/**.h"
-		}
+
+		if not _OPTIONS["rpi"] then
+			links
+			{
+				"GL"
+			}
+		end
+
+		if _OPTIONS["with_x11"] then
+			links { "Xinerama", "X11" }
+			defines { "XWL_WITH_X11=1" }
+
+			files
+			{
+				"src/platforms/x11/**.c",
+				"include/platforms/x11/**.h"
+			}			
+		end
 
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()

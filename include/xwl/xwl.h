@@ -3,15 +3,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
-	
-// define RASPBERRYPI 1 to enable the Raspberry Pi.
 	
 // platform includes
 #if LINUX
-	#include <X11/Xlib.h>
-	#include <X11/keysym.h>
-	#include <X11/extensions/Xrandr.h>
+	#if XWL_WITH_X11
+		#include <X11/Xlib.h>
+		#include <X11/keysym.h>
+		#include <X11/extensions/Xrandr.h>
+	#endif
+
 	#define XWL_EXPORT
 #elif _WIN32
 	#ifdef XWL_DLL
@@ -148,9 +148,12 @@ typedef struct xwl_native_window_s
     xwl_window_t handle;
         
 #ifdef LINUX
-    XIC inputContext;
-    Atom atomClose;
-    XEvent lastKeyRelease;
+
+    #if XWL_WITH_X11
+	    XIC inputContext;
+	    Atom atomClose;
+	    XEvent lastKeyRelease;
+   #endif
 #endif
 
 #if _WIN32
