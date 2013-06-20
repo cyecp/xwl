@@ -1,13 +1,13 @@
 newoption {
 	trigger = "rpi",
 	value = nil,
-	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1,-DXWL_WITH_EGL=1, plus platform files."
+	description = "Enables RaspberryPi support, adds -DRASPBERRYPI=1, plus platform files."
 }
 
 newoption {
 	trigger = "with_egl",
 	value = nil,
-	description = "Enable EGL support, adds -DEGL=1, plus platform files."
+	description = "Enable EGL support, adds -DXWL_WITH_EGL=1, plus platform files."
 }
 
 newoption {
@@ -31,8 +31,7 @@ end
 function setup_raspberry_pi()
 	defines
 	{
-		"RASPBERRYPI=1",
-		"XWL_WITH_EGL=1",
+		"RASPBERRYPI=1"
 	}
 
 	files
@@ -51,8 +50,7 @@ function setup_raspberry_pi()
 	includedirs
 	{
 		"/opt/vc/include",
-		"includes/platforms/rpi/",
-		"includes/platforms/egl/"
+		"includes/platforms/rpi/"
 	}
 
 	buildoptions
@@ -67,7 +65,6 @@ function setup_raspberry_pi()
 
 	links
 	{
-		"EGL",
 		"GLESv2"
 	}
 end
@@ -82,6 +79,11 @@ function setup_egl()
 	{
 		"src/platforms/egl/**.c",
 		"include/platforms/egl/**.h"
+	}
+
+	includedirs
+	{
+		"includes/platforms/egl/"
 	}
 
 	links
@@ -138,13 +140,6 @@ project "xwl"
 	configuration{ "linux" }
 		defines { "LINUX=1", baseDefines }
 
-		if not _OPTIONS["rpi"] then
-			links
-			{
-				"GL"
-			}
-		end
-
 		if _OPTIONS["with_x11"] then
 			links { "Xinerama", "X11" }
 			defines { "XWL_WITH_X11=1" }
@@ -158,7 +153,15 @@ project "xwl"
 
 		if _OPTIONS["rpi"] ~= nil then
 			setup_raspberry_pi()
-		elseif _OPTIONS["with_egl"] ~= nil then
+		else
+			links
+			{
+				"GL",
+				"dl"
+			}
+		end
+
+		if _OPTIONS["with_egl"] ~= nil then
 			setup_egl()
 		end
 

@@ -33,6 +33,7 @@ class xwlBuilder(Builder):
 	def generate(self, *args, **kwargs):
 		builder = kwargs.get( "builder", None )
 		premake = Premake4( action=builder.premake_action )
+		premake.with_x11 = True
 		premake.run()
 
 	def postclean(self, *args, **kwargs):
