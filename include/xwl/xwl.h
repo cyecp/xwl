@@ -5,7 +5,7 @@ extern "C" {
 #endif
 	
 // platform includes
-#if LINUX
+#if __linux__
 	#if XWL_WITH_X11
 		#include <X11/Xlib.h>
 		#include <X11/keysym.h>
@@ -147,8 +147,7 @@ typedef struct xwl_native_window_s
 {
     xwl_window_t handle;
         
-#ifdef LINUX
-
+#ifdef __linux__
     #if XWL_WITH_X11
 	    XIC inputContext;
 	    Atom atomClose;
