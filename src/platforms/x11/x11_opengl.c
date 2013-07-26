@@ -21,6 +21,8 @@
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = 0;
 #endif
 
+typedef void (*GLXSWAPINTERVALEXTPROC)( int interval );
+GLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = 0;
 
 #if 0
 Window xwl_linux_create_window( xwl_renderer_settings_t * settings, unsigned int * attribs )
@@ -107,9 +109,18 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 		}
 		XFree( vi );
 		*/
+
+
 		if ( !glXCreateContextAttribsARB )
 		{
 			xwl_set_error( "glXCreateContextAttribsARB could not be found" );
+			return 0;
+		}
+
+		glXSwapIntervalEXT = (GLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*)"glXSwapIntervalSGI");
+		if ( !glXSwapIntervalEXT )
+		{
+			xwl_set_error( "glXSwapIntervalEXT could not be found" );
 			return 0;
 		}
 	}
@@ -192,6 +203,9 @@ void *x11_opengl_create_context( xwl_native_window_t * native_window, xwl_window
 		context = glXCreateContextAttribsARB( x11_current_display(), *framebuffer_config, 0, 1, modern_attributes );
 		XFree( framebuffer_config );
 	}
+
+
+	//glXSwapIntervalEXT(0);
 
 #else
 	fprintf( stdout, "[xwl] Fetching visual: %i...\n", native_window->handle.pixel_format );
