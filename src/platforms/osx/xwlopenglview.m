@@ -203,7 +203,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	if ( modifierFlags & NSAlternateKeyMask )
 	{
 		ev->keymods |= XWLKM_ALT;
-		NSLog( @"alt" );
+		//NSLog( @"alt" );
 	}
 	else
 	{
@@ -213,7 +213,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	if ( modifierFlags & NSControlKeyMask)
 	{
 		ev->keymods |= XWLKM_CONTROL;
-		NSLog( @"control" );
+		//NSLog( @"control" );
 	}
 	else
 	{
@@ -223,7 +223,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	if ( modifierFlags & NSShiftKeyMask )
 	{
 		ev->keymods |= XWLKM_SHIFT;
-		NSLog( @"shift" );
+		//NSLog( @"shift" );
 	}
 	else
 	{
@@ -233,7 +233,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	if ( modifierFlags & NSCommandKeyMask )
 	{
 		ev->keymods |= XWLKM_SYSTEM;
-		NSLog( @"system" );
+		//NSLog( @"system" );
 	}
 	else
 	{
@@ -396,7 +396,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 
 -(void)viewDidChangeBackingProperties
 {
-	NSLog(@"viewDidChangeBackingProperties");
+	NSLog(@"xwl: handle viewDidChangeBackingProperties");
 }
 
 -(void)update

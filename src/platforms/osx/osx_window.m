@@ -69,7 +69,7 @@ void *cocoa_create_window( xwl_native_window_t * wh, const char * utf8_title, un
 		return 0;
 	}
 
-	NSLog( @"created window on thread: %@", [NSThread currentThread]);
+	//NSLog( @"created window on thread: %@", [NSThread currentThread]);
 	
 	// uncomment the next line to see a red color when the window is initially created
 	//[handle setBackgroundColor: [NSColor redColor]];

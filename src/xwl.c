@@ -392,7 +392,8 @@ xwl_input_provider_register _input_providers[] = {
 #endif
 };
 
-#define USE_PROVIDER( name ) fprintf( stdout, "use provider: '%s'\n", #name ); return name
+//#define USE_PROVIDER( name ) fprintf( stdout, "use provider: '%s'\n", #name ); return name
+#define USE_PROVIDER( name ) return name
 
 unsigned int _xwl_default_window_provider()
 {
