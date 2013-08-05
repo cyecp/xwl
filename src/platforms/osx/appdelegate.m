@@ -1,6 +1,6 @@
 #include <xwl/platforms/osx/appdelegate.h>
 #import <xwl/platforms/osx/xwlwindow.h>
-
+#import <xwl/xwl_internal.h>
 
 // the implementation for xwlDelegate is provided by default and takes over as application delegate.
 @implementation xwlDelegate
@@ -41,6 +41,7 @@
 	xwl_send_event( &ev );
 	return YES;
 }
+
 -(void) windowDidResignKey:(NSNotification*)notification
 {
 	xwl_event_t ev = {0};
