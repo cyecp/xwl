@@ -46,11 +46,12 @@ void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_
 	*outattribs++ = NSOpenGLPFAColorSize;
 	*outattribs++ = color_size;
 	*outattribs = 0;
-	
+
 
 	// create an opengl pixel format
 	format = [[NSOpenGLPixelFormat alloc] initWithAttributes: attrib_pointer];
 //	global_format = format;
+	
 	free( attrib_pointer );
 	
 	if ( format == nil )
@@ -61,6 +62,16 @@ void *cocoa_api_create_context( xwl_native_window_t * native_window, xwl_window_
 	
 	// create opengl context
 	context = [[NSOpenGLContext alloc] initWithFormat: format shareContext: (NSOpenGLContext*)other_context];
+	
+	GLint opacity = 1; // 1: opaque, 0: transparent
+	GLint waitforvsync = 1; // 1: on; 0: off
+	
+	// make the window opaque
+	[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+	
+	// enable v-sync
+	[context setValues:&waitforvsync forParameter:NSOpenGLCPSwapInterval];
+	
 	[format release];
 	
 	if ( context == nil )
