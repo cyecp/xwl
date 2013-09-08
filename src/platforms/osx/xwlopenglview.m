@@ -1,6 +1,7 @@
 #include <xwl/platforms/osx/appdelegate.h>
 #include <xwl/platforms/osx/xwlopenglview.h>
 #import <xwl/platforms/osx/xwlwindow.h>
+#include <xwl/xwl_internal.h>
 
 unsigned int NonLocalizedKeys(unsigned short keycode);
 unsigned int LocalizedKeys(unichar ch);
@@ -246,6 +247,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	xwl_event_t ev = {0};
 	xwlWindow * wnd = (xwlWindow*)[event window];
 	NSString *string = [event charactersIgnoringModifiers];
+
 	
 	// send text event with unicode
 	if ( [[event characters] length] && ![event isARepeat] )
@@ -354,6 +356,7 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	}
 	else
 	{
+		NSLog( @"key is a repeat, keyup" );
 		//[super keyUp: event];
 	}
 	
@@ -361,27 +364,37 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	[super keyUp: event];
 }
 
+
 -(void)flagsChanged:(NSEvent *)event
 {
+//	NSLog( @"flagschanged: %@", [event charactersIgnoringModifiers] );
+//	NSLog( @"keycode: %i", [event keyCode] );
 /*
 	xwl_event_t ev;
 	ev.type = XWLE_KEYPRESSED;
 	[self setKeymods:&ev fromModifierFlags:[event modifierFlags]];
 	*/
-/*
-//	 TODO: generate key events for these
-		NSUInteger modifierFlags = [event modifierFlags];
-		if ( modifierFlags & NSAlternateKeyMask )
-			NSLog( @"alt" );
-		if ( modifierFlags & NSControlKeyMask)
-			NSLog( @"control" );
-		if ( modifierFlags & NSShiftKeyMask )
-			NSLog( @"shift" );
-		if ( modifierFlags & NSCommandKeyMask )
-			NSLog( @"system" );
 	
-	NSLog( @"Flags Changed!" );
-	*/
+
+
+//	NSLog( @"Flags Changed!" );
+////	 TODO: generate key events for these
+//		NSUInteger modifierFlags = [event modifierFlags];
+//		if ( modifierFlags & NSAlternateKeyMask )
+//			NSLog( @"alt" );
+//		if ( modifierFlags & NSControlKeyMask)
+//			NSLog( @"control" );
+//		if ( modifierFlags & NSShiftKeyMask )
+//			NSLog( @"shift" );
+//		if ( modifierFlags & NSCommandKeyMask )
+//			NSLog( @"system" );
+
+//	NSString * characters = [event characters];
+//	NSLog( @"characters: %@", characters );
+
+	//NSLog( @"keycode: %i", [event keyCode] );
+
+	[super flagsChanged:event];
 }
 
 -(void)mouseEntered:(NSEvent *)theEvent
@@ -399,19 +412,19 @@ void dispatchMouseMoveEvent(NSEvent * theEvent)
 	NSLog(@"xwl: handle viewDidChangeBackingProperties");
 }
 
--(void)update
-{
-	int new_viertual_screen;
-
-	// handle GPU switches
-	[super update];
-
-	new_viertual_screen = [[self openGLContext] currentVirtualScreen];
-	if ( current_virtual_screen != new_viertual_screen )
-	{
-		// a switch has occurred - requery GPU for capabilities
-		current_virtual_screen = new_viertual_screen;
-	}
-}
+//-(void)update
+//{
+//	int new_virtual_screen;
+//
+//	// handle GPU switches
+//	[super update];
+//
+//	new_virtual_screen = [[self openGLContext] currentVirtualScreen];
+//	if ( current_virtual_screen != new_virtual_screen )
+//	{
+//		// a switch has occurred - requery GPU for capabilities
+//		current_virtual_screen = new_virtual_screen;
+//	}
+//}
 
 @end
