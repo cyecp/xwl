@@ -135,6 +135,8 @@ void cocoa_api_activate_context( void * context, xwl_native_window_t * native_wi
 	int swap_interval = 1;
 	[ctx setValues:&swap_interval forParameter:NSOpenGLCPSwapInterval];
 	
+	int is_opaque = 1; // 0: transparent
+	[ctx setValues:&is_opaque forParameter:NSOpenGLCPSurfaceOpacity];
 //	CVDisplayLinkCreateWithActiveCGDisplays( &view->display_link );
 	
 //	CVDisplayLinkSetOutputCallback( view->display_link, &display_link_callback, view );
