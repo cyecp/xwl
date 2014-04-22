@@ -183,7 +183,7 @@ void x11_window_register( xwl_window_provider_t * wapi )
 
 #if 0
 
-#if LINUX && 0
+#if __linux__ && 0
 	#include <stdio.h>
 	#include <X11/Xlib.h>
 	//#include <X11/extensions/Xrandr.h>

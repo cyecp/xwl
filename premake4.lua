@@ -138,7 +138,7 @@ project "xwl"
 	}	
 	
 	configuration{ "linux" }
-		defines { "LINUX=1", baseDefines }
+		defines { baseDefines }
 
 		if _OPTIONS["with_x11"] then
 			links { "Xinerama", "X11" }
@@ -235,7 +235,7 @@ project "sample"
 		}
 
 	configuration{ "linux" }
-		defines { "LINUX=1", baseDefines }
+		defines { baseDefines }
 		links
 		{
 			"Xinerama",

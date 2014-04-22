@@ -24,13 +24,13 @@
 #include <string.h>
 #include <stdio.h>
 
-#if LINUX
+#if __linux__
 #include <errno.h>
 #endif
 
 #if _WIN32
 #include <windows.h>
-#elif LINUX || __APPLE__
+#elif __linux__ || __APPLE__
 #include <dlfcn.h>
 #endif
 
@@ -62,7 +62,7 @@ int xlib_open( xlib_t * lib, const char * library_path )
 
 	// restore error mode
 	SetErrorMode( previous_error_mode );
-#elif LINUX || __APPLE__
+#elif __linux__ || __APPLE__
 	lib->handle = dlopen( library_path, RTLD_LAZY );
 #endif
 
@@ -84,7 +84,7 @@ void xlib_close( xlib_t * lib )
 #if _WIN32
 		FreeLibrary( lib->handle );
 		lib->handle = 0;
-#elif LINUX || __APPLE__
+#elif __linux__ || __APPLE__
 		dlclose( lib->handle );
 #endif
 	}
@@ -102,7 +102,7 @@ void * xlib_find_symbol( xlib_t * lib, const char * procname )
 
 #if _WIN32
 	return GetProcAddress( (HMODULE)lib->handle, (LPSTR)procname );
-#elif LINUX || __APPLE__
+#elif __linux__ || __APPLE__
 	return dlsym( lib->handle, procname );
 #endif
 } // xlib_find_symbol

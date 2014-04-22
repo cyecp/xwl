@@ -39,11 +39,11 @@ xwl_native_window_t *_xwl_window_at_index( int index )
 } // _xwl_window_at_index
 
 
-#if _WIN32 || LINUX
+#if _WIN32 || __linux__
 int _xwl_open_driver_library( unsigned int api_provider )
 {
 	const char * library_name = "";
-#if LINUX
+#if __linux__
 #if RASPBERRYPI
 	library_name = "libGLESv2.so";
 #else
@@ -256,7 +256,7 @@ const char * xwl_mouse_to_string( int mb )
 
 
 
-#if LINUX
+#if __linux__
 /*
 int xwl_xserver_handler( Display * display, XErrorEvent * event )
 {
@@ -272,7 +272,7 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 
 #if __APPLE__
 	#include <xwl/platforms/osx/osx.h>
-#elif LINUX
+#elif __linux__
 
 	#if RASPBERRYPI
 		#include <xwl/platforms/rpi/rpi.h>
@@ -298,7 +298,7 @@ xwl_input_provider_t _input_provider;
 xwl_window_provider_register _window_providers[] = {
 	0, // invalid
 	0, // default
-#if LINUX
+#if __linux__
 	0, // EGL
 
 	#if XWL_WITH_X11
@@ -333,7 +333,7 @@ xwl_window_provider_register _window_providers[] = {
 xwl_api_provider_register _api_providers[] = {
 	0, // invalid
 	0, // default
-#if LINUX
+#if __linux__
 
 	#if XWL_WITH_EGL
 		egl_api_register,
@@ -367,7 +367,7 @@ xwl_api_provider_register _api_providers[] = {
 xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
-#if LINUX
+#if __linux__
 
 	#if XWL_WITH_X11
 		x11_input_register, // X11
@@ -401,7 +401,7 @@ unsigned int _xwl_default_window_provider()
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_COCOA );
 #elif RASPBERRYPI
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_RASPBERRYPI );
-#elif LINUX
+#elif __linux__
 
 	#if XWL_WITH_X11
 		USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
@@ -420,7 +420,7 @@ unsigned int _xwl_default_api_provider()
 	USE_PROVIDER( XWL_API_PROVIDER_COCOA );
 #elif RASPBERRYPI
 	USE_PROVIDER( XWL_API_PROVIDER_EGL );
-#elif LINUX
+#elif __linux__
 
 	#if XWL_WITH_X11
 		USE_PROVIDER( XWL_API_PROVIDER_X11 );
@@ -438,7 +438,7 @@ unsigned int _xwl_default_input_provider()
 {
 #if __APPLE__
 	USE_PROVIDER( XWL_INPUT_PROVIDER_COCOA );
-#elif LINUX
+#elif __linux__
 
 	#if XWL_WITH_X11
 		USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
@@ -627,7 +627,7 @@ void * xwl_findsymbol( const char * symbol_name )
 		// if that fails, try to get it from the dynamic library
 		if ( !func )
 		{
-	#if _WIN32 || LINUX
+	#if _WIN32 || __linux__
 			func = xlib_find_symbol( &api_lib, symbol_name );
 	#elif __APPLE__
 			func = _xwl_apple_find_symbol( symbol_name );

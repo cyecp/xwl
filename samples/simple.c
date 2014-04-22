@@ -14,7 +14,7 @@ int my;
 	#include <gl/gl.h>
 	#pragma comment( lib, "opengl32.lib" )
 	#define XWLGL_API __stdcall
-#elif LINUX
+#elif __linux__
 	#include <GL/gl.h>
 	//#include <GL/glx.h>
 	//#include <GLES2/gl2.h>  /* use OpenGL ES 2.x */
