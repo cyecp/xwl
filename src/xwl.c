@@ -39,12 +39,12 @@ xwl_native_window_t *_xwl_window_at_index( int index )
 } // _xwl_window_at_index
 
 
-#if _WIN32 || __linux__
+#if defined(_WIN32) || defined(__linux__)
 int _xwl_open_driver_library( unsigned int api_provider )
 {
 	const char * library_name = "";
-#if __linux__
-#if RASPBERRYPI
+#if defined(__linux__)
+#if defined(RASPBERRYPI)
 	library_name = "libGLESv2.so";
 #else
 	library_name = "libGL.so";
@@ -55,7 +55,7 @@ int _xwl_open_driver_library( unsigned int api_provider )
 		library_name = "libGLESv2.so";
 	}
 	
-#elif _WIN32
+#elif defined(_WIN32)
 	library_name = "OpenGL32.dll";
 #endif
 	
@@ -256,7 +256,7 @@ const char * xwl_mouse_to_string( int mb )
 
 
 
-#if __linux__
+#if defined(__linux__)
 /*
 int xwl_xserver_handler( Display * display, XErrorEvent * event )
 {
@@ -270,23 +270,23 @@ int xwl_xserver_handler( Display * display, XErrorEvent * event )
 	
 // include relevant headers for platforms
 
-#if __APPLE__
+#if defined(__APPLE__)
 	#include <xwl/platforms/osx/osx.h>
-#elif __linux__
+#elif defined(__linux__)
 
-	#if RASPBERRYPI
+	#if defined(RASPBERRYPI)
 		#include <xwl/platforms/rpi/rpi.h>
 	#endif
 
-	#if XWL_WITH_EGL
+	#if defined(XWL_WITH_EGL)
 		#include <xwl/platforms/egl/egl.h>
 	#endif
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		#include <xwl/platforms/x11/x11.h>
 	#endif
 
-#elif _WIN32
+#elif defined(_WIN32)
 	#include <xwl/platforms/win32/win32.h>
 #endif
 
@@ -298,10 +298,10 @@ xwl_input_provider_t _input_provider;
 xwl_window_provider_register _window_providers[] = {
 	0, // invalid
 	0, // default
-#if __linux__
+#if defined(__linux__)
 	0, // EGL
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		x11_window_register, // X11
 	#else
 		0, // X11
@@ -312,19 +312,19 @@ xwl_window_provider_register _window_providers[] = {
 	0, 0, 0,
 #endif
 
-#if __APPLE__
+#if defined(__APPLE__)
 	cocoa_register,
 #else
 	0,
 #endif
 
-#if _WIN32
+#if defined(_WIN32)
 	win32_window_register, // Win32
 #else
 	0,
 #endif
 
-#if RASPBERRYPI
+#if defined(RASPBERRYPI)
 	rpi_window_register, // Raspberry Pi
 #endif
 };
@@ -333,15 +333,15 @@ xwl_window_provider_register _window_providers[] = {
 xwl_api_provider_register _api_providers[] = {
 	0, // invalid
 	0, // default
-#if __linux__
+#if defined(__linux__)
 
-	#if XWL_WITH_EGL
+	#if defined(XWL_WITH_EGL)
 		egl_api_register,
 	#else
 		0, // EGL
 	#endif
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		x11_opengl_register, // X11,
 	#else
 		0,
@@ -350,13 +350,13 @@ xwl_api_provider_register _api_providers[] = {
 	0, 0,
 #endif
 
-#if __APPLE__
+#if defined(__APPLE__)
 	cocoa_api_register,
 #else
 	0,
 #endif
 
-#if _WIN32
+#if defined(_WIN32)
 	win32_opengl_register, // Win32
 #else
 	0,
@@ -367,9 +367,9 @@ xwl_api_provider_register _api_providers[] = {
 xwl_input_provider_register _input_providers[] = {
 	0, // invalid
 	0, // default
-#if __linux__
+#if defined(__linux__)
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		x11_input_register, // X11
 	#else
 		0, // X11
@@ -379,13 +379,13 @@ xwl_input_provider_register _input_providers[] = {
 	0,
 #endif
 
-#if __APPLE__
+#if defined(__APPLE__)
 	cocoa_input_register,
 #else
 	0,
 #endif
 
-#if _WIN32
+#if defined(_WIN32)
 	win32_input_register, // Win32
 #else
 	0,
@@ -397,17 +397,17 @@ xwl_input_provider_register _input_providers[] = {
 
 unsigned int _xwl_default_window_provider()
 {
-#if __APPLE__
+#if defined(__APPLE__)
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_COCOA );
-#elif RASPBERRYPI
+#elif defined(RASPBERRYPI)
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_RASPBERRYPI );
-#elif __linux__
+#elif defined(__linux__)
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		USE_PROVIDER( XWL_WINDOW_PROVIDER_X11 );
 	#endif
 		
-#elif _WIN32
+#elif defined(_WIN32)
 	USE_PROVIDER( XWL_WINDOW_PROVIDER_WIN32 );
 #endif
 
@@ -416,17 +416,17 @@ unsigned int _xwl_default_window_provider()
 
 unsigned int _xwl_default_api_provider()
 {
-#if __APPLE__
+#if defined(__APPLE__)
 	USE_PROVIDER( XWL_API_PROVIDER_COCOA );
-#elif RASPBERRYPI
+#elif defined(RASPBERRYPI)
 	USE_PROVIDER( XWL_API_PROVIDER_EGL );
-#elif __linux__
+#elif defined(__linux__)
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		USE_PROVIDER( XWL_API_PROVIDER_X11 );
 	#endif
 
-#elif _WIN32
+#elif defined(_WIN32)
 	USE_PROVIDER( XWL_API_PROVIDER_WIN32 );
 #endif
 	
@@ -436,15 +436,15 @@ unsigned int _xwl_default_api_provider()
 
 unsigned int _xwl_default_input_provider()
 {
-#if __APPLE__
+#if defined(__APPLE__)
 	USE_PROVIDER( XWL_INPUT_PROVIDER_COCOA );
-#elif __linux__
+#elif defined(__linux__)
 
-	#if XWL_WITH_X11
+	#if defined(XWL_WITH_X11)
 		USE_PROVIDER( XWL_INPUT_PROVIDER_X11 );
 	#endif
 
-#elif _WIN32
+#elif defined(_WIN32)
 	USE_PROVIDER( XWL_INPUT_PROVIDER_WIN32 );
 #endif
 	
@@ -627,9 +627,9 @@ void * xwl_findsymbol( const char * symbol_name )
 		// if that fails, try to get it from the dynamic library
 		if ( !func )
 		{
-	#if _WIN32 || __linux__
+	#if defined(_WIN32) || defined(__linux__)
 			func = xlib_find_symbol( &api_lib, symbol_name );
-	#elif __APPLE__
+	#elif defined(__APPLE__)
 			func = _xwl_apple_find_symbol( symbol_name );
 	#endif
 		}
